@@ -1,11 +1,21 @@
 services:
 
+  # TLS BOOTSTRAP (one-shot: generates the gRPC CA + server cert into dama-tls)
+  tls-init:
+    container_name: TlsInit
+    build:
+      context: ${CONTEXT}
+      dockerfile: ./infrastructure/environments/tls-init/Dockerfile
+    volumes:
+      - dama-tls:/tls
+    restart: "no"
+
   # FRONTEND
   frontend:
     container_name: Frontend
     build:
       context: ${CONTEXT}
-      dockerfile: ./infrastructure/environments-dev/frontend/Dockerfile
+      dockerfile: ./infrastructure/environments/frontend/Dockerfile
     ports:
       - "${FRONTEND_HOST_PORT}:80"
     mem_limit: 256m
@@ -20,7 +30,7 @@ services:
     container_name: api
     build:
       context: ${CONTEXT}
-      dockerfile: ./infrastructure/environments-dev/api-gateway/Dockerfile
+      dockerfile: ./infrastructure/environments/api-gateway/Dockerfile
     ports:
       - "${API_GATEWAY_HOST_PORT}:80"
     mem_limit: 256m
@@ -43,7 +53,7 @@ services:
     container_name: CredentialsService
     build:
       context: ${CONTEXT}
-      dockerfile: ./infrastructure/environments-dev/credentials/Dockerfile
+      dockerfile: ./infrastructure/environments/credentials/Dockerfile
     environment:
       ASPNETCORE_HTTP_PORTS: 80
       AppSettings__PublicKey: ${JWT_PUBLIC_KEY_B64}
@@ -58,7 +68,7 @@ services:
     container_name: AuthService
     build:
       context: ${CONTEXT}
-      dockerfile: ./infrastructure/environments-dev/auth/Dockerfile
+      dockerfile: ./infrastructure/environments/auth/Dockerfile
     environment:
       ASPNETCORE_HTTP_PORTS: 80
       SEED_DB: "true"
@@ -91,7 +101,7 @@ services:
       - MYSQL_DATABASE=${AUTH_DB_SCHEMA}
     volumes:
       - ${CONTEXT}/infrastructure/seeding/auth:/var/lib/mysql-files/
-      - ${CONTEXT}/infrastructure/environments-dev/auth/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ${CONTEXT}/infrastructure/environments/auth/init.sql:/docker-entrypoint-initdb.d/init.sql
     mem_limit: 1g
     cpus: 1.0
     restart: unless-stopped
@@ -107,7 +117,7 @@ services:
     container_name: CourseManagementService
     build:
       context: ${CONTEXT}
-      dockerfile: ./infrastructure/environments-dev/course-management/Dockerfile
+      dockerfile: ./infrastructure/environments/course-management/Dockerfile
     environment:
       SEED_DB: "true"
       DB_CONNECTION_STRING: ${COURSE_MANAGEMENT_DB_CONNECTION_STRING}
@@ -121,7 +131,11 @@ services:
     mem_limit: 768m
     cpus: 1.0
     restart: unless-stopped
+    volumes:
+      - dama-tls:/etc/dama/tls:ro
     depends_on:
+      tls-init:
+        condition: service_completed_successfully
       course-management-database:
         condition: service_healthy
       rabbitmq:
@@ -137,7 +151,7 @@ services:
       - MYSQL_DATABASE=${COURSE_MANAGEMENT_DB_SCHEMA}
     volumes:
       - ${CONTEXT}/infrastructure/seeding/course-management:/var/lib/mysql-files/
-      - ${CONTEXT}/infrastructure/environments-dev/course-management/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ${CONTEXT}/infrastructure/environments/course-management/init.sql:/docker-entrypoint-initdb.d/init.sql
     mem_limit: 1g
     cpus: 1.0
     restart: unless-stopped
@@ -153,7 +167,7 @@ services:
     container_name: AttendanceService
     build:
       context: ${CONTEXT}
-      dockerfile: ./infrastructure/environments-dev/attendance/Dockerfile
+      dockerfile: ./infrastructure/environments/attendance/Dockerfile
     environment:
       DB_CONNECTION_STRING: ${ATTENDANCE_DB_CONNECTION_STRING}
       PAYMENT_CALLBACK_SECRET: ${PAYMENT_CALLBACK_SECRET}
@@ -167,7 +181,11 @@ services:
     mem_limit: 768m
     cpus: 1.0
     restart: unless-stopped
+    volumes:
+      - dama-tls:/etc/dama/tls:ro
     depends_on:
+      tls-init:
+        condition: service_completed_successfully
       attendance-database:
         condition: service_healthy
       course-management-service:
@@ -187,7 +205,7 @@ services:
       - MYSQL_DATABASE=${ATTENDANCE_DB_SCHEMA}
     volumes:
       - ${CONTEXT}/infrastructure/seeding/attendance:/var/lib/mysql-files/
-      - ${CONTEXT}/infrastructure/environments-dev/attendance/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ${CONTEXT}/infrastructure/environments/attendance/init.sql:/docker-entrypoint-initdb.d/init.sql
     mem_limit: 1g
     cpus: 1.0
     restart: unless-stopped
@@ -203,7 +221,7 @@ services:
     container_name: PaymentService
     build:
       context: ${CONTEXT}
-      dockerfile: ./infrastructure/environments-dev/payment/Dockerfile
+      dockerfile: ./infrastructure/environments/payment/Dockerfile
     environment:
       SEED_DB: "true"
       DB_CONNECTION_STRING: ${PAYMENT_DB_CONNECTION_STRING}
@@ -236,7 +254,7 @@ services:
       - MYSQL_DATABASE=${PAYMENT_DB_SCHEMA}
     volumes:
       - ${CONTEXT}/infrastructure/seeding/payment:/var/lib/mysql-files/
-      - ${CONTEXT}/infrastructure/environments-dev/payment/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ${CONTEXT}/infrastructure/environments/payment/init.sql:/docker-entrypoint-initdb.d/init.sql
     mem_limit: 1g
     cpus: 1.0
     restart: unless-stopped
@@ -252,7 +270,7 @@ services:
     container_name: RabbitMQ
     build:
       context: ${CONTEXT}
-      dockerfile: ./infrastructure/environments-dev/rabbitmq/Dockerfile
+      dockerfile: ./infrastructure/environments/rabbitmq/Dockerfile
     environment:
       - RABBITMQ_DEFAULT_USER=${RABBITMQ_USER}
       - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASSWORD}
@@ -266,3 +284,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
+
+volumes:
+  dama-tls:

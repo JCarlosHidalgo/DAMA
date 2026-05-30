@@ -7,14 +7,16 @@
 # (Attendance is a client — it only needs ca.crt in its trust store, no cert
 # of its own).
 #
-# Run once after cloning, and again to rotate. Output goes to
-# infrastructure/tls/, which is gitignored — the .key files never leave
-# the host.
+# Output goes to TLS_DIR (default infrastructure/tls/, gitignored — the .key
+# files never leave the host). The tls-init compose service reuses this exact
+# script with TLS_DIR=/tls to populate the dama-tls volume on every deploy.
+# Idempotent: re-running skips anything already present, so it is safe to run
+# on every `docker compose up`; delete a cert to force regeneration (rotation).
 
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-TLS_DIR="${SCRIPT_DIR}/tls"
+TLS_DIR="${TLS_DIR:-${SCRIPT_DIR}/tls}"
 mkdir -p "${TLS_DIR}"
 cd "${TLS_DIR}"
 
@@ -38,6 +40,10 @@ generate_server_cert() {
     local name="$1"        # file prefix, e.g. payment
     local hostname="$2"    # SAN value, e.g. PaymentService
 
+    if [[ -f "${name}.crt" && -f "${name}.key" ]]; then
+        echo "${name}.crt + ${name}.key already exist; skipping"
+        return
+    fi
     openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 -out "${name}.key"
     openssl req -new -key "${name}.key" -out "${name}.csr" \
         -subj "/CN=${hostname}"

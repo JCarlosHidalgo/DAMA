@@ -6,6 +6,6 @@ COPY ./apps/Frontend/ ./
 RUN bun run build
 
 FROM httpd:2.4-alpine
-COPY ./infrastructure/environments-dev/frontend/httpd.conf /usr/local/apache2/conf/httpd.conf
+COPY ./infrastructure/environments/frontend/httpd.conf /usr/local/apache2/conf/httpd.conf
 COPY --from=builder /app/dist/Frontend/browser/ /usr/local/apache2/htdocs/
 EXPOSE 80

@@ -1,11 +1,23 @@
 services:
 
+  # TLS BOOTSTRAP (one-shot: generates the gRPC CA + server cert into dama-tls)
+  tls-init:
+    container_name: TlsInit
+    build:
+      context: ${CONTEXT}
+      dockerfile: ./infrastructure/environments/tls-init/Dockerfile
+    volumes:
+      - dama-tls:/tls
+    restart: "no"
+    networks:
+      - dokploy-network
+
   # FRONTEND
   frontend:
     container_name: Frontend
     build:
       context: ${CONTEXT}
-      dockerfile: ./infrastructure/environments-dev/frontend/Dockerfile
+      dockerfile: ./infrastructure/environments/frontend/Dockerfile
     expose:
       - "80"
     mem_limit: 256m
@@ -22,7 +34,7 @@ services:
     container_name: api
     build:
       context: ${CONTEXT}
-      dockerfile: ./infrastructure/environments-dev/api-gateway/Dockerfile
+      dockerfile: ./infrastructure/environments/api-gateway/Dockerfile
     expose:
       - "80"
     mem_limit: 256m
@@ -47,7 +59,7 @@ services:
     container_name: CredentialsService
     build:
       context: ${CONTEXT}
-      dockerfile: ./infrastructure/environments-dev/credentials/Dockerfile
+      dockerfile: ./infrastructure/environments/credentials/Dockerfile
     expose:
       - "80"
     environment:
@@ -66,7 +78,7 @@ services:
     container_name: AuthService
     build:
       context: ${CONTEXT}
-      dockerfile: ./infrastructure/environments-dev/auth/Dockerfile
+      dockerfile: ./infrastructure/environments/auth/Dockerfile
     expose:
       - "80"
     environment:
@@ -95,7 +107,7 @@ services:
     container_name: CourseManagementService
     build:
       context: ${CONTEXT}
-      dockerfile: ./infrastructure/environments-dev/course-management/Dockerfile
+      dockerfile: ./infrastructure/environments/course-management/Dockerfile
     expose:
       - "80"
       - "81"
@@ -111,9 +123,13 @@ services:
     mem_limit: 768m
     cpus: 1.0
     restart: unless-stopped
+    volumes:
+      - dama-tls:/etc/dama/tls:ro
     networks:
       - dokploy-network
     depends_on:
+      tls-init:
+        condition: service_completed_successfully
       rabbitmq:
         condition: service_healthy
 
@@ -122,10 +138,9 @@ services:
     container_name: AttendanceService
     build:
       context: ${CONTEXT}
-      dockerfile: ./infrastructure/environments-dev/attendance/Dockerfile
+      dockerfile: ./infrastructure/environments/attendance/Dockerfile
     expose:
       - "80"
-      - "81"
     environment:
       DB_CONNECTION_STRING: ${ATTENDANCE_DB_CONNECTION_STRING}
       PAYMENT_CALLBACK_SECRET: ${PAYMENT_CALLBACK_SECRET}
@@ -139,9 +154,13 @@ services:
     mem_limit: 768m
     cpus: 1.0
     restart: unless-stopped
+    volumes:
+      - dama-tls:/etc/dama/tls:ro
     networks:
       - dokploy-network
     depends_on:
+      tls-init:
+        condition: service_completed_successfully
       course-management-service:
         condition: service_healthy
       payment-service:
@@ -154,7 +173,7 @@ services:
     container_name: PaymentService
     build:
       context: ${CONTEXT}
-      dockerfile: ./infrastructure/environments-dev/payment/Dockerfile
+      dockerfile: ./infrastructure/environments/payment/Dockerfile
     expose:
       - "80"
     environment:
@@ -183,7 +202,7 @@ services:
     container_name: RabbitMQ
     build:
       context: ${CONTEXT}
-      dockerfile: ./infrastructure/environments-dev/rabbitmq/Dockerfile
+      dockerfile: ./infrastructure/environments/rabbitmq/Dockerfile
     expose:
       - "5672"
       - "15672"
@@ -224,6 +243,7 @@ services:
 volumes:
   rabbitmq-data:
   dbgate-data:
+  dama-tls:
 
 networks:
   dokploy-network:

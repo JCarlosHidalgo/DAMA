@@ -6,7 +6,7 @@ keys (`.env.staging.example`). **Production** runs on **Dokploy** with managed d
 subject of this document.
 
 The build artifacts already exist: `compose.prod.yaml` (app services only, `expose` not `ports`,
-external `dokploy-network`), `.env.prod.example`, the four `environments-dev/<svc>/init.sql`,
+external `dokploy-network`), `.env.prod.example`, the four `environments/<svc>/init.sql`,
 `bootstrap-tls.sh`, and the gateway `nginx.conf`. This runbook is the order in which to wire them.
 
 ---
@@ -20,7 +20,8 @@ external `dokploy-network`), `.env.prod.example`, the four `environments-dev/<sv
 - DNS for **`dama-software.org`** and **`api.dama-software.org`** pointed at the host. TLS at the
   edge is handled by **Cloudflare Tunnels** — do *not* provision certbot/Let's Encrypt for prod.
 - The repo cloned by Dokploy from `https://github.com/JCarlosHidalgo/DAMA`. Note the checkout path on
-  the host — it is the build context (`CONTEXT`) and where the TLS bootstrap must run (steps 4 & 5).
+  the host — it is the build context (`CONTEXT`, set in step 5). TLS now bootstraps itself in-stack
+  (step 4), so no manual cert step is needed in the checkout.
 
 ### 1. Provision the four managed databases (Dokploy UI)
 
@@ -44,13 +45,13 @@ root has the `CREATE DATABASE`/`USE` rights each file requires (it prompts for t
 
 ```bash
 # In the Auth database's terminal:
-curl -fsSL https://raw.githubusercontent.com/JCarlosHidalgo/DAMA/main/infrastructure/environments-dev/auth/init.sql | mysql -u root -p
+curl -fsSL https://raw.githubusercontent.com/JCarlosHidalgo/DAMA/main/infrastructure/environments/auth/init.sql | mysql -u root -p
 # CourseManagement:
-curl -fsSL https://raw.githubusercontent.com/JCarlosHidalgo/DAMA/main/infrastructure/environments-dev/course-management/init.sql | mysql -u root -p
+curl -fsSL https://raw.githubusercontent.com/JCarlosHidalgo/DAMA/main/infrastructure/environments/course-management/init.sql | mysql -u root -p
 # Attendance:
-curl -fsSL https://raw.githubusercontent.com/JCarlosHidalgo/DAMA/main/infrastructure/environments-dev/attendance/init.sql | mysql -u root -p
+curl -fsSL https://raw.githubusercontent.com/JCarlosHidalgo/DAMA/main/infrastructure/environments/attendance/init.sql | mysql -u root -p
 # Payment:
-curl -fsSL https://raw.githubusercontent.com/JCarlosHidalgo/DAMA/main/infrastructure/environments-dev/payment/init.sql | mysql -u root -p
+curl -fsSL https://raw.githubusercontent.com/JCarlosHidalgo/DAMA/main/infrastructure/environments/payment/init.sql | mysql -u root -p
 ```
 
 Credentials has no database, so there is no fifth command. Verify, e.g.:
@@ -87,20 +88,20 @@ Never reuse dev/staging values. Full inventory and rotation playbook live in
 Each backend's `SecretsValidationModule` (Order = -100) fails fast at boot if any secret is missing
 or malformed — a wrong key kills the container with a precise message, not a runtime 500.
 
-### 4. Bootstrap inter-service TLS on the host (the build blocker)
+### 4. Inter-service TLS (automatic — no manual step)
 
-`course-management` and `attendance` Dockerfiles `COPY ./infrastructure/tls/*.crt` at build
-time, but `infrastructure/tls/` is **gitignored**, so a fresh clone does not contain it and those two
-builds fail. Generate the certs once, **inside the Dokploy checkout**:
+TLS is bootstrapped **inside the compose stack** by the one-shot **`tls-init`** service
+(`infrastructure/environments/tls-init/Dockerfile`), which runs `bootstrap-tls.sh` into the named
+volume **`dama-tls`** on every `docker compose up`. It generates the internal CA + the CourseManagement
+server cert (SAN = container name). CourseManagement mounts the volume read-only and Kestrel serves
+`course-management.crt/.key`; Attendance mounts it and its `entrypoint.sh` installs `ca.crt` into the OS
+trust store at container start. Both backends gate on `depends_on: tls-init`
+(`service_completed_successfully`), so the bundle always exists before they boot.
 
-```bash
-cd <dokploy-checkout-path>
-./infrastructure/bootstrap-tls.sh
-```
-
-This writes the internal CA plus the CourseManagement server cert (SAN = container name, which matches prod) into
-`infrastructure/tls/`. They are untracked and survive `git pull`, so the next deploy reuses them. If
-Dokploy ever does a clean clone (wiping untracked files), re-run the script before rebuilding.
+Generation is **idempotent** (skips anything already present) and the volume persists across deploys, so
+certs are stable. There is **no manual host step and no build-time `COPY`** — a fresh clone builds even
+without `infrastructure/tls/` present. To rotate, delete the volume (`docker volume rm <stack>_dama-tls`)
+and redeploy. The host `bootstrap-tls.sh` stays for local `dotnet run`.
 
 ### 5. Fill the Dokploy environment
 
@@ -143,8 +144,8 @@ This is the production backup story; the schema-evolution story is DbGate (step 
 
 ## Verification
 
-- **TLS build unblocked:** after step 4, the CourseManagement/Attendance images build (the
-  `COPY ./infrastructure/tls/*.crt` no longer fails).
+- **TLS auto-bootstrap:** `tls-init` exits successfully and populates `dama-tls`; CourseManagement and
+  Attendance start only after it completes. Images build with no `infrastructure/tls/` on the host.
 - **Frontend & API reachable:** `https://dama-software.org` loads; `https://api.dama-software.org`
   routes `/api/<service>/*` to each backend (`infrastructure/verify-gateway-routes.sh` from the host
   checks each upstream resolves through the gateway).

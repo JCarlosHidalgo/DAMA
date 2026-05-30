@@ -13,11 +13,10 @@ WORKDIR /webapp
 COPY --from=build /webapp/out .
 ENV ASPNETCORE_ENVIRONMENT=Container
 
-# Inter-service gRPC TLS. Server only — CourseManagement makes no outbound
-# gRPC calls, so the CA trust isn't needed in this image.
-COPY ./infrastructure/tls/course-management.crt /etc/dama/tls/server.crt
-COPY ./infrastructure/tls/course-management.key /etc/dama/tls/server.key
-RUN chmod 600 /etc/dama/tls/server.key
+# Inter-service gRPC TLS. CourseManagement is the gRPC server; its cert + key
+# arrive at runtime via the dama-tls volume (mounted read-only at /etc/dama/tls),
+# where Kestrel reads course-management.crt/.key. No build-time COPY — the
+# tls-init compose service generates the bundle into that volume on every deploy.
 
 HEALTHCHECK --interval=10s --timeout=3s --retries=6 --start-period=20s \
     CMD curl -fsS http://localhost:80/health || exit 1

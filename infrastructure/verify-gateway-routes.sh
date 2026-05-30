@@ -35,6 +35,6 @@ done
 if [[ $failed -ne 0 ]]; then
     echo
     echo "One or more gateway routes failed. Check upstream and location blocks in"
-    echo "infrastructure/environments-dev/api-gateway/nginx.conf."
+    echo "infrastructure/environments/api-gateway/nginx.conf."
     exit 1
 fi
