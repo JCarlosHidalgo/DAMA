@@ -9,3 +9,8 @@ RUN apk add --no-cache curl ca-certificates \
     && curl -fSL -o /opt/rabbitmq/plugins/rabbitmq_delayed_message_exchange-${DELAYED_PLUGIN_VERSION}.ez \
         "https://github.com/rabbitmq/rabbitmq-delayed-message-exchange/releases/download/v${DELAYED_PLUGIN_VERSION}/rabbitmq_delayed_message_exchange-${DELAYED_PLUGIN_VERSION}.ez" \
     && rabbitmq-plugins enable --offline rabbitmq_delayed_message_exchange
+
+# Serve the management UI under /api/rabbitmq so it is reachable through the
+# api-gateway (location /api/rabbitmq/). conf.d is additive — it does not clobber
+# the default-user config the image generates from RABBITMQ_DEFAULT_USER/PASS.
+COPY ./infrastructure/environments/rabbitmq/management-path.conf /etc/rabbitmq/conf.d/20-management-path.conf

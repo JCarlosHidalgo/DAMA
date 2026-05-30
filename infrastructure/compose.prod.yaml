@@ -20,6 +20,8 @@ services:
       dockerfile: ./infrastructure/environments/frontend/Dockerfile
     expose:
       - "80"
+    ports:
+      - "127.0.0.1:8001:80"
     mem_limit: 256m
     cpus: 0.5
     restart: unless-stopped
@@ -37,6 +39,8 @@ services:
       dockerfile: ./infrastructure/environments/api-gateway/Dockerfile
     expose:
       - "80"
+    ports:
+      - "127.0.0.1:8000:80"
     mem_limit: 256m
     cpus: 0.5
     restart: unless-stopped
@@ -222,12 +226,12 @@ services:
       timeout: 5s
       retries: 10
 
-  # SCHEMA ADMIN (DbGate, reachable only through the gateway at /api/db-gate/)
+  # SCHEMA ADMIN (DbGate, reachable only through the gateway at /api/db-gate/).
+  # No expose/ports: nginx reaches it as DbGate:3000 over dokploy-network; it is
+  # never published to the host nor advertised.
   dbgate:
     container_name: DbGate
     image: dbgate/dbgate:7.1.13
-    expose:
-      - "3000"
     environment:
       WEB_ROOT: /api/db-gate
       LOGIN: ${DBGATE_LOGIN}
