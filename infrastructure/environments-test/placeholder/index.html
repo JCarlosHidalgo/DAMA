@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sin reporte · DAMA Coverage</title>
+    <style>
+      :root {
+        --bg: #0f1419;
+        --bg-card: #1c2128;
+        --border: #30363d;
+        --border-strong: #484f58;
+        --text: #e6edf3;
+        --text-muted: #8d96a0;
+        --text-soft: #b1bac4;
+        --warn: #f59e0b;
+        --warn-soft: rgba(245, 158, 11, 0.12);
+        --accent: #4f8cc9;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      html,
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font-family:
+          -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', 'Roboto', 'Helvetica Neue',
+          Arial, sans-serif;
+        font-size: 16px;
+        line-height: 1.5;
+        min-height: 100vh;
+      }
+
+      body {
+        background:
+          radial-gradient(circle at 50% 0%, rgba(245, 158, 11, 0.06), transparent 50%),
+          var(--bg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+      }
+
+      .panel {
+        max-width: 560px;
+        width: 100%;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 32px;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .panel::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: var(--warn);
+      }
+
+      .icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        background: var(--warn-soft);
+        color: var(--warn);
+        font-size: 24px;
+        font-weight: 700;
+        margin-bottom: 20px;
+        border: 1px solid rgba(245, 158, 11, 0.2);
+      }
+
+      h1 {
+        font-size: 24px;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+        margin-bottom: 12px;
+      }
+
+      p {
+        color: var(--text-soft);
+        margin-bottom: 16px;
+      }
+
+      code {
+        font-family: 'JetBrains Mono', 'SF Mono', 'Menlo', 'Consolas', monospace;
+        font-size: 13px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--border);
+        padding: 1px 6px;
+        border-radius: 4px;
+        color: var(--text);
+      }
+
+      .hint {
+        margin-top: 24px;
+        padding: 16px;
+        background: rgba(0, 0, 0, 0.25);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        font-family: 'JetBrains Mono', 'SF Mono', 'Menlo', 'Consolas', monospace;
+        font-size: 13px;
+        color: var(--text-soft);
+        white-space: pre-wrap;
+      }
+
+      .hint::before {
+        content: '$ ';
+        color: var(--text-muted);
+      }
+
+      .actions {
+        margin-top: 24px;
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+
+      a.link {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 14px;
+        background: transparent;
+        border: 1px solid var(--border-strong);
+        border-radius: 8px;
+        color: var(--text);
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 500;
+        transition: border-color 0.15s ease, background 0.15s ease;
+      }
+
+      a.link:hover {
+        border-color: var(--accent);
+        background: rgba(79, 140, 201, 0.08);
+      }
+
+      a.link::before {
+        content: '←';
+        color: var(--accent);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="panel">
+      <span class="icon">!</span>
+      <h1>No hay reporte de cobertura</h1>
+      <p>
+        Este servicio no produjo datos de cobertura. Probablemente la build del test-runner
+        falló (compilación, dependencias, runner) antes de generar el reporte.
+      </p>
+      <p>Revisa los logs del contenedor correspondiente:</p>
+      <div class="hint">docker logs &lt;ServiceName&gt;Test</div>
+      <div class="actions">
+        <a class="link" href="/">Volver al índice</a>
+      </div>
+    </div>
+  </body>
+</html>

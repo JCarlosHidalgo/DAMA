@@ -1,0 +1,20 @@
+info:
+  name: "Student: List Pending QR Debts"
+  type: http
+  seq: 8
+
+http:
+  method: GET
+  url: "{{API_PATH}}/api/payment/qr/pending?Index=0"
+  query:
+    - name: Index
+      value: "0"
+  auth:
+    type: bearer
+    token: "{{Student_JWT}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

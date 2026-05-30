@@ -1,0 +1,20 @@
+opencollection: 1.0.0
+info:
+  name: "DAMA"
+  type: workspace
+
+collections:
+  - name: "Auth"
+    path: "collections/Auth"
+  - name: "ClassAttendance"
+    path: "collections/ClassAttendance"
+  - name: "CourseManagement"
+    path: "collections/CourseManagement"
+  - name: "Credentials"
+    path: "collections/Credentials"
+  - name: "Payment"
+    path: "collections/Payment"
+
+specs:
+
+docs: ''

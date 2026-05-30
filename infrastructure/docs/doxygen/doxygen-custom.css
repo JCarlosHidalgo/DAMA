@@ -1,0 +1,24 @@
+/* Custom theme layered on top of Doxygen's default stylesheet. */
+
+:root {
+  --primary-color: #2c5282;
+  --primary-light-color: #3182ce;
+  --primary-dark-color: #1a365d;
+  --page-background-color: #fafbfc;
+  --side-nav-background: #edf2f7;
+  --separator-color: #cbd5e0;
+}
+
+html.dark-mode {
+  --primary-color: #63b3ed;
+  --primary-light-color: #90cdf4;
+  --primary-dark-color: #2b6cb0;
+  --page-background-color: #1a202c;
+  --side-nav-background: #2d3748;
+  --separator-color: #4a5568;
+}
+
+/* Interface-node highlighting for inheritance graphs lives in
+   doxygen-interface-highlight.js: Doxygen 1.17 wraps each graph in an
+   <iframe>, and parent stylesheets do not cascade into iframe documents,
+   so the rules have to be injected from inside the iframe. */

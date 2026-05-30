@@ -1,0 +1,60 @@
+:host {
+  display: block;
+}
+
+.scanner-wrap {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  max-width: 480px;
+  margin: 0 auto;
+  border-radius: var(--dama-radius-md);
+  background: #000;
+  overflow: hidden;
+
+  zxing-scanner {
+    display: block;
+    width: 100%;
+    height: 100%;
+
+    ::ng-deep video {
+      height: 100% !important;
+    }
+  }
+
+  .bracket {
+    position: absolute;
+    width: 28px;
+    height: 28px;
+    border: 3px solid rgba(255, 255, 255, 0.9);
+    pointer-events: none;
+
+    &.tl {
+      top: 12px;
+      left: 12px;
+      border-right: 0;
+      border-bottom: 0;
+      border-top-left-radius: 6px;
+    }
+    &.tr {
+      top: 12px;
+      right: 12px;
+      border-left: 0;
+      border-bottom: 0;
+      border-top-right-radius: 6px;
+    }
+    &.bl {
+      bottom: 12px;
+      left: 12px;
+      border-right: 0;
+      border-top: 0;
+      border-bottom-left-radius: 6px;
+    }
+    &.br {
+      bottom: 12px;
+      right: 12px;
+      border-left: 0;
+      border-top: 0;
+      border-bottom-right-radius: 6px;
+    }
+  }
+}

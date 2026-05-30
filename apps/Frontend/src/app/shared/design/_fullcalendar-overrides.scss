@@ -1,0 +1,80 @@
+.fc {
+  --fc-border-color: var(--dama-divider);
+  --fc-page-bg-color: var(--dama-surface);
+  --fc-neutral-bg-color: var(--dama-bg-2);
+  --fc-today-bg-color: color-mix(in oklab, var(--dama-primary-soft) 35%, var(--dama-surface));
+  --fc-now-indicator-color: var(--dama-danger);
+  --fc-event-text-color: white;
+  --fc-event-border-color: transparent;
+  --fc-button-bg-color: var(--dama-surface);
+  --fc-button-text-color: var(--dama-text);
+  --fc-button-border-color: var(--dama-border-strong);
+  --fc-button-hover-bg-color: var(--dama-surface-hover);
+  --fc-button-active-bg-color: var(--dama-primary-soft);
+
+  font-family: inherit;
+
+  .fc-col-header-cell {
+    background: var(--dama-bg-2);
+  }
+  .fc-col-header-cell-cushion {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--dama-text-muted);
+    padding: 8px;
+  }
+
+  .fc-timegrid-axis-cushion,
+  .fc-timegrid-slot-label-cushion {
+    font-size: 10px;
+    color: var(--dama-text-faint);
+  }
+
+  .fc-event {
+    border-radius: 6px;
+    padding: 4px 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+    border-left: 3px solid;
+  }
+  .fc-event-body {
+    font-size: 12px;
+    line-height: 1.25;
+
+    .ev-course {
+      font-weight: 700;
+    }
+    .ev-time {
+      opacity: 0.92;
+      font-variant-numeric: tabular-nums;
+    }
+    .ev-teachers {
+      opacity: 0.85;
+    }
+  }
+  .fc-event-actions {
+    display: flex;
+    gap: 4px;
+    margin-top: 4px;
+
+    button {
+      background: rgba(0, 0, 0, 0.28);
+      color: white;
+      border-radius: 4px;
+      padding: 2px 6px;
+      border: 0;
+
+      &:hover {
+        background: rgba(0, 0, 0, 0.45);
+      }
+    }
+  }
+}
+
+@media (max-width: 767px) {
+  .fc-toolbar {
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+}

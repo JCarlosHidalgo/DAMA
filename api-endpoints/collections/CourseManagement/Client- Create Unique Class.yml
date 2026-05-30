@@ -1,0 +1,34 @@
+info:
+  name: "Client: Create Unique Class"
+  type: http
+  seq: 12
+
+http:
+  method: POST
+  url: "{{API_PATH}}/api/course-management/course/unique"
+  body:
+    type: json
+    data: |-
+      {
+        "date": "2026-12-31",
+        "maxStudentLimit": 30,
+        "startTime": "10:00:00",
+        "endTime": "11:30:00",
+        "courseId": "733922e4-1c68-429a-9014-27ef751846f5",
+        "teachers": [
+          {
+            "teacherId": "13a6111c-8b17-4340-beef-ffe7a6f9cac9",
+            "teacherName": "Teacher Example"
+          }
+        ],
+        "externalReference": "demo-unique-001"
+      }
+  auth:
+    type: bearer
+    token: "{{Client_JWT}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -1,0 +1,104 @@
+@use '../../shared/design/mixins' as dm;
+
+:host {
+  display: block;
+  min-height: 100dvh;
+  background: var(--dama-bg);
+}
+
+.login-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  min-height: 100dvh;
+
+  @include dm.up('tablet') {
+    grid-template-columns: 1.1fr 1fr;
+  }
+}
+
+.brand-panel {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: var(--dama-space-8) var(--dama-space-6);
+  background: linear-gradient(
+    135deg,
+    color-mix(in oklab, var(--dama-primary-soft) 70%, var(--dama-bg)),
+    var(--dama-bg) 80%
+  );
+  border-bottom: 1px solid var(--dama-border);
+
+  @include dm.up('tablet') {
+    padding: var(--dama-space-16);
+    border-bottom: 0;
+    border-right: 1px solid var(--dama-border);
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: var(--dama-space-8);
+
+    .brand-mark {
+      width: 40px;
+      height: 40px;
+      border-radius: var(--dama-radius);
+      background: var(--dama-primary);
+      color: var(--dama-primary-fg);
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+      font-size: 18px;
+      letter-spacing: -0.02em;
+      box-shadow: var(--dama-shadow-sm);
+    }
+    .brand-name {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--dama-text-strong);
+    }
+  }
+  .tagline {
+    color: var(--dama-text-muted);
+    margin: 8px 0 0;
+    max-width: 38ch;
+  }
+}
+
+.card-panel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--dama-space-6);
+
+  @include dm.up('tablet') {
+    padding: var(--dama-space-12);
+  }
+}
+
+.login-card {
+  width: 100%;
+  max-width: 420px;
+  padding: 12px;
+  box-shadow: var(--dama-shadow-lg) !important;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dama-space-1);
+  margin-top: var(--dama-space-3);
+}
+
+.error-text {
+  color: var(--dama-danger);
+  margin: 0 0 var(--dama-space-2);
+  font-size: 12.5px;
+}
+
+.submit-btn {
+  height: 48px;
+  margin-top: var(--dama-space-2);
+}

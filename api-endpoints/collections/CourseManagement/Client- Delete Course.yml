@@ -1,0 +1,17 @@
+info:
+  name: "Client: Delete Course"
+  type: http
+  seq: 5
+
+http:
+  method: DELETE
+  url: "{{API_PATH}}/api/course-management/course/fe397012-7463-4270-99ec-cbda47af5ccd"
+  auth:
+    type: bearer
+    token: "{{Client_JWT}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

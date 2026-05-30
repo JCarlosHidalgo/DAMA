@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+option csharp_namespace = "DAMA.Software.ValidateCourse.Grpc";
+package dama.validate_course;
+
+service CourseExistence {
+  rpc Exists(CourseExistsRequest) returns (CourseExistsResponse);
+}
+
+message CourseExistsRequest {
+  string course_id = 1;
+}
+
+message CourseExistsResponse {
+  bool exists = 1;
+}

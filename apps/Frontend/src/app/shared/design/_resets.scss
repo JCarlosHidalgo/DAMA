@@ -1,0 +1,30 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+img,
+svg,
+video {
+  max-width: 100%;
+  display: block;
+}
+button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+::selection {
+  background: var(--dama-primary-soft);
+  color: var(--dama-primary);
+}
+body {
+  touch-action: manipulation;
+  color: var(--dama-text);
+  background: var(--dama-bg);
+}

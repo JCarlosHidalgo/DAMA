@@ -1,0 +1,24 @@
+info:
+  name: "Client: Register Student"
+  type: http
+  seq: 4
+
+http:
+  method: POST
+  url: "{{API_PATH}}/api/auth/register/student"
+  body:
+    type: json
+    data: |-
+      {
+        "username" : "Student Nuevo",
+        "password" : "Admin123"
+      }
+  auth:
+    type: bearer
+    token: "{{Client_JWT}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -1,0 +1,85 @@
+{
+  "name": "DAMA – Arquitectura",
+  "title": "DAMA – Arquitectura",
+  "version": "1.0",
+  "fitToScreen": true,
+  "icons": [],
+  "colors": [
+    { "id": "c-blue", "value": "#3b82f6" },
+    { "id": "c-orange", "value": "#f59e0b" },
+    { "id": "c-green", "value": "#10b981" },
+    { "id": "c-purple", "value": "#8b5cf6" },
+    { "id": "c-grey", "value": "#94a3b8" }
+  ],
+  "items": [
+    { "id": "user", "name": "Usuario", "icon": "user" },
+    { "id": "frontend", "name": "Frontend (Angular 21)", "icon": "desktop" },
+    { "id": "gateway", "name": "api-gateway (nginx)", "icon": "loadbalancer" },
+    { "id": "auth", "name": "Auth", "icon": "lock" },
+    { "id": "course", "name": "CourseManagement", "icon": "server" },
+    { "id": "attendance", "name": "ClassAttendance", "icon": "server" },
+    { "id": "payment", "name": "Payment", "icon": "paymentcard" },
+    { "id": "credentials", "name": "Credentials", "icon": "document" },
+    { "id": "db-auth", "name": "MySQL Auth", "icon": "storage" },
+    { "id": "db-course", "name": "MySQL CourseManagement", "icon": "storage" },
+    { "id": "db-attendance", "name": "MySQL ClassAttendance", "icon": "storage" },
+    { "id": "db-payment", "name": "MySQL Payment", "icon": "storage" },
+    { "id": "rabbitmq", "name": "RabbitMQ", "icon": "queue" },
+    { "id": "todotix", "name": "Todotix", "icon": "cloud" }
+  ],
+  "views": [
+    {
+      "id": "main",
+      "name": "Arquitectura",
+      "items": [
+        { "id": "user", "tile": { "x": 0, "y": -10 }, "labelHeight": 100 },
+        { "id": "frontend", "tile": { "x": 0, "y": -7 }, "labelHeight": 100 },
+        { "id": "gateway", "tile": { "x": 0, "y": -4 }, "labelHeight": 100 },
+        { "id": "auth", "tile": { "x": -12, "y": 0 }, "labelHeight": 100 },
+        { "id": "course", "tile": { "x": -6, "y": 0 }, "labelHeight": 100 },
+        { "id": "attendance", "tile": { "x": 0, "y": 0 }, "labelHeight": 100 },
+        { "id": "payment", "tile": { "x": 6, "y": 0 }, "labelHeight": 100 },
+        { "id": "credentials", "tile": { "x": 12, "y": 0 }, "labelHeight": 100 },
+        { "id": "db-auth", "tile": { "x": -12, "y": 4 }, "labelHeight": 100 },
+        { "id": "db-course", "tile": { "x": -6, "y": 4 }, "labelHeight": 100 },
+        { "id": "db-attendance", "tile": { "x": 0, "y": 4 }, "labelHeight": 100 },
+        { "id": "db-payment", "tile": { "x": 6, "y": 4 }, "labelHeight": 100 },
+        { "id": "rabbitmq", "tile": { "x": 0, "y": 9 }, "labelHeight": 100 },
+        { "id": "todotix", "tile": { "x": 13, "y": 4 }, "labelHeight": 100 }
+      ],
+      "rectangles": [
+        { "id": "r-backends", "color": "c-grey", "from": { "x": -14, "y": -1 }, "to": { "x": 14, "y": 1 } },
+        { "id": "r-data", "color": "c-grey", "from": { "x": -14, "y": 3 }, "to": { "x": 8, "y": 5 } }
+      ],
+      "textBoxes": [
+        { "id": "tb-backends", "tile": { "x": -14, "y": -1 }, "content": "Backends .NET 9", "fontSize": 0.6 },
+        { "id": "tb-data", "tile": { "x": -14, "y": 6 }, "content": "Capa de datos y mensajería", "fontSize": 0.6 }
+      ],
+      "connectors": [
+        { "id": "k-user-fe", "color": "c-blue", "style": "SOLID", "anchors": [ { "id": "a1", "ref": { "item": "user" } }, { "id": "a2", "ref": { "item": "frontend" } } ] },
+        { "id": "k-fe-gw", "color": "c-blue", "style": "SOLID", "anchors": [ { "id": "a3", "ref": { "item": "frontend" } }, { "id": "a4", "ref": { "item": "gateway" } } ] },
+
+        { "id": "k-gw-auth", "color": "c-blue", "style": "SOLID", "anchors": [ { "id": "a5", "ref": { "item": "gateway" } }, { "id": "a6", "ref": { "item": "auth" } } ] },
+        { "id": "k-gw-course", "color": "c-blue", "style": "SOLID", "anchors": [ { "id": "a7", "ref": { "item": "gateway" } }, { "id": "a8", "ref": { "item": "course" } } ] },
+        { "id": "k-gw-att", "color": "c-blue", "style": "SOLID", "anchors": [ { "id": "a9", "ref": { "item": "gateway" } }, { "id": "a10", "ref": { "item": "attendance" } } ] },
+        { "id": "k-gw-pay", "color": "c-blue", "style": "SOLID", "anchors": [ { "id": "a11", "ref": { "item": "gateway" } }, { "id": "a12", "ref": { "item": "payment" } } ] },
+        { "id": "k-gw-cred", "color": "c-blue", "style": "SOLID", "anchors": [ { "id": "a13", "ref": { "item": "gateway" } }, { "id": "a14", "ref": { "item": "credentials" } } ] },
+
+        { "id": "k-auth-db", "color": "c-blue", "style": "SOLID", "anchors": [ { "id": "a15", "ref": { "item": "auth" } }, { "id": "a16", "ref": { "item": "db-auth" } } ] },
+        { "id": "k-course-db", "color": "c-blue", "style": "SOLID", "anchors": [ { "id": "a17", "ref": { "item": "course" } }, { "id": "a18", "ref": { "item": "db-course" } } ] },
+        { "id": "k-att-db", "color": "c-blue", "style": "SOLID", "anchors": [ { "id": "a19", "ref": { "item": "attendance" } }, { "id": "a20", "ref": { "item": "db-attendance" } } ] },
+        { "id": "k-pay-db", "color": "c-blue", "style": "SOLID", "anchors": [ { "id": "a21", "ref": { "item": "payment" } }, { "id": "a22", "ref": { "item": "db-payment" } } ] },
+
+        { "id": "k-auth-mq", "color": "c-orange", "style": "DASHED", "description": "outbox", "anchors": [ { "id": "a23", "ref": { "item": "auth" } }, { "id": "a24", "ref": { "item": "rabbitmq" } } ] },
+        { "id": "k-course-mq", "color": "c-orange", "style": "DASHED", "description": "outbox", "anchors": [ { "id": "a25", "ref": { "item": "course" } }, { "id": "a26", "ref": { "item": "rabbitmq" } } ] },
+        { "id": "k-pay-mq", "color": "c-orange", "style": "DASHED", "description": "outbox", "anchors": [ { "id": "a27", "ref": { "item": "payment" } }, { "id": "a28", "ref": { "item": "rabbitmq" } } ] },
+        { "id": "k-mq-att", "color": "c-orange", "style": "DASHED", "description": "consume", "anchors": [ { "id": "a29", "ref": { "item": "rabbitmq" } }, { "id": "a30", "ref": { "item": "attendance" } } ] },
+        { "id": "k-mq-pay", "color": "c-orange", "style": "DASHED", "description": "consume", "anchors": [ { "id": "a31", "ref": { "item": "rabbitmq" } }, { "id": "a32", "ref": { "item": "payment" } } ] },
+
+        { "id": "k-att-course", "color": "c-green", "style": "DOTTED", "description": "gRPC TLS", "anchors": [ { "id": "a33", "ref": { "item": "attendance" } }, { "id": "a34", "ref": { "item": "course" } } ] },
+
+        { "id": "k-pay-todotix", "color": "c-purple", "style": "DASHED", "description": "HTTPS", "anchors": [ { "id": "a35", "ref": { "item": "payment" } }, { "id": "a36", "ref": { "item": "todotix" } } ] }
+      ]
+    }
+  ]
+}

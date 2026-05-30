@@ -1,0 +1,17 @@
+info:
+  name: "Client: Delete Unique Class"
+  type: http
+  seq: 14
+
+http:
+  method: DELETE
+  url: "{{API_PATH}}/api/course-management/course/unique/4024c261-fe21-460b-8fc9-4bd86c217107"
+  auth:
+    type: bearer
+    token: "{{Client_JWT}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

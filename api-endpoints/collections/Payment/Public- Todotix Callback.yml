@@ -1,0 +1,24 @@
+info:
+  name: "Public: Todotix Callback"
+  type: http
+  seq: 12
+
+http:
+  method: GET
+  url: "{{API_PATH}}/api/payment/qr/callback?transaction_id=00000000-0000-0000-0000-000000000000&error=0&cancel_order=0&sig="
+  query:
+    - name: transaction_id
+      value: 00000000-0000-0000-0000-000000000000
+    - name: error
+      value: "0"
+    - name: cancel_order
+      value: "0"
+    - name: sig
+      value: ""
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

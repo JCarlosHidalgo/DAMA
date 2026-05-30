@@ -1,0 +1,24 @@
+info:
+  name: "Public: Login Teacher"
+  type: http
+  seq: 12
+  tags:
+    - smoke-skip
+
+http:
+  method: POST
+  url: "{{API_PATH}}/api/auth/login"
+  body:
+    type: json
+    data: |-
+      {
+        "username" : "Teacher Example",
+        "password" : "Admin123"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

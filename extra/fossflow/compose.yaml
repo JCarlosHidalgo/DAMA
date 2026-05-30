@@ -1,0 +1,13 @@
+services:
+  fossflow:
+    build: .
+    container_name: dama-fossflow
+    ports:
+      - "8088:80"
+    environment:
+      - NODE_ENV=production
+      - ENABLE_SERVER_STORAGE=true
+      - STORAGE_PATH=/data/diagrams
+    volumes:
+      - ./diagrams:/data/diagrams
+    restart: unless-stopped

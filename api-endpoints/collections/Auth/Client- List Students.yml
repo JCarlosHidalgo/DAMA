@@ -1,0 +1,20 @@
+info:
+  name: "Client: List Students"
+  type: http
+  seq: 5
+
+http:
+  method: GET
+  url: "{{API_PATH}}/api/auth/students?pageIndex=0"
+  query:
+    - name: pageIndex
+      value: "0"
+  auth:
+    type: bearer
+    token: "{{Client_JWT}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -1,0 +1,17 @@
+info:
+  name: "Client: Delete User"
+  type: http
+  seq: 9
+
+http:
+  method: DELETE
+  url: "{{API_PATH}}/api/auth/users/def02027-9cb8-4297-98a1-a470f707442d"
+  auth:
+    type: bearer
+    token: "{{Client_JWT}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

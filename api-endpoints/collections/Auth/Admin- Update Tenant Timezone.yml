@@ -1,0 +1,23 @@
+info:
+  name: "Admin: Update Tenant Timezone"
+  type: http
+  seq: 10
+
+http:
+  method: PUT
+  url: "{{API_PATH}}/api/auth/tenants/c4c1c44d-7b5c-414a-b8df-a5537357ee30/timezone"
+  body:
+    type: json
+    data: |-
+      {
+        "timezone" : "America/La_Paz"
+      }
+  auth:
+    type: bearer
+    token: "{{Admin_JWT}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

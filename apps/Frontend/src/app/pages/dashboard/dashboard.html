@@ -1,0 +1,43 @@
+<mat-sidenav-container class="dashboard-container">
+  <mat-sidenav
+    #sidenav
+    class="dashboard-sidenav"
+    [mode]="isHandset() ? 'over' : 'side'"
+    [opened]="!isHandset()"
+    [class.collapsed]="!expanded() && !isHandset()"
+    autoFocus="dialog"
+  >
+    <div class="brand">
+      <fa-icon class="brand-icon" [icon]="faSchool" />
+      <span class="brand-text">DAMA</span>
+    </div>
+    <mat-nav-list>
+      @for (tab of tabs(); track tab.path) {
+        <a
+          mat-list-item
+          [routerLink]="tab.path"
+          [class.active-link]="activeSegment() === tab.path"
+          [title]="tab.label"
+        >
+          <fa-icon matListItemIcon [icon]="tab.icon" />
+          <span matListItemTitle class="nav-label">{{ tab.label }}</span>
+        </a>
+      }
+    </mat-nav-list>
+  </mat-sidenav>
+  <mat-sidenav-content>
+    <mat-toolbar color="primary">
+      <button mat-icon-button (click)="toggleSidenav()" aria-label="Alternar menú">
+        <fa-icon [icon]="faMenu" />
+      </button>
+      <span class="toolbar-spacer"></span>
+      <span class="user-label">{{ displayName() }}</span>
+      <button mat-icon-button (click)="onLogout()" aria-label="Cerrar sesión">
+        <fa-icon [icon]="faLogout" />
+      </button>
+    </mat-toolbar>
+    <main class="dashboard-content">
+      <router-outlet />
+    </main>
+  </mat-sidenav-content>
+</mat-sidenav-container>

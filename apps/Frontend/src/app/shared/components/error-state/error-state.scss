@@ -1,0 +1,20 @@
+:host {
+  display: block;
+}
+
+.dama-error {
+  padding: 36px 20px;
+  text-align: center;
+  color: var(--dama-danger);
+
+  app-icon {
+    font-size: 28px;
+    opacity: 0.85;
+    margin-bottom: 10px;
+    display: inline-block;
+  }
+  p {
+    color: var(--dama-text);
+    margin: 0 0 12px;
+  }
+}

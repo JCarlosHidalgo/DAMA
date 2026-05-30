@@ -1,0 +1,555 @@
+CREATE DATABASE IF NOT EXISTS CourseManagement;
+
+USE CourseManagement;
+
+-- COURSE
+CREATE TABLE IF NOT EXISTS Course(
+    Id          VARCHAR(36) PRIMARY KEY NOT NULL,
+    Name        VARCHAR(200),
+    TenantId    VARCHAR(36)
+);
+
+DELIMITER //
+CREATE PROCEDURE GetCoursesByTenantId(IN tenantId CHAR(36))
+BEGIN
+    SELECT
+        course.Id,
+        course.Name,
+        course.TenantId
+    FROM
+        Course course
+    WHERE
+        course.TenantId = tenantId;
+END //
+DELIMITER ;
+
+-- SCHEDULED CLASS
+CREATE TABLE IF NOT EXISTS ScheduledClass(
+    Id VARCHAR(36) PRIMARY KEY NOT NULL,
+    DayOfWeekIndex TINYINT,
+    MaxStudentLimit SMALLINT NOT NULL DEFAULT 0,
+    StartTime TIME,
+    EndTime TIME,
+    CourseId VARCHAR(36),
+    TenantId VARCHAR(36) NOT NULL,
+    FOREIGN KEY (CourseId) REFERENCES Course(Id),
+    INDEX idx_scheduledclass_tenant (TenantId)
+);
+
+-- UNIQUE CLASS
+CREATE TABLE IF NOT EXISTS UniqueClass (
+    Id VARCHAR(36) PRIMARY KEY NOT NULL,
+    Date DATE,
+    MaxStudentLimit SMALLINT NOT NULL DEFAULT 0,
+    StartTime TIME,
+    EndTime TIME,
+    CourseId VARCHAR(36),
+    TenantId VARCHAR(36) NOT NULL,
+    FOREIGN KEY (CourseId) REFERENCES Course(Id),
+    INDEX idx_uniqueclass_tenant (TenantId)
+);
+
+-- M:N JOIN TABLES (teacher membership with denormalized name snapshot)
+CREATE TABLE IF NOT EXISTS ScheduledClassTeacher (
+    ScheduledClassId VARCHAR(36)  NOT NULL,
+    TeacherId        VARCHAR(36)  NOT NULL,
+    TeacherName      VARCHAR(200) NOT NULL,
+    TenantId         VARCHAR(36)  NOT NULL,
+    PRIMARY KEY (ScheduledClassId, TeacherId),
+    FOREIGN KEY (ScheduledClassId) REFERENCES ScheduledClass(Id) ON DELETE CASCADE,
+    INDEX idx_sct_teacher_tenant (TeacherId, TenantId)
+);
+
+CREATE TABLE IF NOT EXISTS UniqueClassTeacher (
+    UniqueClassId VARCHAR(36)  NOT NULL,
+    TeacherId     VARCHAR(36)  NOT NULL,
+    TeacherName   VARCHAR(200) NOT NULL,
+    TenantId      VARCHAR(36)  NOT NULL,
+    PRIMARY KEY (UniqueClassId, TeacherId),
+    FOREIGN KEY (UniqueClassId) REFERENCES UniqueClass(Id) ON DELETE CASCADE,
+    INDEX idx_uct_teacher_tenant (TeacherId, TenantId)
+);
+
+DELIMITER //
+CREATE PROCEDURE GetScheduledClassesByCourseId(IN courseId CHAR(36))
+BEGIN
+    SELECT
+        sc.Id,
+        sc.DayOfWeekIndex,
+        sc.MaxStudentLimit,
+        sc.StartTime,
+        sc.EndTime,
+        sc.CourseId,
+        sc.TenantId,
+        CONCAT('[', IFNULL(GROUP_CONCAT(
+            JSON_OBJECT('TeacherId', t.TeacherId, 'TeacherName', t.TeacherName)
+        ), ''), ']') AS Teachers
+    FROM ScheduledClass sc
+    LEFT JOIN ScheduledClassTeacher t ON t.ScheduledClassId = sc.Id
+    WHERE sc.CourseId = courseId
+    GROUP BY sc.Id;
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE GetUniqueClassesOnSameWeekByDate(IN courseId CHAR(36),IN dateInput DATE)
+BEGIN
+    SELECT
+        uc.Id,
+        uc.Date,
+        uc.MaxStudentLimit,
+        uc.StartTime,
+        uc.EndTime,
+        uc.CourseId,
+        uc.TenantId,
+        CONCAT('[', IFNULL(GROUP_CONCAT(
+            JSON_OBJECT('TeacherId', t.TeacherId, 'TeacherName', t.TeacherName)
+        ), ''), ']') AS Teachers
+    FROM UniqueClass uc
+    LEFT JOIN UniqueClassTeacher t ON t.UniqueClassId = uc.Id
+    WHERE uc.CourseId = courseId
+      AND YEAR(uc.Date) = YEAR(dateInput)
+      AND WEEK(uc.Date) = WEEK(dateInput)
+    GROUP BY uc.Id;
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE ExistsScheduledClassForTenant(IN tenantId CHAR(36), IN classId CHAR(36), IN classDate DATE)
+BEGIN
+    SELECT sc.Id, sc.StartTime, sc.EndTime, sc.MaxStudentLimit
+    FROM ScheduledClass sc
+    WHERE sc.Id = classId
+      AND sc.TenantId = tenantId
+      AND sc.DayOfWeekIndex = (WEEKDAY(classDate) + 1)
+    LIMIT 1;
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE ExistsUniqueClassForTenant(IN tenantId CHAR(36), IN classId CHAR(36))
+BEGIN
+    SELECT uc.Id, uc.StartTime, uc.EndTime, uc.Date AS ClassDate, uc.MaxStudentLimit
+    FROM UniqueClass uc
+    WHERE uc.Id = classId
+      AND uc.TenantId = tenantId
+    LIMIT 1;
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE CreateScheduledClass(
+    IN id              CHAR(36),
+    IN dayOfWeekIndex  TINYINT,
+    IN maxStudentLimit SMALLINT,
+    IN startTime       TIME,
+    IN endTime         TIME,
+    IN courseId        CHAR(36),
+    IN tenantId        CHAR(36)
+)
+BEGIN
+    INSERT INTO ScheduledClass (Id, DayOfWeekIndex, MaxStudentLimit, StartTime, EndTime, CourseId, TenantId)
+    SELECT id, dayOfWeekIndex, maxStudentLimit, startTime, endTime, courseId, tenantId
+    FROM Course c
+    WHERE c.Id = courseId
+      AND c.TenantId = tenantId;
+    SELECT ROW_COUNT() AS Inserted;
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE CreateUniqueClass(
+    IN id              CHAR(36),
+    IN classDate       DATE,
+    IN maxStudentLimit SMALLINT,
+    IN startTime       TIME,
+    IN endTime         TIME,
+    IN courseId        CHAR(36),
+    IN tenantId        CHAR(36)
+)
+BEGIN
+    INSERT INTO UniqueClass (Id, Date, MaxStudentLimit, StartTime, EndTime, CourseId, TenantId)
+    SELECT id, classDate, maxStudentLimit, startTime, endTime, courseId, tenantId
+    FROM Course c
+    WHERE c.Id = courseId
+      AND c.TenantId = tenantId;
+    SELECT ROW_COUNT() AS Inserted;
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE InsertScheduledClassTeacher(
+    IN scheduledClassId CHAR(36),
+    IN teacherId        CHAR(36),
+    IN teacherName      VARCHAR(200),
+    IN tenantId         CHAR(36)
+)
+BEGIN
+    INSERT INTO ScheduledClassTeacher (ScheduledClassId, TeacherId, TeacherName, TenantId)
+    VALUES (scheduledClassId, teacherId, teacherName, tenantId);
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE InsertUniqueClassTeacher(
+    IN uniqueClassId CHAR(36),
+    IN teacherId     CHAR(36),
+    IN teacherName   VARCHAR(200),
+    IN tenantId      CHAR(36)
+)
+BEGIN
+    INSERT INTO UniqueClassTeacher (UniqueClassId, TeacherId, TeacherName, TenantId)
+    VALUES (uniqueClassId, teacherId, teacherName, tenantId);
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE DeleteScheduledClassTeachers(IN scheduledClassId CHAR(36))
+BEGIN
+    DELETE sct FROM ScheduledClassTeacher sct WHERE sct.ScheduledClassId = scheduledClassId;
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE DeleteUniqueClassTeachers(IN uniqueClassId CHAR(36))
+BEGIN
+    DELETE uct FROM UniqueClassTeacher uct WHERE uct.UniqueClassId = uniqueClassId;
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE GetCourseByIdForTenant(IN tenantId CHAR(36), IN courseId CHAR(36))
+BEGIN
+    SELECT
+        c.Id,
+        c.Name,
+        c.TenantId
+    FROM Course c
+    WHERE c.Id = courseId
+      AND c.TenantId = tenantId;
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE ExistsCourseForTenant(IN tenantId CHAR(36), IN courseId CHAR(36))
+BEGIN
+    SELECT 1
+    FROM Course c
+    WHERE c.Id = courseId
+      AND c.TenantId = tenantId
+    LIMIT 1;
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE UpdateCourseForTenant(
+    IN courseId  CHAR(36),
+    IN newName   VARCHAR(200),
+    IN tenantId  CHAR(36)
+)
+BEGIN
+    UPDATE Course c
+    SET c.Name = newName
+    WHERE c.Id = courseId
+      AND c.TenantId = tenantId;
+    SELECT ROW_COUNT() AS Updated;
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE UpdateScheduledClassForTenant(
+    IN id              CHAR(36),
+    IN dayOfWeekIndex  TINYINT,
+    IN maxStudentLimit SMALLINT,
+    IN startTime       TIME,
+    IN endTime         TIME,
+    IN tenantId        CHAR(36)
+)
+BEGIN
+    UPDATE ScheduledClass sc
+    SET sc.DayOfWeekIndex  = dayOfWeekIndex,
+        sc.MaxStudentLimit = maxStudentLimit,
+        sc.StartTime       = startTime,
+        sc.EndTime         = endTime
+    WHERE sc.Id = id
+      AND sc.TenantId = tenantId;
+    SELECT ROW_COUNT() AS Updated;
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE UpdateUniqueClassForTenant(
+    IN id              CHAR(36),
+    IN classDate       DATE,
+    IN maxStudentLimit SMALLINT,
+    IN startTime       TIME,
+    IN endTime         TIME,
+    IN tenantId        CHAR(36)
+)
+BEGIN
+    UPDATE UniqueClass uc
+    SET uc.Date            = classDate,
+        uc.MaxStudentLimit = maxStudentLimit,
+        uc.StartTime       = startTime,
+        uc.EndTime         = endTime
+    WHERE uc.Id = id
+      AND uc.TenantId = tenantId;
+    SELECT ROW_COUNT() AS Updated;
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE GetScheduledClassesByTeacherForTenant(IN tenantId CHAR(36), IN teacherId CHAR(36))
+BEGIN
+    SELECT
+        sc.Id,
+        sc.DayOfWeekIndex,
+        sc.MaxStudentLimit,
+        sc.StartTime,
+        sc.EndTime,
+        sc.CourseId,
+        sc.TenantId,
+        CONCAT('[', IFNULL(GROUP_CONCAT(
+            JSON_OBJECT('TeacherId', t2.TeacherId, 'TeacherName', t2.TeacherName)
+        ), ''), ']') AS Teachers
+    FROM ScheduledClass sc
+    INNER JOIN ScheduledClassTeacher tm
+        ON tm.ScheduledClassId = sc.Id
+       AND tm.TeacherId = teacherId
+       AND tm.TenantId  = tenantId
+    LEFT JOIN ScheduledClassTeacher t2 ON t2.ScheduledClassId = sc.Id
+    WHERE sc.TenantId = tenantId
+    GROUP BY sc.Id;
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE GetUniqueClassesByTeacherForTenant(IN tenantId CHAR(36), IN teacherId CHAR(36))
+BEGIN
+    SELECT
+        uc.Id,
+        uc.Date,
+        uc.MaxStudentLimit,
+        uc.StartTime,
+        uc.EndTime,
+        uc.CourseId,
+        uc.TenantId,
+        CONCAT('[', IFNULL(GROUP_CONCAT(
+            JSON_OBJECT('TeacherId', t2.TeacherId, 'TeacherName', t2.TeacherName)
+        ), ''), ']') AS Teachers
+    FROM UniqueClass uc
+    INNER JOIN UniqueClassTeacher tm
+        ON tm.UniqueClassId = uc.Id
+       AND tm.TeacherId = teacherId
+       AND tm.TenantId  = tenantId
+    LEFT JOIN UniqueClassTeacher t2 ON t2.UniqueClassId = uc.Id
+    WHERE uc.TenantId = tenantId
+    GROUP BY uc.Id;
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE GetScheduledClassByIdForTenant(IN tenantId CHAR(36), IN id CHAR(36))
+BEGIN
+    SELECT
+        sc.Id,
+        sc.DayOfWeekIndex,
+        sc.MaxStudentLimit,
+        sc.StartTime,
+        sc.EndTime,
+        sc.CourseId,
+        sc.TenantId,
+        CONCAT('[', IFNULL(GROUP_CONCAT(
+            JSON_OBJECT('TeacherId', t.TeacherId, 'TeacherName', t.TeacherName)
+        ), ''), ']') AS Teachers
+    FROM ScheduledClass sc
+    LEFT JOIN ScheduledClassTeacher t ON t.ScheduledClassId = sc.Id
+    WHERE sc.Id = id
+      AND sc.TenantId = tenantId
+    GROUP BY sc.Id;
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE GetUniqueClassByIdForTenant(IN tenantId CHAR(36), IN id CHAR(36))
+BEGIN
+    SELECT
+        uc.Id,
+        uc.Date,
+        uc.MaxStudentLimit,
+        uc.StartTime,
+        uc.EndTime,
+        uc.CourseId,
+        uc.TenantId,
+        CONCAT('[', IFNULL(GROUP_CONCAT(
+            JSON_OBJECT('TeacherId', t.TeacherId, 'TeacherName', t.TeacherName)
+        ), ''), ']') AS Teachers
+    FROM UniqueClass uc
+    LEFT JOIN UniqueClassTeacher t ON t.UniqueClassId = uc.Id
+    WHERE uc.Id = id
+      AND uc.TenantId = tenantId
+    GROUP BY uc.Id;
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE GetScheduledClassesForTenant(IN tenantId CHAR(36))
+BEGIN
+    SELECT
+        sc.Id,
+        sc.DayOfWeekIndex,
+        sc.MaxStudentLimit,
+        sc.StartTime,
+        sc.EndTime,
+        sc.CourseId,
+        sc.TenantId,
+        CONCAT('[', IFNULL(GROUP_CONCAT(
+            JSON_OBJECT('TeacherId', t.TeacherId, 'TeacherName', t.TeacherName)
+        ), ''), ']') AS Teachers
+    FROM ScheduledClass sc
+    LEFT JOIN ScheduledClassTeacher t ON t.ScheduledClassId = sc.Id
+    WHERE sc.TenantId = tenantId
+    GROUP BY sc.Id;
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE GetUniqueClassesOnWeekForTenant(IN tenantId CHAR(36), IN dateInput DATE)
+BEGIN
+    SELECT
+        uc.Id,
+        uc.Date,
+        uc.MaxStudentLimit,
+        uc.StartTime,
+        uc.EndTime,
+        uc.CourseId,
+        uc.TenantId,
+        CONCAT('[', IFNULL(GROUP_CONCAT(
+            JSON_OBJECT('TeacherId', t.TeacherId, 'TeacherName', t.TeacherName)
+        ), ''), ']') AS Teachers
+    FROM UniqueClass uc
+    LEFT JOIN UniqueClassTeacher t ON t.UniqueClassId = uc.Id
+    WHERE uc.TenantId = tenantId
+      AND uc.Date BETWEEN
+            DATE_SUB(dateInput, INTERVAL WEEKDAY(dateInput) DAY)
+            AND
+            DATE_ADD(DATE_SUB(dateInput, INTERVAL WEEKDAY(dateInput) DAY), INTERVAL 6 DAY)
+    GROUP BY uc.Id;
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE GetUniqueClassesOnWeekByTeacherForTenant(IN tenantId CHAR(36), IN teacherId CHAR(36), IN dateInput DATE)
+BEGIN
+    SELECT
+        uc.Id,
+        uc.Date,
+        uc.MaxStudentLimit,
+        uc.StartTime,
+        uc.EndTime,
+        uc.CourseId,
+        uc.TenantId,
+        CONCAT('[', IFNULL(GROUP_CONCAT(
+            JSON_OBJECT('TeacherId', t2.TeacherId, 'TeacherName', t2.TeacherName)
+        ), ''), ']') AS Teachers
+    FROM UniqueClass uc
+    INNER JOIN UniqueClassTeacher tm
+        ON tm.UniqueClassId = uc.Id
+       AND tm.TeacherId = teacherId
+       AND tm.TenantId  = tenantId
+    LEFT JOIN UniqueClassTeacher t2 ON t2.UniqueClassId = uc.Id
+    WHERE uc.TenantId = tenantId
+      AND uc.Date BETWEEN
+            DATE_SUB(dateInput, INTERVAL WEEKDAY(dateInput) DAY)
+            AND
+            DATE_ADD(DATE_SUB(dateInput, INTERVAL WEEKDAY(dateInput) DAY), INTERVAL 6 DAY)
+    GROUP BY uc.Id;
+END //
+DELIMITER ;
+
+-- COURSE IDEMPOTENCY (ledger of processed external references for create ops)
+CREATE TABLE IF NOT EXISTS CourseIdempotency (
+    TenantId          VARCHAR(36)  NOT NULL,
+    ExternalReference VARCHAR(128) NOT NULL,
+    EntityType        VARCHAR(32)  NOT NULL,
+    EntityId          VARCHAR(36)  NOT NULL,
+    ProcessedAt       DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (TenantId, ExternalReference)
+);
+
+-- TEACHER OVERLAP CHECKS
+DELIMITER //
+CREATE PROCEDURE HasScheduledClassOverlapForTeacher(
+    IN tenantId CHAR(36),
+    IN teacherId CHAR(36),
+    IN dayOfWeekIndex INT,
+    IN startTime TIME,
+    IN endTime TIME,
+    IN excludeId CHAR(36)
+)
+BEGIN
+    SELECT COUNT(*)
+    FROM ScheduledClass sc
+    JOIN ScheduledClassTeacher sct ON sct.ScheduledClassId = sc.Id
+    WHERE sc.TenantId = tenantId
+      AND sct.TeacherId = teacherId
+      AND sc.DayOfWeekIndex = dayOfWeekIndex
+      AND sc.StartTime < endTime
+      AND sc.EndTime > startTime
+      AND (excludeId IS NULL OR sc.Id <> excludeId);
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE HasUniqueClassOverlapForTeacher(
+    IN tenantId CHAR(36),
+    IN teacherId CHAR(36),
+    IN classDate DATE,
+    IN startTime TIME,
+    IN endTime TIME,
+    IN excludeId CHAR(36)
+)
+BEGIN
+    SELECT COUNT(*)
+    FROM UniqueClass uc
+    JOIN UniqueClassTeacher uct ON uct.UniqueClassId = uc.Id
+    WHERE uc.TenantId = tenantId
+      AND uct.TeacherId = teacherId
+      AND uc.Date = classDate
+      AND uc.StartTime < endTime
+      AND uc.EndTime > startTime
+      AND (excludeId IS NULL OR uc.Id <> excludeId);
+END //
+DELIMITER ;
+
+-- OUTBOX EVENTS
+CREATE TABLE IF NOT EXISTS outbox_events (
+    Id            CHAR(36)     NOT NULL PRIMARY KEY,
+    AggregateType VARCHAR(64)  NOT NULL,
+    AggregateId   CHAR(36)     NOT NULL,
+    EventType     VARCHAR(128) NOT NULL,
+    RoutingKey    VARCHAR(128) NOT NULL,
+    Payload       JSON         NOT NULL,
+    OccurredAt    DATETIME(6)  NOT NULL,
+    PublishedAt   DATETIME(6)  NULL,
+    LeasedUntil   DATETIME(6)  NULL,
+    Attempts      INT          NOT NULL DEFAULT 0,
+    LastError     VARCHAR(500) NULL,
+    INDEX idx_unpublished (PublishedAt, LeasedUntil, OccurredAt)
+);
+
+-- TRUNCATE ALL TABLES
+DELIMITER //
+CREATE PROCEDURE TruncateAllTables()
+BEGIN
+    SET FOREIGN_KEY_CHECKS = 0;
+    TRUNCATE TABLE Course;
+    TRUNCATE TABLE ScheduledClass;
+    TRUNCATE TABLE UniqueClass;
+    TRUNCATE TABLE ScheduledClassTeacher;
+    TRUNCATE TABLE UniqueClassTeacher;
+    TRUNCATE TABLE CourseIdempotency;
+    TRUNCATE TABLE outbox_events;
+    SET FOREIGN_KEY_CHECKS = 1;
+END //
+DELIMITER ;

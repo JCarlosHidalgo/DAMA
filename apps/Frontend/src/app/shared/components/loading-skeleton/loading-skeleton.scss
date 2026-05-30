@@ -1,0 +1,30 @@
+:host {
+  display: block;
+}
+
+.dama-skel {
+  background: linear-gradient(
+    90deg,
+    var(--dama-bg-2) 0%,
+    var(--dama-surface-hover) 50%,
+    var(--dama-bg-2) 100%
+  );
+  background-size: 200% 100%;
+  border-radius: var(--dama-radius-sm);
+  animation: dama-skel-shimmer 1.4s ease-in-out infinite;
+}
+
+@keyframes dama-skel-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dama-skel {
+    animation: none;
+  }
+}

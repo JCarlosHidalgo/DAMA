@@ -1,0 +1,77 @@
+services:
+
+  apache:
+    container_name: Apache
+    image: httpd:2.4.65-alpine
+    ports:
+      - "8002:80"
+    volumes:
+      - ./environments-test/root/index.html:/usr/local/apache2/htdocs/index.html:ro
+      - auth-test-results:/usr/local/apache2/htdocs/auth/
+      - payment-test-results:/usr/local/apache2/htdocs/payment/
+      - course-management-test-results:/usr/local/apache2/htdocs/course-management/
+      - class-attendance-test-results:/usr/local/apache2/htdocs/class-attendance/
+      - frontend-test-results:/usr/local/apache2/htdocs/frontend/
+    depends_on:
+      auth-test:
+        condition: service_completed_successfully
+      payment-test:
+        condition: service_completed_successfully
+      course-management-test:
+        condition: service_completed_successfully
+      class-attendance-test:
+        condition: service_completed_successfully
+      frontend-test:
+        condition: service_completed_successfully
+
+  auth-test:
+    container_name: AuthTest
+    build:
+      context: ${CONTEXT}
+      dockerfile: ./infrastructure/environments-test/auth/Dockerfile
+    volumes:
+      - ./environments-test/placeholder:/placeholder:ro
+      - auth-test-results:/test-env/Test/TestResults/
+
+  payment-test:
+    container_name: PaymentTest
+    build:
+      context: ${CONTEXT}
+      dockerfile: ./infrastructure/environments-test/payment/Dockerfile
+    volumes:
+      - ./environments-test/placeholder:/placeholder:ro
+      - payment-test-results:/test-env/Test/TestResults/
+
+  course-management-test:
+    container_name: CourseManagementTest
+    build:
+      context: ${CONTEXT}
+      dockerfile: ./infrastructure/environments-test/course-management/Dockerfile
+    volumes:
+      - ./environments-test/placeholder:/placeholder:ro
+      - course-management-test-results:/test-env/Test/TestResults/
+
+  class-attendance-test:
+    container_name: ClassAttendanceTest
+    build:
+      context: ${CONTEXT}
+      dockerfile: ./infrastructure/environments-test/class-attendance/Dockerfile
+    volumes:
+      - ./environments-test/placeholder:/placeholder:ro
+      - class-attendance-test-results:/test-env/Test/TestResults/
+
+  frontend-test:
+    container_name: FrontendTest
+    build:
+      context: ${CONTEXT}
+      dockerfile: ./infrastructure/environments-test/frontend/Dockerfile
+    volumes:
+      - ./environments-test/placeholder:/placeholder:ro
+      - frontend-test-results:/test-env/coverage/
+
+volumes:
+  auth-test-results:
+  payment-test-results:
+  course-management-test-results:
+  class-attendance-test-results:
+  frontend-test-results:

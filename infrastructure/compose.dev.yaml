@@ -1,0 +1,268 @@
+services:
+
+  # FRONTEND
+  frontend:
+    container_name: Frontend
+    build:
+      context: ${CONTEXT}
+      dockerfile: ./infrastructure/environments-dev/frontend/Dockerfile
+    ports:
+      - "${FRONTEND_HOST_PORT}:80"
+    mem_limit: 256m
+    cpus: 0.5
+    restart: unless-stopped
+    depends_on:
+      api-gateway:
+        condition: service_started
+
+  # API GATEWAY
+  api-gateway:
+    container_name: api
+    build:
+      context: ${CONTEXT}
+      dockerfile: ./infrastructure/environments-dev/api-gateway/Dockerfile
+    ports:
+      - "${API_GATEWAY_HOST_PORT}:80"
+    mem_limit: 256m
+    cpus: 0.5
+    restart: unless-stopped
+    depends_on:
+      auth-service:
+        condition: service_healthy
+      course-management-service:
+        condition: service_healthy
+      class-attendance-service:
+        condition: service_healthy
+      credentials-service:
+        condition: service_healthy
+      payment-service:
+        condition: service_healthy
+
+  # CREDENTIALS
+  credentials-service:
+    container_name: CredentialsService
+    build:
+      context: ${CONTEXT}
+      dockerfile: ./infrastructure/environments-dev/credentials/Dockerfile
+    environment:
+      ASPNETCORE_HTTP_PORTS: 80
+      AppSettings__PublicKey: ${JWT_PUBLIC_KEY_B64}
+      AppSettings__Issuer: ${JWT_ISSUER}
+      AppSettings__Audience: Credentials
+    mem_limit: 256m
+    cpus: 0.5
+    restart: unless-stopped
+
+  # AUTH
+  auth-service:
+    container_name: AuthService
+    build:
+      context: ${CONTEXT}
+      dockerfile: ./infrastructure/environments-dev/auth/Dockerfile
+    environment:
+      ASPNETCORE_HTTP_PORTS: 80
+      SEED_DB: "true"
+      DB_CONNECTION_STRING: ${AUTH_DB_CONNECTION_STRING}
+      RABBITMQ_HOST: ${RABBITMQ_HOST}
+      RABBITMQ_PORT: ${RABBITMQ_PORT}
+      RABBITMQ_USER: ${RABBITMQ_USER}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+      AppSettings__PublicKey: ${JWT_PUBLIC_KEY_B64}
+      AppSettings__PrivateKey: ${JWT_PRIVATE_KEY_B64}
+      AppSettings__Issuer: ${JWT_ISSUER}
+      AppSettings__Audience: Auth
+      AppSettings__Audiences: Auth,ClassAttendance,CourseManagement,Payment,Credentials
+    mem_limit: 768m
+    cpus: 1.0
+    restart: unless-stopped
+    depends_on:
+      auth-database:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+  auth-database:
+    container_name: AuthDB
+    image: mysql:9
+    user: "${HOST_UID:-1000}:${HOST_GID:-1000}"
+    command: ["mysqld", "--max-connections=500"]
+    environment:
+      - MYSQL_ROOT_PASSWORD=${AUTH_DB_PASSWORD}
+      - MYSQL_DATABASE=${AUTH_DB_SCHEMA}
+    volumes:
+      - ${CONTEXT}/infrastructure/seeding/auth:/var/lib/mysql-files/
+      - ${CONTEXT}/infrastructure/environments-dev/auth/init.sql:/docker-entrypoint-initdb.d/init.sql
+    mem_limit: 1g
+    cpus: 1.0
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "mysql -u root -p${AUTH_DB_PASSWORD} --execute 'SELECT COUNT(*) from Auth.User;'"]
+      interval: 5s
+      timeout: 5s
+      retries: 60
+      start_period: 60s
+
+  # COURSE MANAGEMENT
+  course-management-service:
+    container_name: CourseManagementService
+    build:
+      context: ${CONTEXT}
+      dockerfile: ./infrastructure/environments-dev/course-management/Dockerfile
+    environment:
+      SEED_DB: "true"
+      DB_CONNECTION_STRING: ${COURSE_MANAGEMENT_DB_CONNECTION_STRING}
+      RABBITMQ_HOST: ${RABBITMQ_HOST}
+      RABBITMQ_PORT: ${RABBITMQ_PORT}
+      RABBITMQ_USER: ${RABBITMQ_USER}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+      AppSettings__PublicKey: ${JWT_PUBLIC_KEY_B64}
+      AppSettings__Issuer: ${JWT_ISSUER}
+      AppSettings__Audience: CourseManagement
+    mem_limit: 768m
+    cpus: 1.0
+    restart: unless-stopped
+    depends_on:
+      course-management-database:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+  course-management-database:
+    container_name: CourseManagementDB
+    image: mysql:9
+    user: "${HOST_UID:-1000}:${HOST_GID:-1000}"
+    command: ["mysqld", "--max-connections=500"]
+    environment:
+      - MYSQL_ROOT_PASSWORD=${COURSE_MANAGEMENT_DB_PASSWORD}
+      - MYSQL_DATABASE=${COURSE_MANAGEMENT_DB_SCHEMA}
+    volumes:
+      - ${CONTEXT}/infrastructure/seeding/course-management:/var/lib/mysql-files/
+      - ${CONTEXT}/infrastructure/environments-dev/course-management/init.sql:/docker-entrypoint-initdb.d/init.sql
+    mem_limit: 1g
+    cpus: 1.0
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "mysql -u root -p${COURSE_MANAGEMENT_DB_PASSWORD} --execute 'SELECT COUNT(*) from CourseManagement.Course;'"]
+      interval: 5s
+      timeout: 5s
+      retries: 60
+      start_period: 60s
+
+  # CLASS ATTENDANCE
+  class-attendance-service:
+    container_name: ClassAttendanceService
+    build:
+      context: ${CONTEXT}
+      dockerfile: ./infrastructure/environments-dev/class-attendance/Dockerfile
+    environment:
+      DB_CONNECTION_STRING: ${CLASS_ATTENDANCE_DB_CONNECTION_STRING}
+      PAYMENT_CALLBACK_SECRET: ${PAYMENT_CALLBACK_SECRET}
+      RABBITMQ_HOST: ${RABBITMQ_HOST}
+      RABBITMQ_PORT: ${RABBITMQ_PORT}
+      RABBITMQ_USER: ${RABBITMQ_USER}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+      AppSettings__PublicKey: ${JWT_PUBLIC_KEY_B64}
+      AppSettings__Issuer: ${JWT_ISSUER}
+      AppSettings__Audience: ClassAttendance
+    mem_limit: 768m
+    cpus: 1.0
+    restart: unless-stopped
+    depends_on:
+      class-attendance-database:
+        condition: service_healthy
+      course-management-service:
+        condition: service_healthy
+      payment-service:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+  class-attendance-database:
+    container_name: ClassAttendanceDB
+    image: mysql:9
+    user: "${HOST_UID:-1000}:${HOST_GID:-1000}"
+    command: ["mysqld", "--max-connections=500"]
+    environment:
+      - MYSQL_ROOT_PASSWORD=${CLASS_ATTENDANCE_DB_PASSWORD}
+      - MYSQL_DATABASE=${CLASS_ATTENDANCE_DB_SCHEMA}
+    volumes:
+      - ${CONTEXT}/infrastructure/seeding/class-attendance:/var/lib/mysql-files/
+      - ${CONTEXT}/infrastructure/environments-dev/class-attendance/init.sql:/docker-entrypoint-initdb.d/init.sql
+    mem_limit: 1g
+    cpus: 1.0
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "mysql -u root -p${CLASS_ATTENDANCE_DB_PASSWORD} --execute 'SELECT COUNT(*) from ClassAttendance.ScheduledClassAttendance;'"]
+      interval: 5s
+      timeout: 5s
+      retries: 60
+      start_period: 60s
+
+  # PAYMENT
+  payment-service:
+    container_name: PaymentService
+    build:
+      context: ${CONTEXT}
+      dockerfile: ./infrastructure/environments-dev/payment/Dockerfile
+    environment:
+      SEED_DB: "true"
+      DB_CONNECTION_STRING: ${PAYMENT_DB_CONNECTION_STRING}
+      TODOTIX_APPKEY: ${TODOTIX_APPKEY}
+      TODOTIX_CALLBACK_URL: ${TODOTIX_CALLBACK_URL}
+      PAYMENT_CALLBACK_SECRET: ${PAYMENT_CALLBACK_SECRET}
+      AppSettings__PublicKey: ${JWT_PUBLIC_KEY_B64}
+      AppSettings__Issuer: ${JWT_ISSUER}
+      AppSettings__Audience: Payment
+      RABBITMQ_HOST: ${RABBITMQ_HOST}
+      RABBITMQ_PORT: ${RABBITMQ_PORT}
+      RABBITMQ_USER: ${RABBITMQ_USER}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+    mem_limit: 768m
+    cpus: 1.0
+    restart: unless-stopped
+    depends_on:
+      payment-database:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+  payment-database:
+    container_name: PaymentDB
+    image: mysql:9
+    user: "${HOST_UID:-1000}:${HOST_GID:-1000}"
+    command: ["mysqld", "--max-connections=500"]
+    environment:
+      - MYSQL_ROOT_PASSWORD=${PAYMENT_DB_PASSWORD}
+      - MYSQL_DATABASE=${PAYMENT_DB_SCHEMA}
+    volumes:
+      - ${CONTEXT}/infrastructure/seeding/payment:/var/lib/mysql-files/
+      - ${CONTEXT}/infrastructure/environments-dev/payment/init.sql:/docker-entrypoint-initdb.d/init.sql
+    mem_limit: 1g
+    cpus: 1.0
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "mysql -u root -p${PAYMENT_DB_PASSWORD} --execute 'SELECT COUNT(*) from Payment.DebtTemplate;'"]
+      interval: 5s
+      timeout: 5s
+      retries: 60
+      start_period: 60s
+
+  # MESSAGE BROKER
+  rabbitmq:
+    container_name: RabbitMQ
+    build:
+      context: ${CONTEXT}
+      dockerfile: ./infrastructure/environments-dev/rabbitmq/Dockerfile
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASSWORD}
+    ports:
+      - "${RABBITMQ_MANAGEMENT_HOST_PORT}:15672"
+    mem_limit: 512m
+    cpus: 1.0
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10

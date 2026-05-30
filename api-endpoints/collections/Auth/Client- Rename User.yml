@@ -1,0 +1,23 @@
+info:
+  name: "Client: Rename User"
+  type: http
+  seq: 8
+
+http:
+  method: PUT
+  url: "{{API_PATH}}/api/auth/users/def02027-9cb8-4297-98a1-a470f707442d/username"
+  body:
+    type: json
+    data: |-
+      {
+        "username" : "Student 2 Renombrado"
+      }
+  auth:
+    type: bearer
+    token: "{{Client_JWT}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

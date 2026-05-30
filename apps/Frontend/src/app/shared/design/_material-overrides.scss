@@ -1,0 +1,230 @@
+@use 'mixins' as dm;
+
+/* ─── Buttons ────────────────────────────────────────────────── */
+.mat-mdc-button-base {
+  letter-spacing: -0.005em;
+  font-weight: 600;
+
+  &.mat-mdc-icon-button {
+    @include dm.touch-target;
+  }
+}
+
+.mat-mdc-unelevated-button {
+  --mdc-filled-button-container-color: var(--dama-primary);
+  --mdc-filled-button-label-text-color: var(--dama-primary-fg);
+  --mdc-filled-button-container-shape: 8px;
+
+  &:hover {
+    --mdc-filled-button-container-color: var(--dama-primary-hover);
+  }
+}
+
+.mat-mdc-outlined-button {
+  --mdc-outlined-button-outline-color: var(--dama-border-strong);
+  --mdc-outlined-button-label-text-color: var(--dama-text);
+  --mdc-outlined-button-container-shape: 8px;
+  background: var(--dama-surface);
+  box-shadow: var(--dama-shadow-xs);
+}
+
+.mat-mdc-button {
+  --mdc-text-button-label-text-color: var(--dama-text-muted);
+  --mdc-text-button-container-shape: 8px;
+  &:hover {
+    background: var(--dama-surface-hover);
+  }
+}
+
+/* ─── Inputs / Form fields ───────────────────────────────────── */
+.mat-mdc-form-field.mat-form-field-appearance-outline {
+  --mdc-outlined-text-field-outline-color: var(--dama-border-strong);
+  --mdc-outlined-text-field-hover-outline-color: var(--dama-border-strong);
+  --mdc-outlined-text-field-focus-outline-color: var(--dama-primary);
+  --mdc-outlined-text-field-label-text-color: var(--dama-text-muted);
+  --mdc-outlined-text-field-input-text-color: var(--dama-text);
+  --mdc-outlined-text-field-container-shape: 8px;
+}
+
+/* ─── Cards ──────────────────────────────────────────────────── */
+.mat-mdc-card {
+  --mdc-elevated-card-container-color: var(--dama-surface);
+  --mdc-elevated-card-container-shape: var(--dama-radius-md);
+  border: 1px solid var(--dama-border);
+  box-shadow: var(--dama-shadow-xs);
+  overflow: hidden;
+}
+.mat-mdc-card-header {
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--dama-divider);
+}
+.mat-mdc-card-content {
+  padding: 20px;
+}
+.mat-mdc-card-title {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--dama-text-strong);
+}
+.mat-mdc-card-subtitle {
+  font-size: 12px;
+  color: var(--dama-text-muted);
+  margin-top: 2px;
+}
+
+/* ─── Tables ─────────────────────────────────────────────────── */
+.mat-mdc-table {
+  background: transparent;
+
+  .mat-mdc-header-row {
+    background: var(--dama-bg-2);
+    height: 40px;
+    .mat-mdc-header-cell {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--dama-text-faint);
+      border-bottom: 1px solid var(--dama-border);
+    }
+  }
+  .mat-mdc-row {
+    transition: background 120ms var(--dama-easing);
+    &:hover {
+      background: var(--dama-surface-2);
+    }
+  }
+  .mat-mdc-cell {
+    font-size: 13.5px;
+    color: var(--dama-text);
+    border-bottom: 1px solid var(--dama-divider);
+    padding: 14px 20px;
+  }
+  .mat-column-actions {
+    text-align: right;
+    width: 120px;
+  }
+}
+
+/* ─── Dialogs ────────────────────────────────────────────────── */
+.mat-mdc-dialog-surface {
+  --mdc-dialog-container-shape: var(--dama-radius-lg);
+  --mdc-dialog-container-color: var(--dama-surface);
+  border: 1px solid var(--dama-border);
+  box-shadow: var(--dama-shadow-lg);
+  overflow: hidden;
+}
+.mat-mdc-dialog-title {
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--dama-divider);
+  font-size: 16px;
+  font-weight: 600;
+}
+.mat-mdc-dialog-content {
+  padding: 20px;
+  max-height: 70vh;
+}
+.mat-mdc-dialog-actions {
+  padding: 14px 20px;
+  border-top: 1px solid var(--dama-divider);
+  background: var(--dama-bg-2);
+  gap: 8px;
+}
+
+@include dm.down('mobile') {
+  .mat-mdc-dialog-surface {
+    --mdc-dialog-container-shape: 0;
+    min-height: 100vh;
+    min-width: 100vw;
+    border: 0;
+  }
+}
+
+/* ─── Sidenav ────────────────────────────────────────────────── */
+.mat-drawer.mat-drawer-side {
+  background: var(--dama-sidenav);
+  border-right: 1px solid var(--dama-border);
+  width: var(--dama-sidenav-w);
+  transition: width 200ms var(--dama-easing);
+
+  &.collapsed {
+    width: var(--dama-sidenav-w-collapsed);
+  }
+}
+
+.mat-mdc-nav-list .mat-mdc-list-item {
+  height: 44px;
+  border-radius: 8px;
+  margin: 2px 8px;
+  color: var(--dama-text-muted);
+  font-size: 14px;
+  font-weight: 500;
+
+  &::before {
+    display: none;
+  }
+
+  &.active-link {
+    background: var(--dama-primary-soft);
+    color: var(--dama-primary);
+    font-weight: 600;
+    .mat-mdc-list-item-icon {
+      color: var(--dama-primary);
+    }
+  }
+
+  @media (hover: hover) {
+    &:hover:not(.active-link) {
+      background: var(--dama-surface-hover);
+      color: var(--dama-text);
+    }
+  }
+}
+
+/* ─── Toolbar ────────────────────────────────────────────────── */
+.mat-toolbar.mat-primary,
+.mat-toolbar {
+  background: var(--dama-surface);
+  color: var(--dama-text);
+  border-bottom: 1px solid var(--dama-border);
+  box-shadow: none;
+  height: var(--dama-toolbar-h);
+  padding: 0 24px;
+}
+
+@include dm.down('mobile') {
+  .mat-toolbar {
+    padding: 0 12px;
+  }
+}
+
+/* ─── Tabs ───────────────────────────────────────────────────── */
+.mat-mdc-tab-group {
+  --mat-tab-header-active-label-text-color: var(--dama-primary);
+  --mat-tab-header-active-ripple-color: var(--dama-primary);
+  --mat-tab-header-inactive-label-text-color: var(--dama-text-muted);
+  --mat-tab-header-active-focus-indicator-color: var(--dama-primary);
+
+  .mat-mdc-tab .mdc-tab__text-label {
+    font-weight: 500;
+    letter-spacing: -0.005em;
+  }
+  .mat-mdc-tab.mdc-tab--active .mdc-tab__text-label {
+    font-weight: 600;
+  }
+}
+
+/* ─── Snackbar ───────────────────────────────────────────────── */
+.mat-mdc-snack-bar-container {
+  --mdc-snackbar-container-shape: 10px;
+  --mdc-snackbar-container-color: var(--dama-text-strong);
+  --mdc-snackbar-supporting-text-color: var(--dama-bg);
+  --mat-snack-bar-button-color: var(--dama-primary-soft);
+  box-shadow: var(--dama-shadow-md);
+}
+
+/* ─── Spinner ────────────────────────────────────────────────── */
+.mat-mdc-progress-spinner {
+  --mdc-circular-progress-active-indicator-color: var(--dama-primary);
+}

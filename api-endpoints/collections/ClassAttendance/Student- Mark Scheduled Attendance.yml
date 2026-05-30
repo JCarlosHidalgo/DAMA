@@ -1,0 +1,24 @@
+info:
+  name: "Student: Mark Scheduled Attendance"
+  type: http
+  seq: 8
+
+http:
+  method: POST
+  url: "{{API_PATH}}/api/class-attendance/attendance/scheduled"
+  body:
+    type: json
+    data: |-
+      {
+        "classId": "{{ScheduledClassIdToday}}",
+        "courseName": "Curso de muestra"
+      }
+  auth:
+    type: bearer
+    token: "{{Student_JWT}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

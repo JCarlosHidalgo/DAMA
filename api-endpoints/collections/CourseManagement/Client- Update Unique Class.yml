@@ -1,0 +1,32 @@
+info:
+  name: "Client: Update Unique Class"
+  type: http
+  seq: 13
+
+http:
+  method: PUT
+  url: "{{API_PATH}}/api/course-management/course/unique/b4444444-4444-4444-8444-444444444444"
+  body:
+    type: json
+    data: |-
+      {
+        "date": "2026-12-30",
+        "maxStudentLimit": 0,
+        "startTime": "11:00:00",
+        "endTime": "12:30:00",
+        "teachers": [
+          {
+            "teacherId": "13a6111c-8b17-4340-beef-ffe7a6f9cac9",
+            "teacherName": "Teacher Example"
+          }
+        ]
+      }
+  auth:
+    type: bearer
+    token: "{{Client_JWT}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

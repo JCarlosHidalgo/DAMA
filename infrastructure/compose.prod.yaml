@@ -1,0 +1,211 @@
+services:
+
+  # FRONTEND
+  frontend:
+    container_name: Frontend
+    build:
+      context: ${CONTEXT}
+      dockerfile: ./infrastructure/environments-dev/frontend/Dockerfile
+    expose:
+      - "80"
+    mem_limit: 256m
+    cpus: 0.5
+    restart: unless-stopped
+    networks:
+      - dokploy-network
+    depends_on:
+      api-gateway:
+        condition: service_started
+
+  # API GATEWAY
+  api-gateway:
+    container_name: api
+    build:
+      context: ${CONTEXT}
+      dockerfile: ./infrastructure/environments-dev/api-gateway/Dockerfile
+    expose:
+      - "80"
+    mem_limit: 256m
+    cpus: 0.5
+    restart: unless-stopped
+    networks:
+      - dokploy-network
+    depends_on:
+      auth-service:
+        condition: service_healthy
+      course-management-service:
+        condition: service_healthy
+      class-attendance-service:
+        condition: service_healthy
+      credentials-service:
+        condition: service_healthy
+      payment-service:
+        condition: service_healthy
+
+  # CREDENTIALS
+  credentials-service:
+    container_name: CredentialsService
+    build:
+      context: ${CONTEXT}
+      dockerfile: ./infrastructure/environments-dev/credentials/Dockerfile
+    expose:
+      - "80"
+    environment:
+      ASPNETCORE_HTTP_PORTS: 80
+      AppSettings__PublicKey: ${JWT_PUBLIC_KEY_B64}
+      AppSettings__Issuer: ${JWT_ISSUER}
+      AppSettings__Audience: Credentials
+    mem_limit: 256m
+    cpus: 0.5
+    restart: unless-stopped
+    networks:
+      - dokploy-network
+
+  # AUTH
+  auth-service:
+    container_name: AuthService
+    build:
+      context: ${CONTEXT}
+      dockerfile: ./infrastructure/environments-dev/auth/Dockerfile
+    expose:
+      - "80"
+    environment:
+      ASPNETCORE_HTTP_PORTS: 80
+      DB_CONNECTION_STRING: ${AUTH_DB_CONNECTION_STRING}
+      RABBITMQ_HOST: ${RABBITMQ_HOST}
+      RABBITMQ_PORT: ${RABBITMQ_PORT}
+      RABBITMQ_USER: ${RABBITMQ_USER}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+      AppSettings__PublicKey: ${JWT_PUBLIC_KEY_B64}
+      AppSettings__PrivateKey: ${JWT_PRIVATE_KEY_B64}
+      AppSettings__Issuer: ${JWT_ISSUER}
+      AppSettings__Audience: Auth
+      AppSettings__Audiences: Auth,ClassAttendance,CourseManagement,Payment,Credentials
+    mem_limit: 768m
+    cpus: 1.0
+    restart: unless-stopped
+    networks:
+      - dokploy-network
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  # COURSE MANAGEMENT
+  course-management-service:
+    container_name: CourseManagementService
+    build:
+      context: ${CONTEXT}
+      dockerfile: ./infrastructure/environments-dev/course-management/Dockerfile
+    expose:
+      - "80"
+      - "81"
+    environment:
+      DB_CONNECTION_STRING: ${COURSE_MANAGEMENT_DB_CONNECTION_STRING}
+      RABBITMQ_HOST: ${RABBITMQ_HOST}
+      RABBITMQ_PORT: ${RABBITMQ_PORT}
+      RABBITMQ_USER: ${RABBITMQ_USER}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+      AppSettings__PublicKey: ${JWT_PUBLIC_KEY_B64}
+      AppSettings__Issuer: ${JWT_ISSUER}
+      AppSettings__Audience: CourseManagement
+    mem_limit: 768m
+    cpus: 1.0
+    restart: unless-stopped
+    networks:
+      - dokploy-network
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  # CLASS ATTENDANCE
+  class-attendance-service:
+    container_name: ClassAttendanceService
+    build:
+      context: ${CONTEXT}
+      dockerfile: ./infrastructure/environments-dev/class-attendance/Dockerfile
+    expose:
+      - "80"
+      - "81"
+    environment:
+      DB_CONNECTION_STRING: ${CLASS_ATTENDANCE_DB_CONNECTION_STRING}
+      PAYMENT_CALLBACK_SECRET: ${PAYMENT_CALLBACK_SECRET}
+      RABBITMQ_HOST: ${RABBITMQ_HOST}
+      RABBITMQ_PORT: ${RABBITMQ_PORT}
+      RABBITMQ_USER: ${RABBITMQ_USER}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+      AppSettings__PublicKey: ${JWT_PUBLIC_KEY_B64}
+      AppSettings__Issuer: ${JWT_ISSUER}
+      AppSettings__Audience: ClassAttendance
+    mem_limit: 768m
+    cpus: 1.0
+    restart: unless-stopped
+    networks:
+      - dokploy-network
+    depends_on:
+      course-management-service:
+        condition: service_healthy
+      payment-service:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+  # PAYMENT
+  payment-service:
+    container_name: PaymentService
+    build:
+      context: ${CONTEXT}
+      dockerfile: ./infrastructure/environments-dev/payment/Dockerfile
+    expose:
+      - "80"
+    environment:
+      DB_CONNECTION_STRING: ${PAYMENT_DB_CONNECTION_STRING}
+      TODOTIX_APPKEY: ${TODOTIX_APPKEY}
+      TODOTIX_CALLBACK_URL: ${TODOTIX_CALLBACK_URL}
+      PAYMENT_CALLBACK_SECRET: ${PAYMENT_CALLBACK_SECRET}
+      AppSettings__PublicKey: ${JWT_PUBLIC_KEY_B64}
+      AppSettings__Issuer: ${JWT_ISSUER}
+      AppSettings__Audience: Payment
+      RABBITMQ_HOST: ${RABBITMQ_HOST}
+      RABBITMQ_PORT: ${RABBITMQ_PORT}
+      RABBITMQ_USER: ${RABBITMQ_USER}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+    mem_limit: 768m
+    cpus: 1.0
+    restart: unless-stopped
+    networks:
+      - dokploy-network
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  # MESSAGE BROKER
+  rabbitmq:
+    container_name: RabbitMQ
+    build:
+      context: ${CONTEXT}
+      dockerfile: ./infrastructure/environments-dev/rabbitmq/Dockerfile
+    expose:
+      - "5672"
+      - "15672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASSWORD}
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    mem_limit: 512m
+    cpus: 1.0
+    restart: unless-stopped
+    networks:
+      - dokploy-network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  rabbitmq-data:
+
+networks:
+  dokploy-network:
+    external: true

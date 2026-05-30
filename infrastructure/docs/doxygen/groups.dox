@@ -1,0 +1,107 @@
+/**
+ * \defgroup entities Domain Entities
+ * \brief Persistence-side records under `Backend.Entities.*` — the rows the DAOs read and write.
+ */
+
+/**
+ * \defgroup daos Data Access Objects
+ * \brief MySQL DAOs under `Backend.DB.Daos.*` (role-segregated abstract interfaces + concrete implementations).
+ */
+
+/**
+ * \defgroup services Services
+ * \brief Per-use-case business services under `Backend.Services.*`. Used by Auth, ClassAttendance, Payment and Credentials; CourseManagement uses \ref handlers instead.
+ */
+
+/**
+ * \defgroup handlers Command & Query Handlers
+ * \brief CourseManagement CQRS-lite handlers under `Backend.Application.*` (`ICommandHandler` / `IQueryHandler`, discriminated-union results).
+ */
+
+/**
+ * \defgroup controllers Controllers
+ * \brief ASP.NET MVC controllers under `Backend.Controllers`.
+ */
+
+/**
+ * \defgroup workers Background Workers
+ * \brief Hosted services under `Backend.Workers` — outbox publishers, janitors, RabbitMQ consumers, callback workers.
+ */
+
+/**
+ * \defgroup dtos DTOs
+ * \brief Request/response data transfer objects under `Backend.Dtos`.
+ */
+
+/**
+ * \defgroup validators Validators
+ * \brief FluentValidation rule sets under `Backend.Validators`.
+ */
+
+/**
+ * \defgroup builders Builders
+ * \brief Entity/DTO/event fabricators under `Backend.Builders` (pattern #10): construction that generates IDs, stamps timestamps, serializes, or selects a variant by business state.
+ */
+
+/**
+ * \defgroup filters Filters
+ * \brief MVC action filters and attribute markers under `Backend.Filters` — most notably the FluentValidation pipeline filter and the `[RuleSet]` attribute.
+ */
+
+/**
+ * \defgroup events Events
+ * \brief Outbox event POCOs under `Backend.Events` — RabbitMQ payloads crossing service boundaries.
+ */
+
+/**
+ * \defgroup infrastructure Infrastructure
+ * \brief Cross-cutting plumbing: claims (`Backend.Infrastructure.Claims`), security/JWT (`Backend.Security`), config (`Backend.Config`), DI/middleware extensions (`Backend.Extensions`), gRPC services and interceptors (`Backend.Grpc.*`).
+ */
+
+/** \namespace Backend.Entities                     \ingroup entities */
+/** \namespace Backend.Entities.Users               \ingroup entities */
+/** \namespace Backend.Entities.Tenants             \ingroup entities */
+/** \namespace Backend.Entities.Attendance          \ingroup entities */
+/** \namespace Backend.Entities.Remain              \ingroup entities */
+
+/** \namespace Backend.DB.Daos                      \ingroup daos */
+/** \namespace Backend.DB.Daos.Abstract             \ingroup daos */
+/** \namespace Backend.DB.Daos.Concrete             \ingroup daos */
+/** \namespace Backend.DB.Daos.Concrete.Single      \ingroup daos */
+
+/** \namespace Backend.Services                     \ingroup services */
+/** \namespace Backend.Services.Abstract            \ingroup services */
+/** \namespace Backend.Services.Concrete            \ingroup services */
+
+/** \namespace Backend.Application                  \ingroup handlers */
+/** \namespace Backend.Application.Commands         \ingroup handlers */
+/** \namespace Backend.Application.Queries          \ingroup handlers */
+/** \namespace Backend.Application.Mediator         \ingroup handlers */
+/** \namespace Backend.Application.Infrastructure   \ingroup handlers */
+
+/** \namespace Backend.Controllers                  \ingroup controllers */
+
+/** \namespace Backend.Workers                      \ingroup workers */
+/** \namespace Backend.Workers.Infrastructure       \ingroup workers */
+/** \namespace Backend.Hubs                         \ingroup workers */
+
+/** \namespace Backend.Dtos                         \ingroup dtos */
+
+/** \namespace Backend.Validators                   \ingroup validators */
+
+/** \namespace Backend.Builders                     \ingroup builders */
+
+/** \namespace Backend.Filters                      \ingroup filters */
+
+/** \namespace Backend.Results                      \ingroup handlers */
+
+/** \namespace Backend.Events                       \ingroup events */
+
+/** \namespace Backend.Infrastructure               \ingroup infrastructure */
+/** \namespace Backend.Infrastructure.Claims        \ingroup infrastructure */
+/** \namespace Backend.Security                     \ingroup infrastructure */
+/** \namespace Backend.Config                       \ingroup infrastructure */
+/** \namespace Backend.Extensions                   \ingroup infrastructure */
+/** \namespace Backend.Grpc                         \ingroup infrastructure */
+/** \namespace Backend.Grpc.Services                \ingroup infrastructure */
+/** \namespace Backend.Grpc.Interceptors            \ingroup infrastructure */

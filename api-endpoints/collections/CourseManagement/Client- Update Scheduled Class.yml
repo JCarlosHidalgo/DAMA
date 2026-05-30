@@ -1,0 +1,32 @@
+info:
+  name: "Client: Update Scheduled Class"
+  type: http
+  seq: 10
+
+http:
+  method: PUT
+  url: "{{API_PATH}}/api/course-management/course/scheduled/a4444444-4444-4444-8444-444444444444"
+  body:
+    type: json
+    data: |-
+      {
+        "dayOfWeekIndex": 2,
+        "maxStudentLimit": 0,
+        "startTime": "09:00:00",
+        "endTime": "10:30:00",
+        "teachers": [
+          {
+            "teacherId": "13a6111c-8b17-4340-beef-ffe7a6f9cac9",
+            "teacherName": "Teacher Example"
+          }
+        ]
+      }
+  auth:
+    type: bearer
+    token: "{{Client_JWT}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

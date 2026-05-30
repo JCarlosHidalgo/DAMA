@@ -1,0 +1,22 @@
+info:
+  name: "Client: Get Course Schedule"
+  type: http
+  seq: 8
+
+http:
+  method: GET
+  url: "{{API_PATH}}/api/course-management/course/schedule?courseId=5178b3ca-5a0f-4636-b99c-a9421e7c762e&weekPaginationIndex=0"
+  query:
+    - name: courseId
+      value: "5178b3ca-5a0f-4636-b99c-a9421e7c762e"
+    - name: weekPaginationIndex
+      value: "0"
+  auth:
+    type: bearer
+    token: "{{Client_JWT}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

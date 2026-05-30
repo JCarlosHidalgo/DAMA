@@ -1,0 +1,15 @@
+# Claude / tooling
+CLAUDE.md
+.claude/
+.codegraph/
+
+# Secrets (real values; never publish). Templates *.example ARE tracked.
+infrastructure/.env.dev
+infrastructure/.env.staging
+infrastructure/.env.prod
+infrastructure/tls/
+
+# OS / editor
+.DS_Store
+.vs/
+*.user

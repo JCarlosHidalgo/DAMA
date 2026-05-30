@@ -1,0 +1,21 @@
+:host {
+  display: block;
+}
+
+.dama-paginator {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--dama-border);
+  border-radius: var(--dama-radius);
+  background: var(--dama-surface);
+
+  .page-label {
+    font-size: 13px;
+    color: var(--dama-text-muted);
+    padding: 0 8px;
+    min-width: 64px;
+    text-align: center;
+  }
+}

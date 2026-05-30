@@ -1,0 +1,26 @@
+info:
+  name: "Client: Create Debt Template"
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{API_PATH}}/api/payment/debt-template"
+  body:
+    type: json
+    data: |-
+      {
+        "Description" : "Paquete 10 clases",
+        "ClassQuantity" : 10,
+        "Cost" : 500,
+        "ExternalReference" : null
+      }
+  auth:
+    type: bearer
+    token: "{{Client_JWT}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

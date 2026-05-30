@@ -1,0 +1,86 @@
+services:
+
+  auth-docs-build:
+    container_name: AuthDocsBuilder
+    build:
+      context: ${CONTEXT}
+      dockerfile: ./infrastructure/environments-docs/auth/Dockerfile
+    volumes:
+      - auth-docs-html:/work/Documentation/
+
+  class-attendance-docs-build:
+    container_name: ClassAttendanceDocsBuilder
+    build:
+      context: ${CONTEXT}
+      dockerfile: ./infrastructure/environments-docs/class-attendance/Dockerfile
+    volumes:
+      - class-attendance-docs-html:/work/Documentation/
+
+  course-management-docs-build:
+    container_name: CourseManagementDocsBuilder
+    build:
+      context: ${CONTEXT}
+      dockerfile: ./infrastructure/environments-docs/course-management/Dockerfile
+    volumes:
+      - course-management-docs-html:/work/Documentation/
+
+  credentials-docs-build:
+    container_name: CredentialsDocsBuilder
+    build:
+      context: ${CONTEXT}
+      dockerfile: ./infrastructure/environments-docs/credentials/Dockerfile
+    volumes:
+      - credentials-docs-html:/work/Documentation/
+
+  payment-docs-build:
+    container_name: PaymentDocsBuilder
+    build:
+      context: ${CONTEXT}
+      dockerfile: ./infrastructure/environments-docs/payment/Dockerfile
+    volumes:
+      - payment-docs-html:/work/Documentation/
+
+  frontend-docs-build:
+    container_name: FrontendDocsBuilder
+    build:
+      context: ${CONTEXT}
+      dockerfile: ./infrastructure/environments-docs/frontend/Dockerfile
+    volumes:
+      - frontend-docs-html:/work/Documentation/
+
+  docs-apache:
+    container_name: DocsApache
+    build:
+      context: ${CONTEXT}
+      dockerfile: ./infrastructure/environments-docs/apache/Dockerfile
+    ports:
+      - "8003:80"
+    volumes:
+      - auth-docs-html:/usr/local/apache2/htdocs/auth/:ro
+      - class-attendance-docs-html:/usr/local/apache2/htdocs/class-attendance/:ro
+      - course-management-docs-html:/usr/local/apache2/htdocs/course-management/:ro
+      - credentials-docs-html:/usr/local/apache2/htdocs/credentials/:ro
+      - payment-docs-html:/usr/local/apache2/htdocs/payment/:ro
+      - frontend-docs-html:/usr/local/apache2/htdocs/frontend/:ro
+    restart: unless-stopped
+    depends_on:
+      auth-docs-build:
+        condition: service_completed_successfully
+      class-attendance-docs-build:
+        condition: service_completed_successfully
+      course-management-docs-build:
+        condition: service_completed_successfully
+      credentials-docs-build:
+        condition: service_completed_successfully
+      payment-docs-build:
+        condition: service_completed_successfully
+      frontend-docs-build:
+        condition: service_completed_successfully
+
+volumes:
+  auth-docs-html:
+  class-attendance-docs-html:
+  course-management-docs-html:
+  credentials-docs-html:
+  payment-docs-html:
+  frontend-docs-html:

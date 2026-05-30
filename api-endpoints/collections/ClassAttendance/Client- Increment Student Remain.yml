@@ -1,0 +1,25 @@
+info:
+  name: "Client: Increment Student Remain"
+  type: http
+  seq: 7
+
+http:
+  method: POST
+  url: "{{API_PATH}}/api/class-attendance/remain/client/6ba1c841-834f-4aeb-a285-a500b15638c9"
+  body:
+    type: json
+    data: |-
+      {
+        "requestId": "6f9619ff-8b86-d011-b42d-00c04fc964ff",
+        "quantity": 4,
+        "studentName": "Estudiante Demo"
+      }
+  auth:
+    type: bearer
+    token: "{{Client_JWT}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

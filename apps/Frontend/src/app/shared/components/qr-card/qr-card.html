@@ -1,0 +1,21 @@
+<div class="qr-card">
+  <div class="qr-wrap">
+    <qrcode
+      [qrdata]="payload()"
+      [width]="size()"
+      [margin]="2"
+      errorCorrectionLevel="M"
+      elementType="canvas"
+    />
+  </div>
+  @if (title() || subtitle()) {
+    <div class="meta">
+      @if (title()) {
+        <div class="t-h2">{{ title() }}</div>
+      }
+      @if (subtitle()) {
+        <div class="t-small">{{ subtitle() }}</div>
+      }
+    </div>
+  }
+</div>

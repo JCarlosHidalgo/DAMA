@@ -1,0 +1,5 @@
+{
+    "DbSettings" : {
+        "ConnectionUrl" : "server=ClassAttendanceDB;port=3306;uid=root;pwd=admin;database=ClassAttendance;Allow User Variables=True;Max Pool Size=300;Min Pool Size=10"
+    }
+}

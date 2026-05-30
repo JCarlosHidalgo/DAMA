@@ -1,0 +1,17 @@
+info:
+  name: "Student: Get QR Debt Status"
+  type: http
+  seq: 7
+
+http:
+  method: GET
+  url: "{{API_PATH}}/api/Payment/qr/b4a41281-6eb2-4eaa-a748-c6b41e9bd201/status"
+  auth:
+    type: bearer
+    token: "{{Student_JWT}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

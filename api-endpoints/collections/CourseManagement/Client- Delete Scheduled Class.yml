@@ -1,0 +1,17 @@
+info:
+  name: "Client: Delete Scheduled Class"
+  type: http
+  seq: 11
+
+http:
+  method: DELETE
+  url: "{{API_PATH}}/api/course-management/course/scheduled/7b0c2566-3d22-4c54-897f-1a669a6bad11"
+  auth:
+    type: bearer
+    token: "{{Client_JWT}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -1,0 +1,21 @@
+@use 'app/shared/design/theme';
+@use 'app/shared/design/tokens';
+@use 'app/shared/design/typography';
+@use 'app/shared/design/resets';
+@use 'app/shared/design/utilities';
+@use 'app/shared/design/material-overrides';
+@use 'app/shared/design/fullcalendar-overrides';
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    Roboto,
+    system-ui,
+    sans-serif;
+}

@@ -1,0 +1,12 @@
+<div class="scanner-wrap">
+  <zxing-scanner
+    [formats]="formats"
+    [enable]="enabled()"
+    previewFitMode="cover"
+    (scanSuccess)="onScan($event)"
+  />
+  <span class="bracket tl"></span>
+  <span class="bracket tr"></span>
+  <span class="bracket bl"></span>
+  <span class="bracket br"></span>
+</div>

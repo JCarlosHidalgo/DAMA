@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<RunSettings>
+  <DataCollectionRunSettings>
+    <DataCollectors>
+      <DataCollector friendlyName="XPlat code coverage">
+        <Configuration>
+          <Format>cobertura,opencover</Format>
+          <SkipAutoProps>true</SkipAutoProps>
+          <ExcludeByAttribute>CompilerGeneratedAttribute</ExcludeByAttribute>
+          <ExcludeByFile>
+            **/AutoMapperProfiles/**/*.cs,
+            **/Controllers/**/*.cs,
+            **/DB/**/*.cs,
+            **/Entities/**/*.cs,
+            **/Events/**/*.cs,
+            **/Filters/**/*.cs,
+            **/Messaging/**/*.cs,
+            **/Modules/**/*.cs,
+            **/Options/**/*.cs,
+            **/Transporters/**/*.cs,
+            **/Workers/**/*.cs,
+            **/Program.cs
+          </ExcludeByFile>
+        </Configuration>
+      </DataCollector>
+    </DataCollectors>
+  </DataCollectionRunSettings>
+</RunSettings>

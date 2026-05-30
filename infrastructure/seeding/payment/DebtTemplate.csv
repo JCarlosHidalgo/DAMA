@@ -1,0 +1,4 @@
+Id,TenantId,Description,ClassQuantity,Cost
+b1d3f1f1-0000-4000-8000-000000000001,c4c1c44d-7b5c-414a-b8df-a5537357ee30,Pack normal: 30 clases,30,1
+b1d3f1f1-0000-4000-8000-000000000002,c4c1c44d-7b5c-414a-b8df-a5537357ee30,Promo día del niño: 20 clases,20,200
+b1d3f1f1-0000-4000-8000-000000000003,c4c1c44d-7b5c-414a-b8df-a5537357ee30,Promo aniversario: 10 clases,10,150

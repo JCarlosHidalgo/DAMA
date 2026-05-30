@@ -1,0 +1,25 @@
+info:
+  name: "Student: Create QR Debt"
+  type: http
+  seq: 6
+
+http:
+  method: POST
+  url: "{{API_PATH}}/api/payment/qr/b1d3f1f1-0000-4000-8000-000000000001"
+  body:
+    type: json
+    data: |-
+      {
+        "email" : "example@gmail.com",
+        "ExternalReference" : null,
+        "descripcion" : "Pago Compra Online"
+      }
+  auth:
+    type: bearer
+    token: "{{Student_JWT}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

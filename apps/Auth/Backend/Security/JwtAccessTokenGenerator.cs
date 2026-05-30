@@ -1,0 +1,57 @@
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+
+using Backend.Dtos.Users.Output;
+using Backend.Entities.Tenants;
+using Backend.Entities.Users;
+using Backend.Options;
+using Backend.Services.Abstract;
+
+using Microsoft.Extensions.Options;
+
+namespace Backend.Security;
+
+public sealed class JwtAccessTokenGenerator : IAccessTokenGenerator
+{
+    private readonly JwtOptions _options;
+    private readonly IJwtTokenSigner _tokenSigner;
+    private readonly string[] _issuanceAudiences;
+
+    public JwtAccessTokenGenerator(IOptions<JwtOptions> options, IJwtTokenSigner tokenSigner)
+    {
+        _options = options.Value;
+        _tokenSigner = tokenSigner;
+        _issuanceAudiences = _options.Audiences.Split(
+            ',',
+            StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+    }
+
+    public TokenResponseDto Issue(User user, Tenant tenant)
+    {
+        List<Claim> claims = new List<Claim>
+        {
+            new Claim(AuthClaims.TenantId, tenant.Id.ToString()),
+            new Claim(AuthClaims.TenantName, tenant.Name),
+            new Claim(AuthClaims.UserId, user.Id.ToString()),
+            new Claim(AuthClaims.UserName, user.UserName),
+            new Claim(AuthClaims.Role, user.Role),
+            new Claim(AuthClaims.TenantTimezone, tenant.Timezone)
+        };
+        foreach (string audience in _issuanceAudiences)
+        {
+            claims.Add(new Claim("aud", audience));
+        }
+
+        JwtSecurityToken securityToken = new JwtSecurityToken(
+            issuer: _options.Issuer,
+            claims: claims,
+            expires: DateTime.UtcNow.Date.Add(_options.Lifetime),
+            signingCredentials: _tokenSigner.Credentials
+        );
+
+        return new TokenResponseDto
+        {
+            AccessToken = new JwtSecurityTokenHandler().WriteToken(securityToken)
+        };
+    }
+}

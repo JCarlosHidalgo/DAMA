@@ -1,0 +1,17 @@
+info:
+  name: "Auth: Get Course By Id"
+  type: http
+  seq: 2
+
+http:
+  method: GET
+  url: "{{API_PATH}}/api/course-management/course/5178b3ca-5a0f-4636-b99c-a9421e7c762e"
+  auth:
+    type: bearer
+    token: "{{Client_JWT}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

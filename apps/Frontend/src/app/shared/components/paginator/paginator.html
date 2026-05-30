@@ -1,0 +1,19 @@
+<nav class="dama-paginator">
+  <button
+    mat-icon-button
+    [disabled]="page().currentIndex <= 0"
+    (click)="prev()"
+    aria-label="Anterior"
+  >
+    <app-icon name="chevron-left" />
+  </button>
+  <span class="page-label tnum"> {{ page().currentIndex + 1 }} / {{ page().maxIndex + 1 }} </span>
+  <button
+    mat-icon-button
+    [disabled]="page().currentIndex >= page().maxIndex"
+    (click)="next()"
+    aria-label="Siguiente"
+  >
+    <app-icon name="chevron-right" />
+  </button>
+</nav>

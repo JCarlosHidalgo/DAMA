@@ -1,0 +1,17 @@
+info:
+  name: "Auth: List Courses"
+  type: http
+  seq: 1
+
+http:
+  method: GET
+  url: "{{API_PATH}}/api/course-management/course"
+  auth:
+    type: bearer
+    token: "{{Client_JWT}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
