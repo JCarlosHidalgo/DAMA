@@ -98,7 +98,7 @@ cd <dokploy-checkout-path>
 ./infrastructure/bootstrap-tls.sh
 ```
 
-This writes the internal CA plus the two server certs (SAN = container name, which matches prod) into
+This writes the internal CA plus the CourseManagement server cert (SAN = container name, which matches prod) into
 `infrastructure/tls/`. They are untracked and survive `git pull`, so the next deploy reuses them. If
 Dokploy ever does a clean clone (wiping untracked files), re-run the script before rebuilding.
 

@@ -13,13 +13,11 @@ WORKDIR /webapp
 COPY --from=build /webapp/out .
 ENV ASPNETCORE_ENVIRONMENT=Container
 
-# Inter-service gRPC TLS. The server cert is presented by Kestrel on :81;
-# the CA goes into the OS trust store so HttpClient validates calls into
-# CourseManagement and Payment without a custom callback.
-COPY ./infrastructure/tls/attendance.crt /etc/dama/tls/server.crt
-COPY ./infrastructure/tls/attendance.key /etc/dama/tls/server.key
-COPY ./infrastructure/tls/ca.crt               /usr/local/share/ca-certificates/dama-ca.crt
-RUN chmod 600 /etc/dama/tls/server.key && update-ca-certificates
+# Inter-service gRPC TLS. Attendance is a gRPC client only, so it presents no
+# server cert — it just trusts the internal CA so HttpClient validates calls
+# into CourseManagement without a custom callback.
+COPY ./infrastructure/tls/ca.crt /usr/local/share/ca-certificates/dama-ca.crt
+RUN update-ca-certificates
 
 HEALTHCHECK --interval=10s --timeout=3s --retries=6 --start-period=20s \
     CMD curl -fsS http://localhost:80/health || exit 1

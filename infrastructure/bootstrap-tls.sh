@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
 #
 # Bootstraps the self-signed PKI used for inter-service gRPC TLS.
-# Generates one CA + one server cert per gRPC backend, each with the
-# container hostname as the SAN so HttpClient validates the upstream by
-# name without any custom callback.
+# Generates one CA + one server cert per gRPC *server* backend, each with
+# the container hostname as the SAN so HttpClient validates the upstream by
+# name without any custom callback. CourseManagement is the only gRPC server
+# (Attendance is a client — it only needs ca.crt in its trust store, no cert
+# of its own).
 #
 # Run once after cloning, and again to rotate. Output goes to
 # infrastructure/tls/, which is gitignored — the .key files never leave
@@ -56,8 +58,7 @@ EOF
 generate_ca
 
 for entry in \
-    "course-management:CourseManagementService" \
-    "attendance:AttendanceService"
+    "course-management:CourseManagementService"
 do
     name="${entry%%:*}"
     hostname="${entry##*:}"
