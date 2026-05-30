@@ -10,7 +10,7 @@
     <Authors>Juan Carlos Hidalgo Sosa</Authors>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <Product>ValidateCourse</Product>
-    <Description>gRPC contract shared by ClassAttendance, Payment, and CourseManagement services. Defines ClassExistence and CourseExistence RPCs used to validate class and course existence from consumer services.</Description>
+    <Description>gRPC contract shared by Attendance, Payment, and CourseManagement services. Defines ClassExistence and CourseExistence RPCs used to validate class and course existence from consumer services.</Description>
     <Copyright>CC BY-SA 4.0, 2026</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageTags>gRPC,Protobuf,DAMA</PackageTags>

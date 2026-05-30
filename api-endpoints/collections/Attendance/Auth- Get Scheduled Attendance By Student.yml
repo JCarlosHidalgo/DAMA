@@ -1,0 +1,17 @@
+info:
+  name: "Auth: Get Scheduled Attendance By Student"
+  type: http
+  seq: 2
+
+http:
+  method: GET
+  url: "{{API_PATH}}/api/attendance/attendance/scheduled/student/00000000-0000-0000-0000-000000000000"
+  auth:
+    type: bearer
+    token: "{{Client_JWT}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

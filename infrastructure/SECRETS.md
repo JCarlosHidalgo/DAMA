@@ -7,9 +7,9 @@ DAMA injects secrets as plain environment variables through `infrastructure/.env
 | Variable | Type | Generate | Consumers |
 | --- | --- | --- | --- |
 | `JWT_PRIVATE_KEY_B64` | RSA private key (PEM, base64 standard) | `openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 -out priv.pem` then `base64 -w0 priv.pem` | Auth only |
-| `JWT_PUBLIC_KEY_B64` | RSA public key (PEM, base64 standard) | `openssl rsa -in priv.pem -pubout -out pub.pem` then `base64 -w0 pub.pem` | Auth, CourseManagement, ClassAttendance, Payment, Credentials |
-| `PAYMENT_CALLBACK_SECRET` | HMAC-SHA256 key (base64url string, used UTF-8 as-is) | `openssl rand -base64 64 \| tr -d '\n=' \| tr '+/' '-_'` | Payment, ClassAttendance |
-| `AUTH_DB_PASSWORD`, `COURSE_MANAGEMENT_DB_PASSWORD`, `CLASS_ATTENDANCE_DB_PASSWORD`, `PAYMENT_DB_PASSWORD` | DB user password | any random string | the corresponding DB container + backend |
+| `JWT_PUBLIC_KEY_B64` | RSA public key (PEM, base64 standard) | `openssl rsa -in priv.pem -pubout -out pub.pem` then `base64 -w0 pub.pem` | Auth, CourseManagement, Attendance, Payment, Credentials |
+| `PAYMENT_CALLBACK_SECRET` | HMAC-SHA256 key (base64url string, used UTF-8 as-is) | `openssl rand -base64 64 \| tr -d '\n=' \| tr '+/' '-_'` | Payment, Attendance |
+| `AUTH_DB_PASSWORD`, `COURSE_MANAGEMENT_DB_PASSWORD`, `ATTENDANCE_DB_PASSWORD`, `PAYMENT_DB_PASSWORD` | DB user password | any random string | the corresponding DB container + backend |
 | `TODOTIX_APPKEY` | external API key | issued by Todotix merchant panel | Payment |
 | `RABBITMQ_USER`, `RABBITMQ_PASSWORD` | broker credentials | any random string | every producer/consumer backend + broker |
 
@@ -50,7 +50,7 @@ There is no zero-downtime "publish two public keys, drain old tokens" path in th
 
 ### `PAYMENT_CALLBACK_SECRET`
 
-This signs the `sig` query parameter on the Todotix callback URL and authenticates the gRPC callback metadata. ClassAttendance and Payment must agree, **and Todotix must use the new value when it re-signs callbacks** — Payment generates the URL with the current secret, but a callback in-flight when you rotate will fail verification.
+This signs the `sig` query parameter on the Todotix callback URL and authenticates the gRPC callback metadata. Attendance and Payment must agree, **and Todotix must use the new value when it re-signs callbacks** — Payment generates the URL with the current secret, but a callback in-flight when you rotate will fail verification.
 
 1. Generate a fresh secret with the `openssl` command above.
 2. Update the env file with the new value (both services read from the same env var).

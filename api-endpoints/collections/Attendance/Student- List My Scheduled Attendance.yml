@@ -5,7 +5,7 @@ info:
 
 http:
   method: GET
-  url: "{{API_PATH}}/api/class-attendance/attendance/scheduled/me?index=0"
+  url: "{{API_PATH}}/api/attendance/attendance/scheduled/me?index=0"
   query:
     - name: index
       value: "0"

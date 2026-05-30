@@ -6,8 +6,8 @@ info:
 collections:
   - name: "Auth"
     path: "collections/Auth"
-  - name: "ClassAttendance"
-    path: "collections/ClassAttendance"
+  - name: "Attendance"
+    path: "collections/Attendance"
   - name: "CourseManagement"
     path: "collections/CourseManagement"
   - name: "Credentials"

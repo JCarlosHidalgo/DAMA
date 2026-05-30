@@ -8,13 +8,13 @@ services:
     volumes:
       - auth-docs-html:/work/Documentation/
 
-  class-attendance-docs-build:
-    container_name: ClassAttendanceDocsBuilder
+  attendance-docs-build:
+    container_name: AttendanceDocsBuilder
     build:
       context: ${CONTEXT}
-      dockerfile: ./infrastructure/environments-docs/class-attendance/Dockerfile
+      dockerfile: ./infrastructure/environments-docs/attendance/Dockerfile
     volumes:
-      - class-attendance-docs-html:/work/Documentation/
+      - attendance-docs-html:/work/Documentation/
 
   course-management-docs-build:
     container_name: CourseManagementDocsBuilder
@@ -57,7 +57,7 @@ services:
       - "8003:80"
     volumes:
       - auth-docs-html:/usr/local/apache2/htdocs/auth/:ro
-      - class-attendance-docs-html:/usr/local/apache2/htdocs/class-attendance/:ro
+      - attendance-docs-html:/usr/local/apache2/htdocs/attendance/:ro
       - course-management-docs-html:/usr/local/apache2/htdocs/course-management/:ro
       - credentials-docs-html:/usr/local/apache2/htdocs/credentials/:ro
       - payment-docs-html:/usr/local/apache2/htdocs/payment/:ro
@@ -66,7 +66,7 @@ services:
     depends_on:
       auth-docs-build:
         condition: service_completed_successfully
-      class-attendance-docs-build:
+      attendance-docs-build:
         condition: service_completed_successfully
       course-management-docs-build:
         condition: service_completed_successfully
@@ -79,7 +79,7 @@ services:
 
 volumes:
   auth-docs-html:
-  class-attendance-docs-html:
+  attendance-docs-html:
   course-management-docs-html:
   credentials-docs-html:
   payment-docs-html:

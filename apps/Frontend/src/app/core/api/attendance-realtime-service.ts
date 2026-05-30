@@ -88,7 +88,7 @@ export class AttendanceRealtimeService {
     }
 
     const newHubConnection = new HubConnectionBuilder()
-      .withUrl(`${environment.apiBaseUrl}/api/class-attendance/hubs/attendance`, {
+      .withUrl(`${environment.apiBaseUrl}/api/attendance/hubs/attendance`, {
         accessTokenFactory: () => this.authService.accessToken ?? '',
       })
       .withAutomaticReconnect()

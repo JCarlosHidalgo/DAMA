@@ -20,7 +20,7 @@ message UniqueExistsRequest {
 // `exists` is the only field guaranteed to be meaningful when the class is not
 // found. When `exists == true`, the time fields (and `class_date` for unique
 // classes) carry the canonical class metadata so consumers (e.g.
-// ClassAttendance) can denormalize them onto attendance rows without a
+// Attendance) can denormalize them onto attendance rows without a
 // separate read.
 message ClassExistsResponse {
   bool   exists            = 1;

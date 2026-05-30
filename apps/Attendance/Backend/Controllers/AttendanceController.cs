@@ -18,9 +18,9 @@ using Microsoft.Extensions.Options;
 
 namespace Backend.Controllers;
 
-[Route("api/class-attendance")]
+[Route("api/attendance")]
 [ApiController]
-public class ClassAttendanceController : ControllerBase
+public class AttendanceController : ControllerBase
 {
     private readonly IScheduledClassService _scheduledService;
     private readonly IUniqueClassService _uniqueService;
@@ -28,7 +28,7 @@ public class ClassAttendanceController : ControllerBase
     private readonly IRemainClassWriter _remainWriter;
     private readonly AttendanceOptions _attendanceOptions;
 
-    public ClassAttendanceController(IScheduledClassService scheduledService,
+    public AttendanceController(IScheduledClassService scheduledService,
                                      IUniqueClassService uniqueService,
                                      IRemainClassReader remainReader,
                                      IRemainClassWriter remainWriter,

@@ -10,7 +10,7 @@
 
 /**
  * \defgroup services Services
- * \brief Per-use-case business services under `Backend.Services.*`. Used by Auth, ClassAttendance, Payment and Credentials; CourseManagement uses \ref handlers instead.
+ * \brief Per-use-case business services under `Backend.Services.*`. Used by Auth, Attendance, Payment and Credentials; CourseManagement uses \ref handlers instead.
  */
 
 /**

@@ -59,11 +59,11 @@ A **bind-mount** of `./diagrams` to `/data/diagrams` is used. This means:
 It reflects the real flow of the stack:
 
 - `User → Frontend (Angular 21) → api-gateway (nginx)` and from there to the 5 .NET 9 backends.
-- Each backend with a database (`Auth`, `CourseManagement`, `ClassAttendance`, `Payment`) connects
+- Each backend with a database (`Auth`, `CourseManagement`, `Attendance`, `Payment`) connects
   to its own `mysql:9` instance; `Credentials` has no database.
 - Outbox publishing to **RabbitMQ** from `Auth`, `CourseManagement` and `Payment` (dashed lines);
-  consumption from `ClassAttendance` and `Payment`.
-- **gRPC TLS** edge: `ClassAttendance → CourseManagement` (dotted line).
+  consumption from `Attendance` and `Payment`.
+- **gRPC TLS** edge: `Attendance → CourseManagement` (dotted line).
 - External integration: `Payment → Todotix` (HTTPS).
 
 ### JSON format (quick reference)

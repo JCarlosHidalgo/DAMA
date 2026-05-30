@@ -1,12 +1,12 @@
 # DAMA.Software.ValidateCourse
 
-Shared gRPC contract for CourseManagement → ClassAttendance and CourseManagement → Payment communication in the DAMA microservices stack.
+Shared gRPC contract for CourseManagement → Attendance and CourseManagement → Payment communication in the DAMA microservices stack.
 
 ## What it contains
 
 Two Protobuf service definitions under `Protos/`:
 
-- **`class_existence.proto`** — `ClassExistence.ScheduledExists(ScheduledExistsRequest) → ClassExistsResponse` and `ClassExistence.UniqueExists(UniqueExistsRequest) → ClassExistsResponse`. Implemented by `CourseManagementService`; consumed by `ClassAttendanceService` to confirm a scheduled or unique class exists before recording attendance.
+- **`class_existence.proto`** — `ClassExistence.ScheduledExists(ScheduledExistsRequest) → ClassExistsResponse` and `ClassExistence.UniqueExists(UniqueExistsRequest) → ClassExistsResponse`. Implemented by `CourseManagementService`; consumed by `AttendanceService` to confirm a scheduled or unique class exists before recording attendance.
 - **`course_existence.proto`** — `CourseExistence.Exists(CourseExistsRequest) → CourseExistsResponse`. Implemented by `CourseManagementService`; consumed by `PaymentService` to validate a `CourseId` when creating a `DebtTemplate`.
 
 `Grpc.Tools` generates both the client and server stubs at build time (`GrpcServices="Both"`), so the same package serves both consumer and producer.
@@ -30,7 +30,7 @@ app.MapGrpcService<CourseExistenceGrpcService>();
 
 Where `ClassExistenceGrpcService` derives from `ClassExistence.ClassExistenceBase` and `CourseExistenceGrpcService` derives from `CourseExistence.CourseExistenceBase`.
 
-### Client side (e.g. ClassAttendanceService)
+### Client side (e.g. AttendanceService)
 
 ```csharp
 builder.Services.AddGrpcClient<ClassExistence.ClassExistenceClient>(o =>

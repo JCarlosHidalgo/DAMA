@@ -2,7 +2,7 @@ FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 
 WORKDIR /test-env
 
-COPY ./apps/ClassAttendance/ ./
+COPY ./apps/Attendance/ ./
 
 WORKDIR /test-env/Test
 

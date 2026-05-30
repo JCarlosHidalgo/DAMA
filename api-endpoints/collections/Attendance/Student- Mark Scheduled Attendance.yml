@@ -5,7 +5,7 @@ info:
 
 http:
   method: POST
-  url: "{{API_PATH}}/api/class-attendance/attendance/scheduled"
+  url: "{{API_PATH}}/api/attendance/attendance/scheduled"
   body:
     type: json
     data: |-

@@ -5,7 +5,7 @@ info:
 
 http:
   method: GET
-  url: "{{API_PATH}}/api/class-attendance/remain/me"
+  url: "{{API_PATH}}/api/attendance/remain/me"
   auth:
     type: bearer
     token: "{{Student_JWT}}"

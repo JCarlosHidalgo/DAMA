@@ -76,7 +76,7 @@ public class JwtAccessTokenGeneratorTests
     [Test]
     public void Issue_EmitsOneAudienceClaimPerCommaSeparatedAudience()
     {
-        JwtAccessTokenGenerator sut = CreateSut("Auth, ClassAttendance ,Payment", TimeSpan.FromHours(1));
+        JwtAccessTokenGenerator sut = CreateSut("Auth, Attendance ,Payment", TimeSpan.FromHours(1));
         User user = new() { Id = Guid.NewGuid(), UserName = "anyone", Role = UserRole.Student.Value };
         Tenant tenant = new() { Id = Guid.NewGuid(), Name = "Academia", Timezone = "America/La_Paz" };
 
@@ -86,7 +86,7 @@ public class JwtAccessTokenGeneratorTests
         List<string> audiences = [.. parsedToken.Audiences];
         Assert.That(audiences, Has.Count.EqualTo(3));
         Assert.That(audiences, Does.Contain("Auth"));
-        Assert.That(audiences, Does.Contain("ClassAttendance"));
+        Assert.That(audiences, Does.Contain("Attendance"));
         Assert.That(audiences, Does.Contain("Payment"));
     }
 

@@ -35,7 +35,7 @@ services:
         condition: service_healthy
       course-management-service:
         condition: service_healthy
-      class-attendance-service:
+      attendance-service:
         condition: service_healthy
       credentials-service:
         condition: service_healthy
@@ -80,7 +80,7 @@ services:
       AppSettings__PrivateKey: ${JWT_PRIVATE_KEY_B64}
       AppSettings__Issuer: ${JWT_ISSUER}
       AppSettings__Audience: Auth
-      AppSettings__Audiences: Auth,ClassAttendance,CourseManagement,Payment,Credentials
+      AppSettings__Audiences: Auth,Attendance,CourseManagement,Payment,Credentials
     mem_limit: 768m
     cpus: 1.0
     restart: unless-stopped
@@ -118,16 +118,16 @@ services:
         condition: service_healthy
 
   # CLASS ATTENDANCE
-  class-attendance-service:
-    container_name: ClassAttendanceService
+  attendance-service:
+    container_name: AttendanceService
     build:
       context: ${CONTEXT}
-      dockerfile: ./infrastructure/environments-dev/class-attendance/Dockerfile
+      dockerfile: ./infrastructure/environments-dev/attendance/Dockerfile
     expose:
       - "80"
       - "81"
     environment:
-      DB_CONNECTION_STRING: ${CLASS_ATTENDANCE_DB_CONNECTION_STRING}
+      DB_CONNECTION_STRING: ${ATTENDANCE_DB_CONNECTION_STRING}
       PAYMENT_CALLBACK_SECRET: ${PAYMENT_CALLBACK_SECRET}
       RABBITMQ_HOST: ${RABBITMQ_HOST}
       RABBITMQ_PORT: ${RABBITMQ_PORT}
@@ -135,7 +135,7 @@ services:
       RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
       AppSettings__PublicKey: ${JWT_PUBLIC_KEY_B64}
       AppSettings__Issuer: ${JWT_ISSUER}
-      AppSettings__Audience: ClassAttendance
+      AppSettings__Audience: Attendance
     mem_limit: 768m
     cpus: 1.0
     restart: unless-stopped
@@ -203,8 +203,27 @@ services:
       timeout: 5s
       retries: 10
 
+  # SCHEMA ADMIN (DbGate, reachable only through the gateway at /api/db-gate/)
+  dbgate:
+    container_name: DbGate
+    image: dbgate/dbgate:7.1.13
+    expose:
+      - "3000"
+    environment:
+      WEB_ROOT: /api/db-gate
+      LOGIN: ${DBGATE_LOGIN}
+      PASSWORD: ${DBGATE_PASSWORD}
+    volumes:
+      - dbgate-data:/root/.dbgate
+    mem_limit: 256m
+    cpus: 0.5
+    restart: unless-stopped
+    networks:
+      - dokploy-network
+
 volumes:
   rabbitmq-data:
+  dbgate-data:
 
 networks:
   dokploy-network:

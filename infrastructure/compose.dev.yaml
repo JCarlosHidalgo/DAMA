@@ -31,7 +31,7 @@ services:
         condition: service_healthy
       course-management-service:
         condition: service_healthy
-      class-attendance-service:
+      attendance-service:
         condition: service_healthy
       credentials-service:
         condition: service_healthy
@@ -71,7 +71,7 @@ services:
       AppSettings__PrivateKey: ${JWT_PRIVATE_KEY_B64}
       AppSettings__Issuer: ${JWT_ISSUER}
       AppSettings__Audience: Auth
-      AppSettings__Audiences: Auth,ClassAttendance,CourseManagement,Payment,Credentials
+      AppSettings__Audiences: Auth,Attendance,CourseManagement,Payment,Credentials
     mem_limit: 768m
     cpus: 1.0
     restart: unless-stopped
@@ -149,13 +149,13 @@ services:
       start_period: 60s
 
   # CLASS ATTENDANCE
-  class-attendance-service:
-    container_name: ClassAttendanceService
+  attendance-service:
+    container_name: AttendanceService
     build:
       context: ${CONTEXT}
-      dockerfile: ./infrastructure/environments-dev/class-attendance/Dockerfile
+      dockerfile: ./infrastructure/environments-dev/attendance/Dockerfile
     environment:
-      DB_CONNECTION_STRING: ${CLASS_ATTENDANCE_DB_CONNECTION_STRING}
+      DB_CONNECTION_STRING: ${ATTENDANCE_DB_CONNECTION_STRING}
       PAYMENT_CALLBACK_SECRET: ${PAYMENT_CALLBACK_SECRET}
       RABBITMQ_HOST: ${RABBITMQ_HOST}
       RABBITMQ_PORT: ${RABBITMQ_PORT}
@@ -163,12 +163,12 @@ services:
       RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
       AppSettings__PublicKey: ${JWT_PUBLIC_KEY_B64}
       AppSettings__Issuer: ${JWT_ISSUER}
-      AppSettings__Audience: ClassAttendance
+      AppSettings__Audience: Attendance
     mem_limit: 768m
     cpus: 1.0
     restart: unless-stopped
     depends_on:
-      class-attendance-database:
+      attendance-database:
         condition: service_healthy
       course-management-service:
         condition: service_healthy
@@ -177,22 +177,22 @@ services:
       rabbitmq:
         condition: service_healthy
 
-  class-attendance-database:
-    container_name: ClassAttendanceDB
+  attendance-database:
+    container_name: AttendanceDB
     image: mysql:9
     user: "${HOST_UID:-1000}:${HOST_GID:-1000}"
     command: ["mysqld", "--max-connections=500"]
     environment:
-      - MYSQL_ROOT_PASSWORD=${CLASS_ATTENDANCE_DB_PASSWORD}
-      - MYSQL_DATABASE=${CLASS_ATTENDANCE_DB_SCHEMA}
+      - MYSQL_ROOT_PASSWORD=${ATTENDANCE_DB_PASSWORD}
+      - MYSQL_DATABASE=${ATTENDANCE_DB_SCHEMA}
     volumes:
-      - ${CONTEXT}/infrastructure/seeding/class-attendance:/var/lib/mysql-files/
-      - ${CONTEXT}/infrastructure/environments-dev/class-attendance/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ${CONTEXT}/infrastructure/seeding/attendance:/var/lib/mysql-files/
+      - ${CONTEXT}/infrastructure/environments-dev/attendance/init.sql:/docker-entrypoint-initdb.d/init.sql
     mem_limit: 1g
     cpus: 1.0
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "mysql -u root -p${CLASS_ATTENDANCE_DB_PASSWORD} --execute 'SELECT COUNT(*) from ClassAttendance.ScheduledClassAttendance;'"]
+      test: ["CMD-SHELL", "mysql -u root -p${ATTENDANCE_DB_PASSWORD} --execute 'SELECT COUNT(*) from Attendance.ScheduledClassAttendance;'"]
       interval: 5s
       timeout: 5s
       retries: 60

@@ -5,6 +5,6 @@ COPY ./infrastructure/docs/doxygen/doxygen-custom.css ./doxygen-extra/doxygen-cu
 COPY ./infrastructure/docs/doxygen/doxygen-interface-highlight.js ./doxygen-extra/doxygen-interface-highlight.js
 COPY ./infrastructure/docs/doxygen/header.html ./doxygen-extra/header.html
 
-COPY ./apps/ClassAttendance/Backend/ ./
+COPY ./apps/Attendance/Backend/ ./
 
 RUN sed -i 's|^PROJECT_NAME .*|PROJECT_NAME           = "DAMA Class Attendance Backend Documentation"|' Doxyfile

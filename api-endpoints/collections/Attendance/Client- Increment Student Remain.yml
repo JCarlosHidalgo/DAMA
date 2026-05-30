@@ -5,7 +5,7 @@ info:
 
 http:
   method: POST
-  url: "{{API_PATH}}/api/class-attendance/remain/client/6ba1c841-834f-4aeb-a285-a500b15638c9"
+  url: "{{API_PATH}}/api/attendance/remain/client/6ba1c841-834f-4aeb-a285-a500b15638c9"
   body:
     type: json
     data: |-

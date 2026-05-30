@@ -57,7 +57,7 @@ generate_ca
 
 for entry in \
     "course-management:CourseManagementService" \
-    "class-attendance:ClassAttendanceService"
+    "attendance:AttendanceService"
 do
     name="${entry%%:*}"
     hostname="${entry##*:}"

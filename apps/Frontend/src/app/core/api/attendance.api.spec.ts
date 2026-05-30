@@ -9,7 +9,7 @@ import { environment } from '../../../environments/environment';
 describe('AttendanceApi', () => {
   let api: AttendanceApi;
   let httpController: HttpTestingController;
-  const base = `${environment.apiBaseUrl}/api/class-attendance`;
+  const base = `${environment.apiBaseUrl}/api/attendance`;
 
   beforeEach(() => {
     TestBed.configureTestingModule({

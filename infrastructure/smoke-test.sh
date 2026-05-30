@@ -14,7 +14,7 @@
 #     El script propaga API_PATH al CLI de Bruno, sobreescribiendo el default
 #     del env file ("DAMA envs.yml") sólo para esta ejecución.
 #
-# Cobertura: Auth, ClassAttendance, CourseManagement, Credentials
+# Cobertura: Auth, Attendance, CourseManagement, Credentials
 # Excluye:   Payment (depende de Todotix externo)
 #
 # El script obtiene un JWT fresco para cada rol via /api/auth/login y lo
@@ -29,7 +29,7 @@ readonly REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 readonly WORKSPACE_ROOT="$REPO_ROOT/api-endpoints"
 readonly ENV_FILE="$WORKSPACE_ROOT/environments/DAMA envs.yml"
 readonly GATEWAY_URL="${API_PATH:-http://localhost:8100}"
-readonly COLLECTIONS=(Auth ClassAttendance CourseManagement Credentials)
+readonly COLLECTIONS=(Auth Attendance CourseManagement Credentials)
 readonly SEED_PASSWORD="Admin123"
 
 red()    { printf '\033[31m%s\033[0m\n' "$*"; }

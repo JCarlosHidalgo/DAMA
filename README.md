@@ -9,26 +9,26 @@ Browser
   └─▶ Frontend (Angular 21, served by Apache httpd)
   └─▶ api-gateway (nginx)  ──▶  Auth            ─┐
                             ──▶  CourseManagement │  each backend owns its
-                            ──▶  ClassAttendance  │  own MySQL database
+                            ──▶  Attendance  │  own MySQL database
                             ──▶  Payment          │  (Credentials has none)
                             ──▶  Credentials     ─┘
 
-Async events:  Auth · CourseManagement · Payment  ──(outbox)──▶ RabbitMQ ──▶ ClassAttendance (+ Payment self-consume)
-Sync gRPC (TLS): ClassAttendance ──▶ CourseManagement (class/course existence)
+Async events:  Auth · CourseManagement · Payment  ──(outbox)──▶ RabbitMQ ──▶ Attendance (+ Payment self-consume)
+Sync gRPC (TLS): Attendance ──▶ CourseManagement (class/course existence)
 External:        Payment ──▶ Todotix (QR payments, HTTPS)
 ```
 
-- **Backends** (`apps/<Service>/Backend/`) — ASP.NET Core 9. Auth, ClassAttendance, CourseManagement, Payment own a MySQL database each; Credentials is a stateless claims-reflection service.
+- **Backends** (`apps/<Service>/Backend/`) — ASP.NET Core 9. Auth, Attendance, CourseManagement, Payment own a MySQL database each; Credentials is a stateless claims-reflection service.
 - **Frontend** (`apps/Frontend/`) — Angular 21 SPA, package manager **Bun**.
 - **Messaging** — transactional **outbox** → RabbitMQ, with idempotent consumers (`processed_events`). Producers never publish to the broker directly.
-- **Inter-service gRPC** is TLS-terminated end-to-end (ClassAttendance → CourseManagement).
+- **Inter-service gRPC** is TLS-terminated end-to-end (Attendance → CourseManagement).
 
 ## Repository layout
 
 | Path | What it is |
 |------|------------|
-| `apps/<Service>/Backend/` | ASP.NET Core 9 service (Auth, ClassAttendance, CourseManagement, Payment, Credentials) |
-| `apps/<Service>/Test/` | NUnit test project (real suites for Auth/ClassAttendance/CourseManagement/Payment) |
+| `apps/<Service>/Backend/` | ASP.NET Core 9 service (Auth, Attendance, CourseManagement, Payment, Credentials) |
+| `apps/<Service>/Test/` | NUnit test project (real suites for Auth/Attendance/CourseManagement/Payment) |
 | `apps/Frontend/` | Angular 21 SPA (Bun) |
 | `packages/outbox`, `packages/unit-of-work` | Internal NuGet libraries (`DAMA.Software.MySqlOutbox`, `DAMA.Software.MySqlUnitOfWork`) |
 | `packages/grpc-contracts/` | Shared `.proto` package (`DAMA.Software.ValidateCourse`) |

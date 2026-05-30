@@ -1,11 +1,11 @@
 info:
-  name: "Auth: Get Student Remain Classes"
+  name: "Client: Get Unique Attendance By Class"
   type: http
-  seq: 11
+  seq: 4
 
 http:
   method: GET
-  url: "{{API_PATH}}/api/class-attendance/remain/6ba1c841-834f-4aeb-a285-a500b15638c9"
+  url: "{{API_PATH}}/api/attendance/attendance/unique/class/00000000-0000-0000-0000-000000000000"
   auth:
     type: bearer
     token: "{{Client_JWT}}"

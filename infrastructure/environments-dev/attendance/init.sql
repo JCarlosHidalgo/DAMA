@@ -1,6 +1,6 @@
-CREATE DATABASE IF NOT EXISTS ClassAttendance;
+CREATE DATABASE IF NOT EXISTS Attendance;
 
-USE ClassAttendance;
+USE Attendance;
 
 -- SCHEDULED CLASS ATTENDANCE
 CREATE TABLE IF NOT EXISTS ScheduledClassAttendance (

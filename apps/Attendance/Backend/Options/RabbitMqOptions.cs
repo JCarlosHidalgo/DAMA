@@ -12,19 +12,19 @@ public sealed class RabbitMqOptions
 
     public string ExchangeName { get; set; } = "dama.events";
 
-    public string StudentRegisteredQueueName { get; set; } = "class-attendance.student-registered";
+    public string StudentRegisteredQueueName { get; set; } = "attendance.student-registered";
 
     public string StudentRegisteredRoutingKey { get; set; } = "student.registered";
 
-    public string CourseDeletedQueueName { get; set; } = "class-attendance.course-deleted";
+    public string CourseDeletedQueueName { get; set; } = "attendance.course-deleted";
 
     public string CourseDeletedRoutingKey { get; set; } = "course.deleted";
 
-    public string ClassDeletedQueueName { get; set; } = "class-attendance.class-deleted";
+    public string ClassDeletedQueueName { get; set; } = "attendance.class-deleted";
 
     public string ClassDeletedRoutingKey { get; set; } = "class.deleted";
 
-    public string PaymentCapturedQueueName { get; set; } = "class-attendance.payment-captured";
+    public string PaymentCapturedQueueName { get; set; } = "attendance.payment-captured";
 
     public string PaymentCapturedRoutingKey { get; set; } = "payment.captured";
 

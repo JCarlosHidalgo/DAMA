@@ -17,7 +17,7 @@ import { Page } from '../models/page.model';
 @Injectable({ providedIn: 'root' })
 export class AttendanceApi {
   private readonly http = inject(HttpClient);
-  private readonly base = `${environment.apiBaseUrl}/api/class-attendance`;
+  private readonly base = `${environment.apiBaseUrl}/api/attendance`;
 
   getMyRemain(): Observable<StudentRemainClasses> {
     return this.http.get<StudentRemainClasses>(`${this.base}/remain/me`);

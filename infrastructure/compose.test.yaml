@@ -10,7 +10,7 @@ services:
       - auth-test-results:/usr/local/apache2/htdocs/auth/
       - payment-test-results:/usr/local/apache2/htdocs/payment/
       - course-management-test-results:/usr/local/apache2/htdocs/course-management/
-      - class-attendance-test-results:/usr/local/apache2/htdocs/class-attendance/
+      - attendance-test-results:/usr/local/apache2/htdocs/attendance/
       - frontend-test-results:/usr/local/apache2/htdocs/frontend/
     depends_on:
       auth-test:
@@ -19,7 +19,7 @@ services:
         condition: service_completed_successfully
       course-management-test:
         condition: service_completed_successfully
-      class-attendance-test:
+      attendance-test:
         condition: service_completed_successfully
       frontend-test:
         condition: service_completed_successfully
@@ -51,14 +51,14 @@ services:
       - ./environments-test/placeholder:/placeholder:ro
       - course-management-test-results:/test-env/Test/TestResults/
 
-  class-attendance-test:
-    container_name: ClassAttendanceTest
+  attendance-test:
+    container_name: AttendanceTest
     build:
       context: ${CONTEXT}
-      dockerfile: ./infrastructure/environments-test/class-attendance/Dockerfile
+      dockerfile: ./infrastructure/environments-test/attendance/Dockerfile
     volumes:
       - ./environments-test/placeholder:/placeholder:ro
-      - class-attendance-test-results:/test-env/Test/TestResults/
+      - attendance-test-results:/test-env/Test/TestResults/
 
   frontend-test:
     container_name: FrontendTest
@@ -73,5 +73,5 @@ volumes:
   auth-test-results:
   payment-test-results:
   course-management-test-results:
-  class-attendance-test-results:
+  attendance-test-results:
   frontend-test-results:

@@ -6,7 +6,7 @@ GATEWAY="${GATEWAY:-http://localhost:8100}"
 SERVICES=(
     "auth"
     "course-management"
-    "class-attendance"
+    "attendance"
     "credentials"
     "payment"
 )
