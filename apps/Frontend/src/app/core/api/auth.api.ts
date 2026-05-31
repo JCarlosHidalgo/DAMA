@@ -2,14 +2,18 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
-import { environment } from '../../../environments/environment';
-import { PagedUsersResponse, UserListItem } from '../models/page.model';
+import { environment } from '@env/environment';
 import {
+  PagedUsersResponse,
+  UserListItem,
   TokenResponse,
   UserCredentials,
   UpdateUsernamePayload,
   UpdateTenantTimezonePayload,
-} from '../models/auth.model';
+  Tenant,
+  CreateTenantPayload,
+  UpdateTenantNamePayload,
+} from '@core/models';
 
 @Injectable({ providedIn: 'root' })
 export class AuthApi {
@@ -56,5 +60,17 @@ export class AuthApi {
 
   updateTenantTimezone(tenantId: string, payload: UpdateTenantTimezonePayload): Observable<void> {
     return this.http.put<void>(`${this.base}/tenants/${tenantId}/timezone`, payload);
+  }
+
+  listTenants(): Observable<Tenant[]> {
+    return this.http.get<Tenant[]>(`${this.base}/tenants`);
+  }
+
+  createTenant(payload: CreateTenantPayload): Observable<Tenant> {
+    return this.http.post<Tenant>(`${this.base}/tenants`, payload);
+  }
+
+  renameTenant(tenantId: string, payload: UpdateTenantNamePayload): Observable<void> {
+    return this.http.put<void>(`${this.base}/tenants/${tenantId}/name`, payload);
   }
 }

@@ -1,14 +1,12 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { provideZonelessChangeDetection } from '@angular/core';
 import { describe, it, expect, beforeEach } from 'vitest';
 
 import { SummaryRouter } from './summary-router';
-import { ClientSummary } from '../client/summary/summary';
-import { StudentSummary } from '../student/summary/summary';
+import { ClientSummary } from '@pages/dashboard/client/summary/summary';
+import { StudentSummary } from '@pages/dashboard/student/summary/summary';
 import { Placeholder } from './placeholder';
-import { AuthService } from '../../../core/auth/auth-service';
-import { UserRole } from '../../../core/auth/jwt.model';
+import { AuthService, UserRole } from '@core/auth';
 
 @Component({ selector: 'app-client-summary', standalone: true, template: 'CLIENT_SUMMARY' })
 class StubClientSummary {}
@@ -28,10 +26,7 @@ describe('SummaryRouter', () => {
     currentRole.set(role);
     await TestBed.configureTestingModule({
       imports: [SummaryRouter],
-      providers: [
-        provideZonelessChangeDetection(),
-        { provide: AuthService, useValue: authStub },
-      ],
+      providers: [provideZonelessChangeDetection(), { provide: AuthService, useValue: authStub }],
     })
       .overrideComponent(SummaryRouter, {
         remove: { imports: [ClientSummary, StudentSummary, Placeholder] },

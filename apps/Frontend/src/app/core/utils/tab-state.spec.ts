@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { Subject, of, throwError } from 'rxjs';
 
 import { PaginatedTabState, createEmptyTabState } from './tab-state';
-import { Page } from '../models/page.model';
+import { Page } from '@core/models';
 
 describe('createEmptyTabState', () => {
   it('returns a fresh empty state with loading=false, page=null, pageIndex=0', () => {
@@ -48,10 +48,7 @@ describe('PaginatedTabState', () => {
   });
 
   it('hasItems returns false when the page has zero items', async () => {
-    await tabState.loadFrom(
-      () => of<Page<string>>({ currentIndex: 0, maxIndex: 0, items: [] }),
-      0,
-    );
+    await tabState.loadFrom(() => of<Page<string>>({ currentIndex: 0, maxIndex: 0, items: [] }), 0);
 
     expect(tabState.hasItems()).toBe(false);
   });

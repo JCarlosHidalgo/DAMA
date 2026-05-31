@@ -1,16 +1,16 @@
 info:
-  name: "Admin: Update Tenant Timezone"
+  name: "Admin: Create Tenant"
   type: http
-  seq: 10
+  seq: 12
 
 http:
-  method: PUT
-  url: "{{API_PATH}}/api/auth/tenants/c4c1c44d-7b5c-414a-b8df-a5537357ee30/timezone"
+  method: POST
+  url: "{{API_PATH}}/api/auth/tenants"
   body:
     type: json
     data: |-
       {
-        "timezone" : "America/La_Paz"
+        "name" : "Escuela Nueva"
       }
   auth:
     type: bearer

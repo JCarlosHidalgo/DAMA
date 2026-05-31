@@ -1,13 +1,12 @@
-import { Component, input, signal } from '@angular/core';
+import { Component, input, signal, provideZonelessChangeDetection } from '@angular/core';
 import type { CalendarOptions } from '@fullcalendar/core';
 import { TestBed } from '@angular/core/testing';
-import { provideZonelessChangeDetection } from '@angular/core';
 import { FullCalendarModule } from '@fullcalendar/angular';
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
 import { Calendar } from './calendar';
-import { AuthService } from '../../core/auth/auth-service';
-import { CourseScheduleEntry } from '../../core/models/course.model';
+import { AuthService } from '@core/auth';
+import { CourseScheduleEntry } from '@core/models';
 
 interface FakeCalendarApi {
   prev: ReturnType<typeof vi.fn>;
@@ -34,6 +33,7 @@ function buildFakeCalendarApi(): FakeCalendarApi {
 let sharedFakeApi: FakeCalendarApi = buildFakeCalendarApi();
 
 @Component({
+  // eslint-disable-next-line @angular-eslint/component-selector
   selector: 'full-calendar',
   standalone: true,
   template: '',
@@ -83,10 +83,7 @@ describe('Calendar', () => {
 
     await TestBed.configureTestingModule({
       imports: [Calendar],
-      providers: [
-        provideZonelessChangeDetection(),
-        { provide: AuthService, useValue: authStub },
-      ],
+      providers: [provideZonelessChangeDetection(), { provide: AuthService, useValue: authStub }],
     })
       .overrideComponent(Calendar, {
         remove: { imports: [FullCalendarModule] },
@@ -112,9 +109,11 @@ describe('Calendar', () => {
     fixture.componentRef.setInput('entries', sampleEntries);
     fixture.detectChanges();
 
-    const options = (fixture.componentInstance as unknown as {
-      calendarOptions: () => { events: Array<{ id: string; title: string }> };
-    }).calendarOptions();
+    const options = (
+      fixture.componentInstance as unknown as {
+        calendarOptions: () => { events: { id: string; title: string }[] };
+      }
+    ).calendarOptions();
     expect(options.events).toHaveLength(2);
     expect(options.events[0].id).toBe('Scheduled:sched-1');
     expect(options.events[0].title).toBe('Yoga');
@@ -122,9 +121,11 @@ describe('Calendar', () => {
 
   it('uses the authService tenant timezone in options', () => {
     fixture.detectChanges();
-    const options = (fixture.componentInstance as unknown as {
-      calendarOptions: () => { timeZone: string };
-    }).calendarOptions();
+    const options = (
+      fixture.componentInstance as unknown as {
+        calendarOptions: () => { timeZone: string };
+      }
+    ).calendarOptions();
     expect(options.timeZone).toBe('America/La_Paz');
   });
 
@@ -163,16 +164,18 @@ describe('Calendar', () => {
 
   describe('calendarOptions callbacks', () => {
     function options() {
-      return (fixture.componentInstance as unknown as {
-        calendarOptions: () => {
-          eventClick: (arg: { event: { extendedProps: Record<string, unknown> } }) => void;
-          dateClick: (arg: { dateStr: string }) => void;
-          datesSet: (arg: { view: { title: string } }) => void;
-          eventContent: (arg: { event: { extendedProps: Record<string, unknown> } }) => {
-            domNodes: HTMLElement[];
+      return (
+        fixture.componentInstance as unknown as {
+          calendarOptions: () => {
+            eventClick: (arg: { event: { extendedProps: Record<string, unknown> } }) => void;
+            dateClick: (arg: { dateStr: string }) => void;
+            datesSet: (arg: { view: { title: string } }) => void;
+            eventContent: (arg: { event: { extendedProps: Record<string, unknown> } }) => {
+              domNodes: HTMLElement[];
+            };
           };
-        };
-      }).calendarOptions();
+        }
+      ).calendarOptions();
     }
 
     it('eventClick emits the entry via eventClick output', () => {
@@ -202,8 +205,9 @@ describe('Calendar', () => {
     it('datesSet updates currentTitle signal', () => {
       fixture.detectChanges();
       options().datesSet({ view: { title: 'Mayo 2026' } });
-      expect((fixture.componentInstance as unknown as { currentTitle: () => string }).currentTitle())
-        .toBe('Mayo 2026');
+      expect(
+        (fixture.componentInstance as unknown as { currentTitle: () => string }).currentTitle(),
+      ).toBe('Mayo 2026');
     });
 
     it('eventContent renders course name and time when showDetails is on', () => {

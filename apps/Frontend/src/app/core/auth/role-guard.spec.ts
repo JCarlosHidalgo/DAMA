@@ -11,18 +11,14 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { roleGuard } from './role-guard';
 import { SessionStorageTokenStorage } from './token-storage';
 import { UserRole } from './jwt.model';
-import { InMemoryTokenStorage } from '../../../testing/mocks/token-storage.mock';
-import { buildJwtToken } from '../../../testing/fixtures/jwt-tokens.fixture';
-import { buildJwtClaims } from '../../../testing/builders/jwt-claims.builder';
+import { InMemoryTokenStorage, buildJwtToken, buildJwtClaims } from '@testing';
 
 function runRoleGuard(allowedRoles: UserRole[] | undefined): boolean | UrlTree {
   const route = {
     data: allowedRoles === undefined ? {} : { roles: allowedRoles },
   } as unknown as ActivatedRouteSnapshot;
   const state = {} as RouterStateSnapshot;
-  return TestBed.runInInjectionContext(
-    () => roleGuard(route, state) as boolean | UrlTree,
-  );
+  return TestBed.runInInjectionContext(() => roleGuard(route, state) as boolean | UrlTree);
 }
 
 describe('roleGuard', () => {
@@ -31,10 +27,7 @@ describe('roleGuard', () => {
       role === null ? null : buildJwtToken(buildJwtClaims({ role })),
     );
     TestBed.configureTestingModule({
-      providers: [
-        provideRouter([]),
-        { provide: SessionStorageTokenStorage, useValue: storage },
-      ],
+      providers: [provideRouter([]), { provide: SessionStorageTokenStorage, useValue: storage }],
     });
     return TestBed.inject(Router);
   }

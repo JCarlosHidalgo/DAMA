@@ -4,16 +4,14 @@ import {
   Router,
   RouterStateSnapshot,
   UrlTree,
+  provideRouter,
 } from '@angular/router';
-import { provideRouter } from '@angular/router';
 import { describe, it, expect, beforeEach } from 'vitest';
 
 import { authGuard } from './auth-guard';
 import { AuthService } from './auth-service';
 import { SessionStorageTokenStorage } from './token-storage';
-import { InMemoryTokenStorage } from '../../../testing/mocks/token-storage.mock';
-import { buildJwtToken } from '../../../testing/fixtures/jwt-tokens.fixture';
-import { buildJwtClaims } from '../../../testing/builders/jwt-claims.builder';
+import { InMemoryTokenStorage, buildJwtToken, buildJwtClaims } from '@testing';
 
 function runAuthGuard(): boolean | UrlTree {
   const dummyRoute = {} as ActivatedRouteSnapshot;
@@ -24,13 +22,13 @@ function runAuthGuard(): boolean | UrlTree {
 }
 
 describe('authGuard', () => {
-  function configure(initialToken: string | null): { router: Router; storage: InMemoryTokenStorage } {
+  function configure(initialToken: string | null): {
+    router: Router;
+    storage: InMemoryTokenStorage;
+  } {
     const storage = new InMemoryTokenStorage(initialToken);
     TestBed.configureTestingModule({
-      providers: [
-        provideRouter([]),
-        { provide: SessionStorageTokenStorage, useValue: storage },
-      ],
+      providers: [provideRouter([]), { provide: SessionStorageTokenStorage, useValue: storage }],
     });
     return { router: TestBed.inject(Router), storage };
   }
@@ -57,9 +55,7 @@ describe('authGuard', () => {
   });
 
   it('logs out when the token is expired and returns a UrlTree', () => {
-    const expired = buildJwtToken(
-      buildJwtClaims({ exp: Math.floor(Date.now() / 1000) - 10 }),
-    );
+    const expired = buildJwtToken(buildJwtClaims({ exp: Math.floor(Date.now() / 1000) - 10 }));
     const { storage } = configure(expired);
     expect(storage.read()).toBe(expired);
 

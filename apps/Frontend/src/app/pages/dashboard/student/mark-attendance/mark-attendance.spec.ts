@@ -5,12 +5,12 @@ import { of, throwError } from 'rxjs';
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
 import { MarkAttendance } from './mark-attendance';
-import { AttendanceApi } from '../../../../core/api/attendance.api';
-import { AuthService } from '../../../../core/auth/auth-service';
-import { NotificationService } from '../../../../core/services/notification-service';
-import { ClassKindStrategies } from '../../../../core/strategies/class-kind.strategy';
-import { encodeQr } from '../../../../core/utils/qr-payload';
-import { buildJwtClaims } from '../../../../../testing/builders/jwt-claims.builder';
+import { AttendanceApi } from '@core/api';
+import { AuthService } from '@core/auth';
+import { NotificationService } from '@core/services';
+import { ClassKindStrategies } from '@core/strategies';
+import { encodeQr } from '@core/utils';
+import { buildJwtClaims } from '@testing';
 
 interface ScenarioOverrides {
   remainResult?: ReturnType<typeof of> | ReturnType<typeof throwError>;
@@ -184,9 +184,7 @@ describe('MarkAttendance', () => {
     it('shows a generic error when the strategy throws something else', async () => {
       const fixture = await setUp();
       await flushMicrotasks();
-      scheduledStrategy.markAttendance.mockReturnValueOnce(
-        throwError(() => new Error('boom')),
-      );
+      scheduledStrategy.markAttendance.mockReturnValueOnce(throwError(() => new Error('boom')));
       const qr = encodeQr({
         tenantId: 'tenant-1',
         courseName: 'X',

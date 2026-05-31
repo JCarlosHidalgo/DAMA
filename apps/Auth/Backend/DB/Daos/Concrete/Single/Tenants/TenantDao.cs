@@ -52,6 +52,57 @@ public sealed class TenantDao : MySQLSingleDao<Tenant>, ITenantDao
     protected override StringBuilder UpdateCommandIntoStringBuilder(Tenant tenant) =>
         throw new NotSupportedException("TenantDao does not support generic update.");
 
+    public async Task<List<Tenant>> ReadAllAsync()
+    {
+        return await MySQLRetryPolicy.ExecuteAsync(_connection, async () =>
+        {
+            MySqlCommand com = GetCommandStoredProcedure("GetAllTenants");
+
+            using MySqlDataReader reader = (MySqlDataReader)await com.ExecuteReaderAsync();
+            List<Tenant> tenants = new List<Tenant>();
+            while (await reader.ReadAsync())
+            {
+                tenants.Add(new Tenant
+                {
+                    Id = reader.GetGuid("Id"),
+                    Name = reader.GetString("Name"),
+                    Timezone = reader.GetString("Timezone")
+                });
+            }
+            return tenants;
+        });
+    }
+
+    public async Task CreateTenantAsync(Tenant tenant)
+    {
+        await MySQLRetryPolicy.ExecuteAsync(_connection, async () =>
+        {
+            MySqlCommand com = GetCommandStoredProcedure("CreateTenant");
+            com.Parameters.AddWithValue("@tenantId", tenant.Id.ToString());
+            com.Parameters["@tenantId"].Direction = ParameterDirection.Input;
+            com.Parameters.AddWithValue("@tenantName", tenant.Name);
+            com.Parameters["@tenantName"].Direction = ParameterDirection.Input;
+            com.Parameters.AddWithValue("@tenantTimezone", tenant.Timezone);
+            com.Parameters["@tenantTimezone"].Direction = ParameterDirection.Input;
+
+            return await com.ExecuteNonQueryAsync();
+        });
+    }
+
+    public async Task<int> UpdateNameAsync(Guid tenantId, string newName)
+    {
+        return await MySQLRetryPolicy.ExecuteAsync(_connection, async () =>
+        {
+            MySqlCommand com = GetCommandStoredProcedure("UpdateTenantName");
+            com.Parameters.AddWithValue("@tenantId", tenantId.ToString());
+            com.Parameters["@tenantId"].Direction = ParameterDirection.Input;
+            com.Parameters.AddWithValue("@newName", newName);
+            com.Parameters["@newName"].Direction = ParameterDirection.Input;
+
+            return await com.ExecuteNonQueryAsync();
+        });
+    }
+
     public async Task<int> UpdateTimezoneAsync(Guid tenantId, string newTimezone)
     {
         return await MySQLRetryPolicy.ExecuteAsync(_connection, async () =>

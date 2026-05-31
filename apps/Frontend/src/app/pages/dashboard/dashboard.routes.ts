@@ -1,6 +1,8 @@
+import { inject } from '@angular/core';
 import { Routes } from '@angular/router';
 
-import { roleGuard, UserRole } from '@core/auth';
+import { AuthService, roleGuard, UserRole } from '@core/auth';
+import { defaultRouteForRole } from '@core/router';
 
 export const dashboardRoutes: Routes = [
   {
@@ -72,18 +74,18 @@ export const dashboardRoutes: Routes = [
     loadComponent: () =>
       import('./student/attendance-history/attendance-history').then((m) => m.AttendanceHistory),
   },
-  { path: '', pathMatch: 'full', redirectTo: 'resumen' },
+  {
+    path: 'tenants',
+    canActivate: [roleGuard],
+    data: { roles: ['Admin'] as UserRole[] },
+    loadComponent: () => import('./admin/tenants/tenants').then((m) => m.Tenants),
+  },
+  {
+    path: '',
+    pathMatch: 'full',
+    redirectTo: () => {
+      const role = inject(AuthService).currentRole();
+      return role ? defaultRouteForRole(role) : '/';
+    },
+  },
 ];
-
-export function defaultRouteForRole(role: UserRole): string {
-  switch (role) {
-    case 'Client':
-      return '/yo/resumen';
-    case 'Teacher':
-      return '/yo/horario';
-    case 'Student':
-      return '/yo/resumen';
-    case 'Admin':
-      return '/';
-  }
-}

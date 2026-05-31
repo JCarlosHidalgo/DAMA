@@ -5,10 +5,8 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 
 import { AuthService } from './auth-service';
 import { SessionStorageTokenStorage } from './token-storage';
-import { InMemoryTokenStorage } from '../../../testing/mocks/token-storage.mock';
-import { buildJwtClaims } from '../../../testing/builders/jwt-claims.builder';
-import { buildJwtToken } from '../../../testing/fixtures/jwt-tokens.fixture';
-import { environment } from '../../../environments/environment';
+import { InMemoryTokenStorage, buildJwtClaims, buildJwtToken } from '@testing';
+import { environment } from '@env/environment';
 
 describe('AuthService', () => {
   let inMemoryStorage: InMemoryTokenStorage;
@@ -95,9 +93,7 @@ describe('AuthService', () => {
           receivedToken = response.accessToken;
         });
 
-      const pendingRequest = httpController.expectOne(
-        `${environment.apiBaseUrl}/api/auth/login`,
-      );
+      const pendingRequest = httpController.expectOne(`${environment.apiBaseUrl}/api/auth/login`);
       expect(pendingRequest.request.method).toBe('POST');
       expect(pendingRequest.request.body).toEqual({
         username: 'admin@example.com',

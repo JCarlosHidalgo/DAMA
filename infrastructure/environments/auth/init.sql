@@ -161,6 +161,42 @@ END //
 DELIMITER ;
 
 DELIMITER //
+CREATE PROCEDURE GetAllTenants()
+BEGIN
+    SELECT
+        Id,
+        Name,
+        Timezone
+    FROM Tenant
+    ORDER BY Name ASC, Id ASC;
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE CreateTenant(
+    IN tenantId       VARCHAR(36),
+    IN tenantName     VARCHAR(200),
+    IN tenantTimezone VARCHAR(64)
+)
+BEGIN
+    INSERT INTO Tenant (Id, Name, Timezone)
+    VALUES (tenantId, tenantName, tenantTimezone);
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE UpdateTenantName(
+    IN tenantId VARCHAR(36),
+    IN newName  VARCHAR(200)
+)
+BEGIN
+    UPDATE Tenant
+    SET Name = newName
+    WHERE Id = tenantId;
+END //
+DELIMITER ;
+
+DELIMITER //
 CREATE PROCEDURE UpdateUserNameForTenant(
     IN userId      VARCHAR(36),
     IN tenantId    VARCHAR(36),

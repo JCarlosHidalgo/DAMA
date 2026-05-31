@@ -30,6 +30,7 @@ import {
   faCalendarCheck,
   faBars,
   faRightFromBracket,
+  faBuilding,
 } from '@fortawesome/free-solid-svg-icons';
 
 import { AuthService, UserRole } from '@core/auth';
@@ -58,7 +59,7 @@ const TABS_BY_ROLE: Record<UserRole, TabEntry[]> = {
     { label: 'Marcar Asistencia', icon: faQrcode, path: 'marcar-asistencia' },
     { label: 'Mis Asistencias', icon: faCalendarCheck, path: 'mis-asistencias' },
   ],
-  Admin: [],
+  Admin: [{ label: 'Tenants', icon: faBuilding, path: 'tenants' }],
 };
 
 @Component({

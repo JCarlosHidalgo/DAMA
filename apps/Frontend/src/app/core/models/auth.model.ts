@@ -14,3 +14,17 @@ export interface UpdateUsernamePayload {
 export interface UpdateTenantTimezonePayload {
   timezone: string;
 }
+
+export interface Tenant {
+  id: string;
+  name: string;
+  timezone: string;
+}
+
+export interface CreateTenantPayload {
+  name: string;
+}
+
+export interface UpdateTenantNamePayload {
+  name: string;
+}

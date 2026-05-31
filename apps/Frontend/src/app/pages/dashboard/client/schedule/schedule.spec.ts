@@ -51,9 +51,7 @@ describe('ScheduleDialog', () => {
 
     fixture.componentInstance.submit();
 
-    expect(dialogRef.close).toHaveBeenCalledWith(
-      expect.objectContaining({ maxStudentLimit: 30 }),
-    );
+    expect(dialogRef.close).toHaveBeenCalledWith(expect.objectContaining({ maxStudentLimit: 30 }));
   });
 
   it('defaults the student limit to 0 (sin límite)', async () => {
@@ -61,9 +59,7 @@ describe('ScheduleDialog', () => {
 
     fixture.componentInstance.submit();
 
-    expect(dialogRef.close).toHaveBeenCalledWith(
-      expect.objectContaining({ maxStudentLimit: 0 }),
-    );
+    expect(dialogRef.close).toHaveBeenCalledWith(expect.objectContaining({ maxStudentLimit: 0 }));
   });
 
   it('does not close when the end time is not after the start time', async () => {

@@ -6,16 +6,14 @@ import {
   GetCourseScheduleDTO,
   GetScheduledClassDTO,
   GetUniqueClassDTO,
-} from '../models/course.model';
+} from '@core/models';
 
 const COURSES: Course[] = [
   { id: 'course-1', name: 'Yoga', tenantId: 't' },
   { id: 'course-2', name: 'Pilates', tenantId: 't' },
 ];
 
-function buildScheduledClass(
-  overrides: Partial<GetScheduledClassDTO> = {},
-): GetScheduledClassDTO {
+function buildScheduledClass(overrides: Partial<GetScheduledClassDTO> = {}): GetScheduledClassDTO {
   return {
     id: 'sched-1',
     courseId: 'course-1',
@@ -122,9 +120,7 @@ describe('normalizeSchedule', () => {
 
   it('uses empty teachers array when teachers are missing from a scheduled class', () => {
     const response: GetCourseScheduleDTO = {
-      scheduledClasses: [
-        buildScheduledClass({ teachers: undefined as unknown as never }),
-      ],
+      scheduledClasses: [buildScheduledClass({ teachers: undefined as unknown as never })],
       uniqueClasses: [buildUniqueClass({ teachers: undefined as unknown as never })],
     };
 

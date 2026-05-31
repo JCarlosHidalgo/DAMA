@@ -1,9 +1,13 @@
-import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatSelectModule } from '@angular/material/select';
 import { catchError, map, of, startWith } from 'rxjs';
 
-import { PaymentApi } from '@core/api';
+import { AuthApi, PaymentApi } from '@core/api';
+import { AuthService } from '@core/auth';
 import { PaymentSummary } from '@core/models';
+import { NotificationService } from '@core/services';
 import { ErrorState, LoadingSkeleton, PageHead, StatCard } from '@shared/components';
 import { MoneyPipe, TenantDatePipe } from '@shared/pipes';
 
@@ -12,11 +16,45 @@ type SummaryState =
   | { kind: 'ready'; data: PaymentSummary }
   | { kind: 'error' };
 
+const TIMEZONE_OPTIONS = [
+  'America/La_Paz',
+  'America/Lima',
+  'America/Bogota',
+  'America/Mexico_City',
+  'America/Argentina/Buenos_Aires',
+  'America/Sao_Paulo',
+  'America/Santiago',
+  'America/New_York',
+  'America/Los_Angeles',
+  'Europe/Madrid',
+  'Europe/London',
+  'Europe/Paris',
+  'Asia/Tokyo',
+] as const;
+
 @Component({
   selector: 'app-client-summary',
-  imports: [PageHead, StatCard, LoadingSkeleton, ErrorState, MoneyPipe, TenantDatePipe],
+  imports: [
+    PageHead,
+    StatCard,
+    LoadingSkeleton,
+    ErrorState,
+    MoneyPipe,
+    TenantDatePipe,
+    MatFormFieldModule,
+    MatSelectModule,
+  ],
   template: `
     <app-page-head title="Resumen" subtitle="Ganancias y actividad reciente" />
+
+    <mat-form-field appearance="outline" class="tz-field">
+      <mat-label>Zona horaria</mat-label>
+      <mat-select [value]="selectedTimezone()" (selectionChange)="onTimezoneChange($event.value)">
+        @for (zone of timezoneOptions; track zone) {
+          <mat-option [value]="zone">{{ zone }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
 
     @switch (state().kind) {
       @case ('loading') {
@@ -64,6 +102,11 @@ type SummaryState =
       display: block;
     }
 
+    .tz-field {
+      margin-bottom: var(--dama-space-4);
+      min-width: 260px;
+    }
+
     .kpi-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -89,6 +132,14 @@ type SummaryState =
 })
 export class ClientSummary {
   private readonly paymentApi = inject(PaymentApi);
+  private readonly authApi = inject(AuthApi);
+  private readonly authService = inject(AuthService);
+  private readonly notifications = inject(NotificationService);
+
+  private readonly tenantId = this.authService.claims()?.tenantId ?? '';
+
+  protected readonly timezoneOptions = TIMEZONE_OPTIONS;
+  protected readonly selectedTimezone = signal(this.authService.tenantTimezone());
 
   readonly state = toSignal(
     this.paymentApi.getSummary().pipe(
@@ -103,4 +154,17 @@ export class ClientSummary {
     const currentState = this.state();
     return currentState.kind === 'ready' ? currentState.data : null;
   });
+
+  onTimezoneChange(timezone: string): void {
+    if (timezone === this.selectedTimezone()) {
+      return;
+    }
+    this.authApi.updateTenantTimezone(this.tenantId, { timezone }).subscribe({
+      next: () => {
+        this.selectedTimezone.set(timezone);
+        this.notifications.success('Zona horaria actualizada.');
+      },
+      error: () => this.notifications.error('No se pudo actualizar la zona horaria.'),
+    });
+  }
 }

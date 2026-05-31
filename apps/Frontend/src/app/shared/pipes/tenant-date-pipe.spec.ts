@@ -1,16 +1,17 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  signal,
+  provideZonelessChangeDetection,
+} from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { provideZonelessChangeDetection } from '@angular/core';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { describe, it, expect, beforeEach } from 'vitest';
 
 import { TenantDatePipe, TenantDatePrecision } from './tenant-date-pipe';
-import { AuthService } from '../../core/auth/auth-service';
-import { SessionStorageTokenStorage } from '../../core/auth/token-storage';
-import { InMemoryTokenStorage } from '../../../testing/mocks/token-storage.mock';
-import { buildJwtToken } from '../../../testing/fixtures/jwt-tokens.fixture';
-import { buildJwtClaims } from '../../../testing/builders/jwt-claims.builder';
+import { AuthService, SessionStorageTokenStorage } from '@core/auth';
+import { InMemoryTokenStorage, buildJwtToken, buildJwtClaims } from '@testing';
 
 @Component({
   selector: 'app-tenant-date-host',
@@ -84,9 +85,7 @@ describe('TenantDatePipe (via host component)', () => {
 
   function renderedText(): string {
     fixture.detectChanges();
-    return (
-      fixture.nativeElement.querySelector('[data-testid="formatted"]')?.textContent ?? ''
-    );
+    return fixture.nativeElement.querySelector('[data-testid="formatted"]')?.textContent ?? '';
   }
 
   function setUp(tenantTimezone: string): void {

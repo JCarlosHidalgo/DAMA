@@ -1,6 +1,7 @@
 using System.Diagnostics;
 
 using Backend.Dtos.Tenants.Input;
+using Backend.Dtos.Tenants.Output;
 using Backend.Entities.Users;
 using Backend.Results.Tenants;
 using Backend.Services.Abstract.Tenants;
@@ -22,6 +23,34 @@ public class TenantController : ControllerBase
     }
 
     [Authorize(Roles = UserRoles.Admin)]
+    [HttpGet]
+    public async Task<ActionResult<List<TenantDto>>> GetAll()
+    {
+        return Ok(await _tenantService.GetAllTenants());
+    }
+
+    [Authorize(Roles = UserRoles.Admin)]
+    [HttpPost]
+    public async Task<ActionResult<TenantDto>> Create(CreateTenantDto request)
+    {
+        TenantDto tenant = await _tenantService.CreateTenant(request);
+        return CreatedAtAction(nameof(GetAll), tenant);
+    }
+
+    [Authorize(Roles = UserRoles.Admin)]
+    [HttpPut("{id}/name")]
+    public async Task<ActionResult> UpdateName(Guid id, UpdateTenantNameDto request)
+    {
+        UpdateTenantNameOutcome outcome = await _tenantService.RenameTenant(id, request.Name);
+        return outcome switch
+        {
+            UpdateTenantNameOutcome.Updated => NoContent(),
+            UpdateTenantNameOutcome.NotFound => NotFound(),
+            _ => throw new UnreachableException()
+        };
+    }
+
+    [Authorize(Roles = UserRoles.Client)]
     [HttpPut("{id}/timezone")]
     public async Task<ActionResult> UpdateTimezone(Guid id, UpdateTenantTimezoneDto request)
     {

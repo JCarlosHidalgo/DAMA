@@ -23,6 +23,7 @@ import {
   faMoneyBill1,
   faChalkboardUser,
   faCalendarCheck,
+  faBuilding,
   type IconDefinition,
 } from '@fortawesome/free-solid-svg-icons';
 
@@ -50,7 +51,8 @@ export type IconName =
   | 'receipt'
   | 'money-bill'
   | 'chalkboard'
-  | 'calendar-check';
+  | 'calendar-check'
+  | 'building';
 
 export const ICON_REGISTRY: Record<IconName, IconDefinition> = {
   'graduation-cap': faGraduationCap,
@@ -77,4 +79,5 @@ export const ICON_REGISTRY: Record<IconName, IconDefinition> = {
   'money-bill': faMoneyBill1,
   chalkboard: faChalkboardUser,
   'calendar-check': faCalendarCheck,
+  building: faBuilding,
 };

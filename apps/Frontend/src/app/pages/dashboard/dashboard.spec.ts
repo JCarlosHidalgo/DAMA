@@ -4,12 +4,11 @@ import { Router, provideRouter } from '@angular/router';
 import { BreakpointObserver } from '@angular/cdk/layout';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { Subject } from 'rxjs';
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 
 import { Dashboard } from './dashboard';
-import { AuthService } from '../../core/auth/auth-service';
-import { JwtClaims, UserRole } from '../../core/auth/jwt.model';
-import { buildJwtClaims } from '../../../testing/builders/jwt-claims.builder';
+import { AuthService, JwtClaims, UserRole } from '@core/auth';
+import { buildJwtClaims } from '@testing';
 
 interface AuthStub {
   currentRole: ReturnType<typeof signal<UserRole | null>>;
@@ -78,9 +77,10 @@ describe('Dashboard', () => {
       expect(fixture.componentInstance.tabs()).toHaveLength(5);
     });
 
-    it('shows 0 tabs for Admin', async () => {
+    it('shows 1 tab for Admin', async () => {
       await setUp('Admin');
-      expect(fixture.componentInstance.tabs()).toHaveLength(0);
+      expect(fixture.componentInstance.tabs()).toHaveLength(1);
+      expect(fixture.componentInstance.tabs()[0].path).toBe('tenants');
     });
 
     it('shows 0 tabs when there is no role', async () => {

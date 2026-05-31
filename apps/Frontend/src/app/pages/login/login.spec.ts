@@ -1,15 +1,12 @@
 import { TestBed } from '@angular/core/testing';
-import { provideZonelessChangeDetection } from '@angular/core';
+import { provideZonelessChangeDetection, signal } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Router } from '@angular/router';
-import { provideRouter } from '@angular/router';
+import { Router, provideRouter } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 import { Login } from './login';
-import { AuthService } from '../../core/auth/auth-service';
-import { UserRole } from '../../core/auth/jwt.model';
-import { signal } from '@angular/core';
+import { AuthService, UserRole } from '@core/auth';
 
 interface AuthStub {
   login: ReturnType<typeof vi.fn>;
@@ -110,7 +107,7 @@ describe('Login', () => {
     it('navigates to / for Admin role', async () => {
       authStub.currentRole.set('Admin');
       await component.onSubmit();
-      expect(navigateSpy).toHaveBeenCalledWith('/');
+      expect(navigateSpy).toHaveBeenCalledWith('/yo/tenants');
     });
 
     it('navigates to /yo when no role is present', async () => {
@@ -153,17 +150,13 @@ describe('Login', () => {
     });
 
     it.each([400, 401])('sets "Credenciales inválidas" on status %i', async (status) => {
-      authStub.login.mockReturnValueOnce(
-        throwError(() => new HttpErrorResponse({ status })),
-      );
+      authStub.login.mockReturnValueOnce(throwError(() => new HttpErrorResponse({ status })));
       await component.onSubmit();
       expect(component.errorMessage()).toBe('Credenciales inválidas');
     });
 
     it.each([500, 502, 503])('sets a server-error message on status %i', async (status) => {
-      authStub.login.mockReturnValueOnce(
-        throwError(() => new HttpErrorResponse({ status })),
-      );
+      authStub.login.mockReturnValueOnce(throwError(() => new HttpErrorResponse({ status })));
       await component.onSubmit();
       expect(component.errorMessage()).toContain('servidor');
     });
@@ -174,10 +167,8 @@ describe('Login', () => {
       expect(component.errorMessage()).toContain('No se pudo iniciar sesión');
     });
 
-    it('falls back to generic on Http status that doesn\'t match the known buckets (e.g. 404)', async () => {
-      authStub.login.mockReturnValueOnce(
-        throwError(() => new HttpErrorResponse({ status: 404 })),
-      );
+    it("falls back to generic on Http status that doesn't match the known buckets (e.g. 404)", async () => {
+      authStub.login.mockReturnValueOnce(throwError(() => new HttpErrorResponse({ status: 404 })));
       await component.onSubmit();
       expect(component.errorMessage()).toContain('No se pudo iniciar sesión');
     });
