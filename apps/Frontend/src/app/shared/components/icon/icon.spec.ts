@@ -41,10 +41,30 @@ describe('Icon', () => {
 describe('ICON_REGISTRY', () => {
   it('exposes a defined IconDefinition for every IconName', () => {
     const names: IconName[] = [
-      'graduation-cap', 'users', 'calendar', 'qr', 'eye', 'eye-off', 'check',
-      'warning', 'ban', 'edit', 'trash', 'plus', 'user-plus', 'logout', 'bars',
-      'chevron-left', 'chevron-right', 'image', 'gauge', 'credit-card', 'receipt',
-      'money-bill', 'chalkboard', 'calendar-check',
+      'graduation-cap',
+      'users',
+      'calendar',
+      'qr',
+      'eye',
+      'eye-off',
+      'check',
+      'warning',
+      'ban',
+      'edit',
+      'trash',
+      'plus',
+      'user-plus',
+      'logout',
+      'bars',
+      'chevron-left',
+      'chevron-right',
+      'image',
+      'gauge',
+      'credit-card',
+      'receipt',
+      'money-bill',
+      'chalkboard',
+      'calendar-check',
     ];
     for (const name of names) {
       expect(ICON_REGISTRY[name]).toBeDefined();

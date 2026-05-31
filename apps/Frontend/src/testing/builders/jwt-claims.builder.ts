@@ -1,4 +1,4 @@
-import { JwtClaims, UserRole } from '../../app/core/auth/jwt.model';
+import { JwtClaims, UserRole } from '@core/auth';
 
 export function buildJwtClaims(overrides: Partial<JwtClaims> = {}): JwtClaims {
   const oneHourFromNowSeconds = Math.floor(Date.now() / 1000) + 60 * 60;

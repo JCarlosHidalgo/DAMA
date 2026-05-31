@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
-import { Icon } from '../icon/icon';
+import { Icon } from '@shared/components/icon';
 
 @Component({
   selector: 'app-error-state',

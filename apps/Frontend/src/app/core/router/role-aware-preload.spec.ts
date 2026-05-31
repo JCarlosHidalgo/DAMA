@@ -5,8 +5,7 @@ import { Observable, of, throwError } from 'rxjs';
 import { describe, it, expect, vi, afterEach } from 'vitest';
 
 import { RoleAwarePreloadStrategy } from './role-aware-preload';
-import { AuthService } from '../auth/auth-service';
-import { UserRole } from '../auth/jwt.model';
+import { AuthService, UserRole } from '@core/auth';
 
 interface IdleGlobal {
   requestIdleCallback?: (callback: () => void, options?: { timeout: number }) => number;

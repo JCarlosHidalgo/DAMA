@@ -5,10 +5,9 @@ import { of, throwError } from 'rxjs';
 import { describe, it, expect, vi } from 'vitest';
 
 import { PayClasses, PayDialog, QrImageDialog } from './pay-classes';
-import { PaymentApi } from '../../../../core/api/payment.api';
-import { DialogService } from '../../../../core/services/dialog-service';
-import { NotificationService } from '../../../../core/services/notification-service';
-import { DebtTemplate, QrDebtStatus } from '../../../../core/models/payment.model';
+import { PaymentApi } from '@core/api';
+import { DialogService, NotificationService } from '@core/services';
+import { DebtTemplate, QrDebtStatus } from '@core/models';
 
 const TEMPLATE: DebtTemplate = {
   id: 'template-1',

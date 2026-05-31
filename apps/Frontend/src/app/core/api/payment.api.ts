@@ -2,9 +2,9 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
-import { environment } from '../../../environments/environment';
-import { Page } from '../models/page.model';
+import { environment } from '@env/environment';
 import {
+  Page,
   PaymentSummary,
   DebtTemplate,
   CreateDebtTemplatePayload,
@@ -14,7 +14,7 @@ import {
   FailedQrPayment,
   QrDebtPending,
   QrDebtStatus,
-} from '../models/payment.model';
+} from '@core/models';
 
 @Injectable({ providedIn: 'root' })
 export class PaymentApi {

@@ -1,7 +1,7 @@
 import { Signal, signal } from '@angular/core';
 import { Observable, firstValueFrom } from 'rxjs';
 
-import { Page } from '../models/page.model';
+import { Page } from '@core/models';
 
 export interface TabState<T> {
   loading: boolean;

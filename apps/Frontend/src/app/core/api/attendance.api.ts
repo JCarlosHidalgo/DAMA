@@ -1,9 +1,8 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
-import { environment } from '../../../environments/environment';
-import { HttpParams } from '@angular/common/http';
+import { environment } from '@env/environment';
 import {
   StudentRemainClasses,
   ScheduledClassAttendance,
@@ -11,8 +10,8 @@ import {
   ScheduledAttendancePayload,
   UniqueAttendancePayload,
   ClientIncrementRemainPayload,
-} from '../models/attendance.model';
-import { Page } from '../models/page.model';
+  Page,
+} from '@core/models';
 
 @Injectable({ providedIn: 'root' })
 export class AttendanceApi {

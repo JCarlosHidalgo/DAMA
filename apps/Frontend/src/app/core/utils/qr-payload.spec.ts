@@ -66,10 +66,7 @@ describe('encodeQr / decodeQr', () => {
 
     it('returns null when the decoded JSON is missing fields', () => {
       const json = JSON.stringify({ tenantId: 'only' });
-      const base64Url = btoa(json)
-        .replace(/\+/g, '-')
-        .replace(/\//g, '_')
-        .replace(/=+$/, '');
+      const base64Url = btoa(json).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
       expect(decodeQr(`dama1:${base64Url}`)).toBeNull();
     });
 
@@ -80,10 +77,7 @@ describe('encodeQr / decodeQr', () => {
         kind: 'INVALID',
         classId: 'id',
       });
-      const base64Url = btoa(json)
-        .replace(/\+/g, '-')
-        .replace(/\//g, '_')
-        .replace(/=+$/, '');
+      const base64Url = btoa(json).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
       expect(decodeQr(`dama1:${base64Url}`)).toBeNull();
     });
   });

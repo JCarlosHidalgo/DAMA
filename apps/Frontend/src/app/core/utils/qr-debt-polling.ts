@@ -1,6 +1,6 @@
 import { Observable, catchError, firstValueFrom, of, timer } from 'rxjs';
 
-import { QrDebtStatus } from '../models/payment.model';
+import { QrDebtStatus } from '@core/models';
 
 export interface QrDebtPollingOptions {
   intervalMilliseconds: number;

@@ -1,5 +1,5 @@
-import { JwtClaims } from '../../app/core/auth/jwt.model';
-import { buildJwtClaims } from '../builders/jwt-claims.builder';
+import { JwtClaims } from '@core/auth';
+import { buildJwtClaims } from '@testing/builders/jwt-claims.builder';
 
 type RawJwtClaimsPayload = Record<string, string | number>;
 

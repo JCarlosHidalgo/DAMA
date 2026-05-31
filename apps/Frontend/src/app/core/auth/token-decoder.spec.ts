@@ -2,11 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { describe, it, expect, beforeEach } from 'vitest';
 
 import { TokenDecoder } from './token-decoder';
-import { buildJwtClaims } from '../../../testing/builders/jwt-claims.builder';
-import {
-  MALFORMED_TOKEN,
-  buildJwtToken,
-} from '../../../testing/fixtures/jwt-tokens.fixture';
+import { buildJwtClaims, MALFORMED_TOKEN, buildJwtToken } from '@testing';
 
 describe('TokenDecoder', () => {
   let decoder: TokenDecoder;

@@ -4,9 +4,8 @@ import { of, throwError } from 'rxjs';
 import { describe, it, expect, vi } from 'vitest';
 
 import { Recharge } from './recharge';
-import { AttendanceApi, AuthApi } from '../../../../core/api';
-import { DialogService } from '../../../../core/services/dialog-service';
-import { NotificationService } from '../../../../core/services/notification-service';
+import { AttendanceApi, AuthApi } from '@core/api';
+import { DialogService, NotificationService } from '@core/services';
 
 const STUDENT = { id: 'student-1', username: 'Ada Lovelace' };
 

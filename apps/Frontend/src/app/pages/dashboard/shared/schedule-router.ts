@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { AuthService } from '@core/auth';
-import { Schedule } from '../client/schedule/schedule';
-import { TeacherSchedule } from '../teacher/schedule/schedule';
+import { Schedule } from '@pages/dashboard/client/schedule/schedule';
+import { TeacherSchedule } from '@pages/dashboard/teacher/schedule/schedule';
 import { Placeholder } from './placeholder';
 
 @Component({

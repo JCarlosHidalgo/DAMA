@@ -7,9 +7,9 @@ import {
 } from '@microsoft/signalr';
 import { Observable, Subject } from 'rxjs';
 
-import { environment } from '../../../environments/environment';
-import { AuthService } from '../auth/auth-service';
-import { ScheduledClassAttendance, UniqueClassAttendance } from '../models/attendance.model';
+import { environment } from '@env/environment';
+import { AuthService } from '@core/auth';
+import { ScheduledClassAttendance, UniqueClassAttendance } from '@core/models';
 
 type AttendanceMessage = ScheduledClassAttendance | UniqueClassAttendance;
 

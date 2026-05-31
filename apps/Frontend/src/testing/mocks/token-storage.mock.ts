@@ -1,4 +1,4 @@
-import { TokenStorage } from '../../app/core/auth/token-storage';
+import { TokenStorage } from '@core/auth';
 
 export class InMemoryTokenStorage implements TokenStorage {
   private storedToken: string | null;

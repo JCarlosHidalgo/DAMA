@@ -4,10 +4,10 @@ import { of, throwError } from 'rxjs';
 import { describe, it, expect, vi } from 'vitest';
 
 import { DebtStatus } from './debt-status';
-import { PaymentApi } from '../../../../core/api/payment.api';
-import { AuthService } from '../../../../core/auth/auth-service';
-import { NotificationService } from '../../../../core/services/notification-service';
-import { Page } from '../../../../core/models/page.model';
+import { PaymentApi } from '@core/api';
+import { AuthService } from '@core/auth';
+import { NotificationService } from '@core/services';
+import { Page } from '@core/models';
 
 function page<T>(items: T[]): Page<T> {
   return { currentIndex: 0, maxIndex: 0, items };

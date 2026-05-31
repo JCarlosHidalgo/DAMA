@@ -2,7 +2,7 @@ import { Observable, of, throwError } from 'rxjs';
 import { describe, it, expect, vi } from 'vitest';
 
 import { pollQrDebtUntilSettled } from './qr-debt-polling';
-import { QrDebtStatus } from '../models/payment.model';
+import { QrDebtStatus } from '@core/models';
 
 function status(value: QrDebtStatus['status'], extra: Partial<QrDebtStatus> = {}): QrDebtStatus {
   return { identificadorDeuda: 'debt-1', status: value, ...extra };

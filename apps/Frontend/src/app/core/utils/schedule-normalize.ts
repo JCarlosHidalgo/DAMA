@@ -1,4 +1,4 @@
-import { Course, CourseScheduleEntry, GetCourseScheduleDTO } from '../models/course.model';
+import { Course, CourseScheduleEntry, GetCourseScheduleDTO } from '@core/models';
 
 function startOfIsoWeek(date: Date): Date {
   const copy = new Date(date.getFullYear(), date.getMonth(), date.getDate());

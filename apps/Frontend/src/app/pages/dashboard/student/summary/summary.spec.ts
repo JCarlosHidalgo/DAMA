@@ -4,10 +4,10 @@ import { Subject, of, throwError } from 'rxjs';
 import { describe, it, expect } from 'vitest';
 
 import { StudentSummary } from './summary';
-import { AttendanceApi } from '../../../../core/api/attendance.api';
-import { AuthService } from '../../../../core/auth/auth-service';
-import { StudentRemainClasses } from '../../../../core/models/attendance.model';
-import { buildJwtClaims } from '../../../../../testing/builders/jwt-claims.builder';
+import { AttendanceApi } from '@core/api';
+import { AuthService } from '@core/auth';
+import { StudentRemainClasses } from '@core/models';
+import { buildJwtClaims } from '@testing';
 
 const sampleRemain: StudentRemainClasses = {
   tenantId: 'tenant-1',

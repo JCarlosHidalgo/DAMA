@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { AuthService } from '@core/auth';
-import { ClientSummary } from '../client/summary/summary';
-import { StudentSummary } from '../student/summary/summary';
+import { ClientSummary } from '@pages/dashboard/client/summary/summary';
+import { StudentSummary } from '@pages/dashboard/student/summary/summary';
 import { Placeholder } from './placeholder';
 
 @Component({

@@ -1,10 +1,9 @@
-import { Component, input } from '@angular/core';
+import { Component, input, provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { provideZonelessChangeDetection } from '@angular/core';
 import { describe, it, expect, beforeEach } from 'vitest';
 
 import { Teachers } from './teachers';
-import { UserList } from '../users/user-list';
+import { UserList } from '@pages/dashboard/client/users/user-list';
 
 @Component({
   selector: 'app-user-list',

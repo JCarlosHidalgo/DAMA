@@ -2,8 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { PreloadingStrategy, Route } from '@angular/router';
 import { EMPTY, Observable } from 'rxjs';
 
-import { AuthService } from '../auth/auth-service';
-import { UserRole } from '../auth/jwt.model';
+import { AuthService, UserRole } from '@core/auth';
 
 interface IdleWindow {
   requestIdleCallback?: (callback: () => void, options?: { timeout: number }) => number;

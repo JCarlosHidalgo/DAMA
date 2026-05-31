@@ -12,7 +12,7 @@ import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 
 import { AuthService } from '@core/auth';
-import { defaultRouteForRole } from '../dashboard/dashboard.routes';
+import { defaultRouteForRole } from '@core/router';
 
 @Component({
   selector: 'app-login',

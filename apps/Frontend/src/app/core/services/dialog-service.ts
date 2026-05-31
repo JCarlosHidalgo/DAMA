@@ -2,7 +2,7 @@ import { Injectable, Type, inject } from '@angular/core';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { firstValueFrom } from 'rxjs';
 
-import { ConfirmationDialog, ConfirmDialogData } from '../utils/confirmation-dialog';
+import { ConfirmationDialog, ConfirmDialogData } from '@core/utils';
 
 const DEFAULT_CONFIRM_WIDTH = '420px';
 

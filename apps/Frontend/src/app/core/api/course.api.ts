@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
-import { environment } from '../../../environments/environment';
+import { environment } from '@env/environment';
 import {
   Course,
   CreateCoursePayload,
@@ -14,7 +14,7 @@ import {
   CreateUniqueClassPayload,
   UpdateUniqueClassPayload,
   GetCourseScheduleDTO,
-} from '../models/course.model';
+} from '@core/models';
 
 @Injectable({ providedIn: 'root' })
 export class CourseApi {

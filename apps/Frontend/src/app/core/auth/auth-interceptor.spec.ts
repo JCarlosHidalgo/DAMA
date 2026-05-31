@@ -7,9 +7,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { authInterceptor } from './auth-interceptor';
 import { AuthService } from './auth-service';
 import { SessionStorageTokenStorage } from './token-storage';
-import { InMemoryTokenStorage } from '../../../testing/mocks/token-storage.mock';
-import { buildJwtToken } from '../../../testing/fixtures/jwt-tokens.fixture';
-import { buildJwtClaims } from '../../../testing/builders/jwt-claims.builder';
+import { InMemoryTokenStorage, buildJwtToken, buildJwtClaims } from '@testing';
 
 describe('authInterceptor', () => {
   let httpClient: HttpClient;

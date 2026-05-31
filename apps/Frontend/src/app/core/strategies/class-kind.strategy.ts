@@ -1,11 +1,14 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 
-import { AttendanceApi } from '../api/attendance.api';
-import { AttendanceRealtimeService } from '../api/attendance-realtime-service';
-import { CourseApi } from '../api/course.api';
-import { ClassTeacherPayload, ScheduledClass, UniqueClass } from '../models/course.model';
-import { ScheduledClassAttendance, UniqueClassAttendance } from '../models/attendance.model';
+import { AttendanceApi, AttendanceRealtimeService, CourseApi } from '@core/api';
+import {
+  ClassTeacherPayload,
+  ScheduledClass,
+  UniqueClass,
+  ScheduledClassAttendance,
+  UniqueClassAttendance,
+} from '@core/models';
 
 export type ClassKind = 'Scheduled' | 'Unique';
 

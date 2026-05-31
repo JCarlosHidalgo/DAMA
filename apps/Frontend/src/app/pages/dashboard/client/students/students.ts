@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { UserList } from '../users/user-list';
+import { UserList } from '@pages/dashboard/client/users/user-list';
 
 @Component({
   selector: 'app-students',

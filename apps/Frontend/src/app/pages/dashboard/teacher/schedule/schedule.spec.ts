@@ -5,10 +5,10 @@ import { of, throwError } from 'rxjs';
 import { describe, it, expect, vi } from 'vitest';
 
 import { TeacherSchedule } from './schedule';
-import { CourseApi } from '../../../../core/api';
-import { AuthService } from '../../../../core/auth/auth-service';
-import { NotificationService } from '../../../../core/services/notification-service';
-import { Course, CourseScheduleEntry } from '../../../../core/models';
+import { CourseApi } from '@core/api';
+import { AuthService } from '@core/auth';
+import { NotificationService } from '@core/services';
+import { Course, CourseScheduleEntry } from '@core/models';
 
 const EMPTY_SCHEDULE = { scheduledClasses: [], uniqueClasses: [] };
 

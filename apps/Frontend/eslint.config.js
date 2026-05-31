@@ -15,6 +15,19 @@ module.exports = defineConfig([
     ],
     processor: angular.processInlineTemplates,
     rules: {
+      'no-duplicate-imports': ['error', { allowSeparateTypeImports: true }],
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['../*', '../**'],
+              message:
+                'Imports con "../" prohibidos. Usa "./" (mismo directorio) o un path alias de barrel (@core/*, @shared/*, @pages/*, @env/*, @testing/*).',
+            },
+          ],
+        },
+      ],
       '@angular-eslint/directive-selector': [
         'error',
         {

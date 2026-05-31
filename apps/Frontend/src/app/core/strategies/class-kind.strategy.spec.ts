@@ -10,10 +10,8 @@ import {
   ScheduledClassStrategy,
   UniqueClassStrategy,
 } from './class-kind.strategy';
-import { AttendanceApi } from '../api/attendance.api';
-import { AttendanceRealtimeService } from '../api/attendance-realtime-service';
-import { CourseApi } from '../api/course.api';
-import { ScheduledClass, UniqueClass } from '../models/course.model';
+import { AttendanceApi, AttendanceRealtimeService, CourseApi } from '@core/api';
+import { ScheduledClass, UniqueClass } from '@core/models';
 
 function buildCourseApiSpy() {
   return {

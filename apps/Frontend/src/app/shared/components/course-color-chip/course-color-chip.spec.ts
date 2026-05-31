@@ -3,7 +3,7 @@ import { provideZonelessChangeDetection } from '@angular/core';
 import { describe, it, expect, beforeEach } from 'vitest';
 
 import { CourseColorChip } from './course-color-chip';
-import { courseColor } from '../../../core/utils';
+import { courseColor } from '@core/utils';
 
 describe('CourseColorChip', () => {
   let fixture: ReturnType<typeof TestBed.createComponent<CourseColorChip>>;

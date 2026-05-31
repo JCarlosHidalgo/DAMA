@@ -1,10 +1,10 @@
 import { TestBed } from '@angular/core/testing';
 import { MatDialog } from '@angular/material/dialog';
 import { of } from 'rxjs';
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 
 import { DialogService } from './dialog-service';
-import { ConfirmationDialog } from '../utils/confirmation-dialog';
+import { ConfirmationDialog } from '@core/utils';
 
 describe('DialogService', () => {
   let openSpy: ReturnType<typeof vi.fn>;

@@ -4,7 +4,7 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 
 import { PaymentApi } from './payment.api';
-import { environment } from '../../../environments/environment';
+import { environment } from '@env/environment';
 
 describe('PaymentApi', () => {
   let api: PaymentApi;

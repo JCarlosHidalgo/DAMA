@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
-import { Icon } from '../icon/icon';
-import type { IconName } from '../icon/icon-registry';
+import { Icon } from '@shared/components/icon';
+import type { IconName } from '@shared/components/icon';
 
 @Component({
   selector: 'app-empty-state',

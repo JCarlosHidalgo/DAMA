@@ -1,4 +1,9 @@
-import { EnvironmentProviders, Provider, Type, provideZonelessChangeDetection } from '@angular/core';
+import {
+  EnvironmentProviders,
+  Provider,
+  Type,
+  provideZonelessChangeDetection,
+} from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 

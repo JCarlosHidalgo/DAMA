@@ -2,7 +2,7 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 
-import { environment } from '../../../environments/environment';
+import { environment } from '@env/environment';
 import { JwtClaims, UserRole } from './jwt.model';
 import { SessionStorageTokenStorage } from './token-storage';
 import { TokenDecoder } from './token-decoder';
