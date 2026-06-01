@@ -6,6 +6,8 @@ services:
     build:
       context: ${CONTEXT}
       dockerfile: ./infrastructure/environments/tls-init/Dockerfile
+    environment:
+      COURSE_MANAGEMENT_HOST_NAME: ${COURSE_MANAGEMENT_HOST_NAME}
     volumes:
       - dama-tls:/tls
     restart: "no"
@@ -35,6 +37,11 @@ services:
       dockerfile: ./infrastructure/environments/api-gateway/Dockerfile
     environment:
       GATEWAY_FRONTEND_ORIGIN: ${GATEWAY_FRONTEND_ORIGIN}
+      AUTH_HOST_NAME: ${AUTH_HOST_NAME}
+      COURSE_MANAGEMENT_HOST_NAME: ${COURSE_MANAGEMENT_HOST_NAME}
+      ATTENDANCE_HOST_NAME: ${ATTENDANCE_HOST_NAME}
+      PAYMENT_HOST_NAME: ${PAYMENT_HOST_NAME}
+      CREDENTIALS_HOST_NAME: ${CREDENTIALS_HOST_NAME}
     ports:
       - "${API_GATEWAY_HOST_PORT}:80"
     mem_limit: 256m
@@ -54,7 +61,7 @@ services:
 
   # CREDENTIALS
   credentials-service:
-    container_name: CredentialsService
+    container_name: ${CREDENTIALS_HOST_NAME}
     build:
       context: ${CONTEXT}
       dockerfile: ./infrastructure/environments/credentials/Dockerfile
@@ -69,7 +76,7 @@ services:
 
   # AUTH
   auth-service:
-    container_name: AuthService
+    container_name: ${AUTH_HOST_NAME}
     build:
       context: ${CONTEXT}
       dockerfile: ./infrastructure/environments/auth/Dockerfile
@@ -96,7 +103,7 @@ services:
         condition: service_healthy
 
   auth-database:
-    container_name: AuthDB
+    container_name: ${AUTH_DB_HOST_NAME}
     image: mysql:9
     user: "${HOST_UID:-1000}:${HOST_GID:-1000}"
     command: ["mysqld", "--max-connections=500"]
@@ -118,11 +125,16 @@ services:
 
   # COURSE MANAGEMENT
   course-management-service:
-    container_name: CourseManagementService
+    container_name: ${COURSE_MANAGEMENT_HOST_NAME}
     build:
       context: ${CONTEXT}
       dockerfile: ./infrastructure/environments/course-management/Dockerfile
     environment:
+      ASPNETCORE_HTTP_PORTS: 80
+      Kestrel__Endpoints__Grpc__Url: https://*:81
+      Kestrel__Endpoints__Grpc__Protocols: Http2
+      Kestrel__Endpoints__Grpc__Certificate__Path: /etc/dama/tls/course-management.crt
+      Kestrel__Endpoints__Grpc__Certificate__KeyPath: /etc/dama/tls/course-management.key
       SEED_DB: "true"
       DB_CONNECTION_STRING: ${COURSE_MANAGEMENT_DB_CONNECTION_STRING}
       RABBITMQ_HOST: ${RABBITMQ_HOST}
@@ -146,7 +158,7 @@ services:
         condition: service_healthy
 
   course-management-database:
-    container_name: CourseManagementDB
+    container_name: ${COURSE_MANAGEMENT_DB_HOST_NAME}
     image: mysql:9
     user: "${HOST_UID:-1000}:${HOST_GID:-1000}"
     command: ["mysqld", "--max-connections=500"]
@@ -168,11 +180,13 @@ services:
 
   # CLASS ATTENDANCE
   attendance-service:
-    container_name: AttendanceService
+    container_name: ${ATTENDANCE_HOST_NAME}
     build:
       context: ${CONTEXT}
       dockerfile: ./infrastructure/environments/attendance/Dockerfile
     environment:
+      ASPNETCORE_HTTP_PORTS: 80
+      Services__CourseManagementUrl: https://${COURSE_MANAGEMENT_HOST_NAME}:81
       DB_CONNECTION_STRING: ${ATTENDANCE_DB_CONNECTION_STRING}
       PAYMENT_CALLBACK_SECRET: ${PAYMENT_CALLBACK_SECRET}
       RABBITMQ_HOST: ${RABBITMQ_HOST}
@@ -200,7 +214,7 @@ services:
         condition: service_healthy
 
   attendance-database:
-    container_name: AttendanceDB
+    container_name: ${ATTENDANCE_DB_HOST_NAME}
     image: mysql:9
     user: "${HOST_UID:-1000}:${HOST_GID:-1000}"
     command: ["mysqld", "--max-connections=500"]
@@ -222,13 +236,15 @@ services:
 
   # PAYMENT
   payment-service:
-    container_name: PaymentService
+    container_name: ${PAYMENT_HOST_NAME}
     build:
       context: ${CONTEXT}
       dockerfile: ./infrastructure/environments/payment/Dockerfile
     environment:
+      ASPNETCORE_HTTP_PORTS: 80
       SEED_DB: "true"
       DB_CONNECTION_STRING: ${PAYMENT_DB_CONNECTION_STRING}
+      Todotix__BaseUrl: ${TODOTIX_BASE_URL}
       TODOTIX_APPKEY: ${TODOTIX_APPKEY}
       TODOTIX_CALLBACK_URL: ${TODOTIX_CALLBACK_URL}
       PAYMENT_CALLBACK_SECRET: ${PAYMENT_CALLBACK_SECRET}
@@ -249,7 +265,7 @@ services:
         condition: service_healthy
 
   payment-database:
-    container_name: PaymentDB
+    container_name: ${PAYMENT_DB_HOST_NAME}
     image: mysql:9
     user: "${HOST_UID:-1000}:${HOST_GID:-1000}"
     command: ["mysqld", "--max-connections=500"]

@@ -6,6 +6,8 @@ services:
     build:
       context: ${CONTEXT}
       dockerfile: ./infrastructure/environments/tls-init/Dockerfile
+    environment:
+      COURSE_MANAGEMENT_HOST_NAME: ${COURSE_MANAGEMENT_HOST_NAME}
     volumes:
       - dama-tls:/tls
     restart: "no"
@@ -41,6 +43,11 @@ services:
       dockerfile: ./infrastructure/environments/api-gateway/Dockerfile
     environment:
       GATEWAY_FRONTEND_ORIGIN: ${GATEWAY_FRONTEND_ORIGIN}
+      AUTH_HOST_NAME: ${AUTH_HOST_NAME}
+      COURSE_MANAGEMENT_HOST_NAME: ${COURSE_MANAGEMENT_HOST_NAME}
+      ATTENDANCE_HOST_NAME: ${ATTENDANCE_HOST_NAME}
+      PAYMENT_HOST_NAME: ${PAYMENT_HOST_NAME}
+      CREDENTIALS_HOST_NAME: ${CREDENTIALS_HOST_NAME}
     expose:
       - "80"
     ports:
@@ -64,7 +71,7 @@ services:
 
   # CREDENTIALS
   credentials-service:
-    container_name: CredentialsService
+    container_name: ${CREDENTIALS_HOST_NAME}
     build:
       context: ${CONTEXT}
       dockerfile: ./infrastructure/environments/credentials/Dockerfile
@@ -83,7 +90,7 @@ services:
 
   # AUTH
   auth-service:
-    container_name: AuthService
+    container_name: ${AUTH_HOST_NAME}
     build:
       context: ${CONTEXT}
       dockerfile: ./infrastructure/environments/auth/Dockerfile
@@ -112,7 +119,7 @@ services:
 
   # COURSE MANAGEMENT
   course-management-service:
-    container_name: CourseManagementService
+    container_name: ${COURSE_MANAGEMENT_HOST_NAME}
     build:
       context: ${CONTEXT}
       dockerfile: ./infrastructure/environments/course-management/Dockerfile
@@ -120,6 +127,11 @@ services:
       - "80"
       - "81"
     environment:
+      ASPNETCORE_HTTP_PORTS: 80
+      Kestrel__Endpoints__Grpc__Url: https://*:81
+      Kestrel__Endpoints__Grpc__Protocols: Http2
+      Kestrel__Endpoints__Grpc__Certificate__Path: /etc/dama/tls/course-management.crt
+      Kestrel__Endpoints__Grpc__Certificate__KeyPath: /etc/dama/tls/course-management.key
       DB_CONNECTION_STRING: ${COURSE_MANAGEMENT_DB_CONNECTION_STRING}
       RABBITMQ_HOST: ${RABBITMQ_HOST}
       RABBITMQ_PORT: ${RABBITMQ_PORT}
@@ -143,13 +155,15 @@ services:
 
   # CLASS ATTENDANCE
   attendance-service:
-    container_name: AttendanceService
+    container_name: ${ATTENDANCE_HOST_NAME}
     build:
       context: ${CONTEXT}
       dockerfile: ./infrastructure/environments/attendance/Dockerfile
     expose:
       - "80"
     environment:
+      ASPNETCORE_HTTP_PORTS: 80
+      Services__CourseManagementUrl: https://${COURSE_MANAGEMENT_HOST_NAME}:81
       DB_CONNECTION_STRING: ${ATTENDANCE_DB_CONNECTION_STRING}
       PAYMENT_CALLBACK_SECRET: ${PAYMENT_CALLBACK_SECRET}
       RABBITMQ_HOST: ${RABBITMQ_HOST}
@@ -178,14 +192,16 @@ services:
 
   # PAYMENT
   payment-service:
-    container_name: PaymentService
+    container_name: ${PAYMENT_HOST_NAME}
     build:
       context: ${CONTEXT}
       dockerfile: ./infrastructure/environments/payment/Dockerfile
     expose:
       - "80"
     environment:
+      ASPNETCORE_HTTP_PORTS: 80
       DB_CONNECTION_STRING: ${PAYMENT_DB_CONNECTION_STRING}
+      Todotix__BaseUrl: ${TODOTIX_BASE_URL}
       TODOTIX_APPKEY: ${TODOTIX_APPKEY}
       TODOTIX_CALLBACK_URL: ${TODOTIX_CALLBACK_URL}
       PAYMENT_CALLBACK_SECRET: ${PAYMENT_CALLBACK_SECRET}

@@ -5,7 +5,6 @@ COPY ./apps/Attendance/Backend/*.csproj ./
 RUN dotnet restore
 
 COPY ./apps/Attendance/Backend/ .
-COPY ./envs/Attendance/ .
 RUN dotnet publish -c Release -o out
 
 FROM mcr.microsoft.com/dotnet/sdk:9.0

@@ -5,7 +5,6 @@ COPY ./apps/Payment/Backend/*.csproj ./
 RUN dotnet restore
 
 COPY ./apps/Payment/Backend/ .
-COPY ./envs/Payment/ .
 RUN dotnet publish -c Release -o out
 
 FROM mcr.microsoft.com/dotnet/sdk:9.0

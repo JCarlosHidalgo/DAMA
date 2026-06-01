@@ -32,8 +32,7 @@ External:        Payment ──▶ Todotix (QR payments, HTTPS)
 | `apps/Frontend/` | Angular 21 SPA (Bun) |
 | `packages/outbox`, `packages/unit-of-work` | Internal NuGet libraries (`DAMA.Software.MySqlOutbox`, `DAMA.Software.MySqlUnitOfWork`) |
 | `packages/grpc-contracts/` | Shared `.proto` package (`DAMA.Software.ValidateCourse`) |
-| `envs/<Service>/` | Per-service `appsettings*.json` / `dbsettings.json` (copied into the image at build time) |
-| `infrastructure/` | Compose files, per-service Dockerfiles, DB init/seed, gateway, TLS bootstrap |
+| `infrastructure/` | Compose files, per-service Dockerfiles, DB init/seed, gateway, TLS bootstrap, `.env.*` (all container-runtime config) |
 | `api-endpoints/` | Bruno API request collections (per service) |
 | `pocs/`, `extra/` | Throwaway proofs of concept / auxiliary tooling (not part of the stack) |
 

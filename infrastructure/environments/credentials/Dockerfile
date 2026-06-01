@@ -5,7 +5,6 @@ COPY ./apps/Credentials/Backend/*.csproj ./
 RUN dotnet restore
 
 COPY ./apps/Credentials/Backend/ .
-COPY ./envs/Credentials/ .
 RUN dotnet publish -c Release -o out
 
 FROM mcr.microsoft.com/dotnet/sdk:9.0

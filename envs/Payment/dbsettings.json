@@ -1,5 +1,0 @@
-{
-    "DbSettings" : {
-        "ConnectionUrl" : "server=PaymentDB;port=3306;uid=root;pwd=admin;database=Payment;Allow User Variables=True;Max Pool Size=300;Min Pool Size=10"
-    }
-}

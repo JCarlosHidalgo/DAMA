@@ -5,7 +5,6 @@ COPY ./apps/Auth/Backend/*.csproj ./
 RUN dotnet restore
 
 COPY ./apps/Auth/Backend/ .
-COPY ./envs/Auth/ .
 RUN dotnet publish -c Release -o out
 
 FROM mcr.microsoft.com/dotnet/sdk:9.0

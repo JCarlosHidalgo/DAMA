@@ -5,7 +5,10 @@
 # the container hostname as the SAN so HttpClient validates the upstream by
 # name without any custom callback. CourseManagement is the only gRPC server
 # (Attendance is a client — it only needs ca.crt in its trust store, no cert
-# of its own).
+# of its own). The SAN hostname comes from COURSE_MANAGEMENT_HOST_NAME (passed
+# by the tls-init compose service), so it tracks the same var as the gRPC URL
+# and container_name; changing it requires deleting the dama-tls volume to
+# regenerate (the existing cert is otherwise kept by the idempotency check).
 #
 # Output goes to TLS_DIR (default infrastructure/tls/, gitignored — the .key
 # files never leave the host). The tls-init compose service reuses this exact
@@ -64,7 +67,7 @@ EOF
 generate_ca
 
 for entry in \
-    "course-management:CourseManagementService"
+    "course-management:${COURSE_MANAGEMENT_HOST_NAME:-CourseManagementService}"
 do
     name="${entry%%:*}"
     hostname="${entry##*:}"

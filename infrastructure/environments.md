@@ -99,7 +99,7 @@ or malformed — a wrong key kills the container with a precise message, not a r
 TLS is bootstrapped **inside the compose stack** by the one-shot **`tls-init`** service
 (`infrastructure/environments/tls-init/Dockerfile`), which runs `bootstrap-tls.sh` into the named
 volume **`dama-tls`** on every `docker compose up`. It generates the internal CA + the CourseManagement
-server cert (SAN = container name). CourseManagement mounts the volume read-only and Kestrel serves
+server cert (SAN = `${COURSE_MANAGEMENT_HOST_NAME}`, passed to the `tls-init` service). CourseManagement mounts the volume read-only and Kestrel serves
 `course-management.crt/.key`; Attendance mounts it and its `entrypoint.sh` installs `ca.crt` into the OS
 trust store at container start. Both backends gate on `depends_on: tls-init`
 (`service_completed_successfully`), so the bundle always exists before they boot.
@@ -118,11 +118,17 @@ Base it on the variable set in `infrastructure/.env.example` and paste into the 
 hand. Set:
 
 - `CONTEXT` → the Dokploy checkout path from step 0.
-- The four `*_DB_CONNECTION_STRING` → point `server=` at each managed DB's internal host, fill the
-  prod credentials (no `*_DB_PASSWORD`/`*_DB_SCHEMA` here — those only feed the dev mysql containers).
+- The five `*_HOST_NAME` (app: `AuthService`, `CourseManagementService`, … defaults) → set each to the
+  **real container name Dokploy assigns** (it appends an identifier). They drive `container_name`, the
+  gateway upstreams, the Attendance→CourseManagement gRPC URL and the gRPC cert SAN, so they must match
+  what Docker DNS actually resolves. If you change `COURSE_MANAGEMENT_HOST_NAME` after a first deploy,
+  delete the `dama-tls` volume so the cert SAN regenerates.
+- The four `*_DB_HOST_NAME` → each managed DB's internal host (these interpolate into `server=` of the
+  matching `*_DB_CONNECTION_STRING`). Then set the four `*_DB_CONNECTION_STRING` with prod credentials
+  (no `*_DB_PASSWORD`/`*_DB_SCHEMA` here — those only feed the dev mysql containers).
 - `FRONTEND_API_BASE_URL` / `GATEWAY_FRONTEND_ORIGIN` → the prod published URLs
   (`https://api.dama-software.org` / `https://dama-software.org`).
-- `JWT_*`, `PAYMENT_CALLBACK_SECRET`, `TODOTIX_APPKEY`, `TODOTIX_CALLBACK_URL`, `RABBITMQ_*`.
+- `JWT_*`, `PAYMENT_CALLBACK_SECRET`, `TODOTIX_BASE_URL`, `TODOTIX_APPKEY`, `TODOTIX_CALLBACK_URL`, `RABBITMQ_*`.
 - `DBGATE_LOGIN` / `DBGATE_PASSWORD`.
 
 ### 6. Deploy the stack

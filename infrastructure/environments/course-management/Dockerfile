@@ -5,7 +5,6 @@ COPY ./apps/CourseManagement/Backend/*.csproj ./
 RUN dotnet restore
 
 COPY ./apps/CourseManagement/Backend/ .
-COPY ./envs/CourseManagement/ .
 RUN dotnet publish -c Release -o out
 
 FROM mcr.microsoft.com/dotnet/sdk:9.0
