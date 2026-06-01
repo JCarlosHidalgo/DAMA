@@ -24,7 +24,7 @@ public sealed class TenantPaymentCredentialDao : MySQLSingleDao<TenantPaymentCre
     {
         _entity = new TenantPaymentCredential
         {
-            TenantId = _mySqlReader!.GetGuid("TenantId"),
+            Id = _mySqlReader!.GetGuid("TenantId"),
             TodotixAppKey = _mySqlReader!.GetString("TodotixAppKey")
         };
         return _entity;
@@ -37,7 +37,7 @@ public sealed class TenantPaymentCredentialDao : MySQLSingleDao<TenantPaymentCre
         {
             _entity = new TenantPaymentCredential
             {
-                TenantId = _mySqlReader!.GetGuid("TenantId"),
+                Id = _mySqlReader!.GetGuid("TenantId"),
                 TodotixAppKey = _mySqlReader!.GetString("TodotixAppKey")
             };
             _entitiesList.Add(_entity);
