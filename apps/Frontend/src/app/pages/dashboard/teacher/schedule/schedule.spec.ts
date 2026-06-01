@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection, signal } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
+import { provideTanStackQuery, QueryClient } from '@tanstack/angular-query-experimental';
 import { of, throwError } from 'rxjs';
 import { describe, it, expect, vi } from 'vitest';
 
@@ -37,6 +38,7 @@ describe('TeacherSchedule', () => {
       imports: [TeacherSchedule],
       providers: [
         provideZonelessChangeDetection(),
+        provideTanStackQuery(new QueryClient()),
         { provide: CourseApi, useValue: courseApi },
         { provide: MatDialog, useValue: matDialog },
         { provide: NotificationService, useValue: notifications },

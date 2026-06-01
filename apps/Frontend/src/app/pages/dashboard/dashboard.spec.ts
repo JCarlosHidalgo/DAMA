@@ -72,9 +72,9 @@ describe('Dashboard', () => {
       expect(fixture.componentInstance.tabs()[0].path).toBe('horario');
     });
 
-    it('shows 5 tabs for Student', async () => {
+    it('shows 6 tabs for Student', async () => {
       await setUp('Student');
-      expect(fixture.componentInstance.tabs()).toHaveLength(5);
+      expect(fixture.componentInstance.tabs()).toHaveLength(6);
     });
 
     it('shows 1 tab for Admin', async () => {
