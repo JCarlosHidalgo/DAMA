@@ -17,6 +17,7 @@ public class QrCallbackService : IQrCallbackService
     private readonly IFailedQrPaymentDao _failedQrPaymentDao;
     private readonly IOutboxEventDao _outboxEventDao;
     private readonly ITodotixClient _todotixClient;
+    private readonly ITodotixAppKeyResolver _appKeyResolver;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IQrPaymentTransitionBuilder _transitionBuilder;
 
@@ -25,6 +26,7 @@ public class QrCallbackService : IQrCallbackService
                              IFailedQrPaymentDao failedQrPaymentDao,
                              IOutboxEventDao outboxEventDao,
                              ITodotixClient todotixClient,
+                             ITodotixAppKeyResolver appKeyResolver,
                              IUnitOfWork unitOfWork,
                              IQrPaymentTransitionBuilder transitionBuilder)
     {
@@ -33,6 +35,7 @@ public class QrCallbackService : IQrCallbackService
         _failedQrPaymentDao = failedQrPaymentDao;
         _outboxEventDao = outboxEventDao;
         _todotixClient = todotixClient;
+        _appKeyResolver = appKeyResolver;
         _unitOfWork = unitOfWork;
         _transitionBuilder = transitionBuilder;
     }
@@ -45,7 +48,8 @@ public class QrCallbackService : IQrCallbackService
             return;
         }
 
-        TodotixDebtState debtState = await _todotixClient.ConsultDebtAsync(transactionId);
+        string appKey = await _appKeyResolver.ResolveAsync(pending.TenantId);
+        TodotixDebtState debtState = await _todotixClient.ConsultDebtAsync(transactionId, appKey);
 
         if (debtState == TodotixDebtState.Paid)
         {

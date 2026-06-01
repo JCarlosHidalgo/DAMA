@@ -33,6 +33,7 @@ public class QrDebtCreationServiceTests
     private Mock<ITransactionScope> transactionScope = null!;
     private Mock<IClaimContext> claimContext = null!;
     private Mock<IQrPaymentCreationBuilder> creationBuilder = null!;
+    private Mock<Backend.Services.Abstract.Todotix.ITodotixAppKeyResolver> appKeyResolver = null!;
     private QrDebtCreationService sut = null!;
     private Guid tenantId;
     private Guid studentId;
@@ -47,6 +48,8 @@ public class QrDebtCreationServiceTests
         (unitOfWork, transactionScope) = UnitOfWorkMockHelper.BuildCommittingMocks();
         claimContext = new Mock<IClaimContext>(MockBehavior.Strict);
         creationBuilder = new Mock<IQrPaymentCreationBuilder>(MockBehavior.Strict);
+        appKeyResolver = new Mock<Backend.Services.Abstract.Todotix.ITodotixAppKeyResolver>(MockBehavior.Strict);
+        appKeyResolver.Setup(r => r.ResolveAsync(It.IsAny<Guid>())).ReturnsAsync("tenant-app-key");
 
         tenantId = Guid.NewGuid();
         studentId = Guid.NewGuid();
@@ -62,7 +65,8 @@ public class QrDebtCreationServiceTests
             expirationOutboxDao.Object,
             unitOfWork.Object,
             claimContext.Object,
-            creationBuilder.Object);
+            creationBuilder.Object,
+            appKeyResolver.Object);
     }
 
     [Test]
@@ -104,7 +108,7 @@ public class QrDebtCreationServiceTests
         var pendingDto = new QrDebtPendingDto { IdentificadorDeuda = pending.Id, Status = "Pending" };
 
         creationBuilder.Setup(b => b.BuildPendingPayment(It.IsAny<Guid>(), tenantId, studentId, templateId, template, It.IsAny<DateTime>())).Returns(pending);
-        creationBuilder.Setup(b => b.BuildTodotixRequest(It.IsAny<Guid>(), "a@b.com", template, "America/La_Paz", It.IsAny<string>(), It.IsAny<DateTime>())).Returns(todotixRequest);
+        creationBuilder.Setup(b => b.BuildTodotixRequest(It.IsAny<Guid>(), "a@b.com", template, "America/La_Paz", It.IsAny<string>(), It.IsAny<DateTime>(), It.IsAny<string>())).Returns(todotixRequest);
         creationBuilder.Setup(b => b.BuildOutboxEvent(It.IsAny<Guid>(), tenantId, todotixRequest)).Returns(todotixEvent);
         creationBuilder.Setup(b => b.BuildExpirationOutboxEvent(It.IsAny<Guid>(), tenantId, studentId, It.IsAny<DateTime>())).Returns(expirationEvent);
         creationBuilder.Setup(b => b.BuildPendingDebtDto(It.IsAny<Guid>())).Returns(pendingDto);

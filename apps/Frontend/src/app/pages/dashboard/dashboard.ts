@@ -31,6 +31,7 @@ import {
   faBars,
   faRightFromBracket,
   faBuilding,
+  faGear,
 } from '@fortawesome/free-solid-svg-icons';
 
 import { AuthService, UserRole } from '@core/auth';
@@ -52,6 +53,7 @@ const TABS_BY_ROLE: Record<UserRole, TabEntry[]> = {
     { label: 'Plantillas de Cobro', icon: faReceipt, path: 'plantillas-cobro' },
     { label: 'Estudiantes', icon: faGraduationCap, path: 'estudiantes' },
     { label: 'Profesores', icon: faUsers, path: 'profesores' },
+    { label: 'Configuración', icon: faGear, path: 'configuracion' },
   ],
   Teacher: [{ label: 'Horario', icon: faCalendarDays, path: 'horario' }],
   Student: [

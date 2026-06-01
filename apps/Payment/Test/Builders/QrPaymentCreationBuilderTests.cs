@@ -68,7 +68,7 @@ public class QrPaymentCreationBuilderTests
         var expiresAt = new DateTime(2025, 11, 30, 18, 30, 0, DateTimeKind.Utc);
         callbackSignature.Setup(s => s.Sign(debtId.ToString("D"))).Returns("sig123");
 
-        RegisterDebtRequest request = sut.BuildTodotixRequest(debtId, "student@example.com", template, "America/La_Paz", "Pago", expiresAt);
+        RegisterDebtRequest request = sut.BuildTodotixRequest(debtId, "student@example.com", template, "America/La_Paz", "Pago", expiresAt, "appkey-xyz");
 
         Assert.Multiple(() =>
         {
@@ -95,7 +95,7 @@ public class QrPaymentCreationBuilderTests
         var template = new DebtTemplate { Id = Guid.NewGuid(), TenantId = Guid.NewGuid(), Description = "C", ClassQuantity = 1, Cost = 10 };
         callbackSignature.Setup(s => s.Sign(It.IsAny<string>())).Returns("sig");
 
-        RegisterDebtRequest request = sut.BuildTodotixRequest(debtId, string.Empty, template, "America/La_Paz", "desc", DateTime.UtcNow.AddDays(1));
+        RegisterDebtRequest request = sut.BuildTodotixRequest(debtId, string.Empty, template, "America/La_Paz", "desc", DateTime.UtcNow.AddDays(1), "appkey-xyz");
 
         Assert.That(request.EmailCliente, Is.Null);
     }
@@ -109,7 +109,7 @@ public class QrPaymentCreationBuilderTests
         var template = new DebtTemplate { Id = Guid.NewGuid(), TenantId = Guid.NewGuid(), Description = "C", ClassQuantity = 1, Cost = 10 };
         callbackSignature.Setup(s => s.Sign(It.IsAny<string>())).Returns("sigZ");
 
-        RegisterDebtRequest request = sut.BuildTodotixRequest(debtId, "a@b.com", template, "America/La_Paz", "desc", DateTime.UtcNow.AddDays(1));
+        RegisterDebtRequest request = sut.BuildTodotixRequest(debtId, "a@b.com", template, "America/La_Paz", "desc", DateTime.UtcNow.AddDays(1), "appkey-xyz");
 
         Assert.That(request.CallbackUrl, Does.Contain("source=todotix"));
         Assert.That(request.CallbackUrl, Does.Contain("sig=sigZ"));

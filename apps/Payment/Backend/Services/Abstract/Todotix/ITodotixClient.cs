@@ -6,7 +6,7 @@ public interface ITodotixClient
 {
     Task<RegisterDebtResponse> RegisterDebtAsync(RegisterDebtRequest request);
 
-    Task<bool> DebtExistsAsync(Guid debtIdentifier);
+    Task<bool> DebtExistsAsync(Guid debtIdentifier, string appKey);
 
-    Task<TodotixDebtState> ConsultDebtAsync(Guid debtIdentifier);
+    Task<TodotixDebtState> ConsultDebtAsync(Guid debtIdentifier, string appKey);
 }

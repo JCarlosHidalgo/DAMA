@@ -13,6 +13,8 @@ public sealed class SecretsValidationModule : IServiceModule
             configuration["AppSettings:PublicKey"], "JWT_PUBLIC_KEY_B64");
         SecretsValidation.RequireMinimumLength(
             configuration["PAYMENT_CALLBACK_SECRET"], "PAYMENT_CALLBACK_SECRET", minimumCharacters: 32);
+        SecretsValidation.RequireBase64Bytes(
+            configuration["TODOTIX_APPKEY_ENCRYPTION_KEY"], "TODOTIX_APPKEY_ENCRYPTION_KEY", expectedBytes: 32);
     }
 }
 
@@ -49,6 +51,17 @@ internal static class SecretsValidation
         {
             throw new InvalidOperationException(
                 $"Required secret {envName} did not decode to a valid RSA public key.", inner);
+        }
+    }
+
+    public static void RequireBase64Bytes(string? base64Value, string envName, int expectedBytes)
+    {
+        RequireNonEmpty(base64Value, envName);
+        byte[] bytes = DecodeBase64(base64Value!, envName);
+        if (bytes.Length != expectedBytes)
+        {
+            throw new InvalidOperationException(
+                $"Required secret {envName} must decode to exactly {expectedBytes} bytes; got {bytes.Length}.");
         }
     }
 

@@ -50,6 +50,13 @@ const dashboardChildRoutes: Routes = [
     loadComponent: () => import('./client/teachers/teachers').then((m) => m.Teachers),
   },
   {
+    path: 'configuracion',
+    canActivate: [roleGuard],
+    data: { roles: ['Client'] as UserRole[] },
+    loadComponent: () =>
+      import('./client/configuration/configuration').then((m) => m.ClientConfiguration),
+  },
+  {
     path: 'pagar-clases',
     canActivate: [roleGuard],
     data: { roles: ['Student'] as UserRole[] },

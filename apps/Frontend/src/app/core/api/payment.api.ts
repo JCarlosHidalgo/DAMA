@@ -14,6 +14,9 @@ import {
   FailedQrPayment,
   QrDebtPending,
   QrDebtStatus,
+  TodotixAppKeyStatus,
+  TodotixAppKeyReveal,
+  UpdateTodotixAppKeyPayload,
 } from '@core/models';
 
 @Injectable({ providedIn: 'root' })
@@ -66,5 +69,17 @@ export class PaymentApi {
     return this.http.get<Page<FailedQrPayment>>(`${this.base}/qr/failed`, {
       params: new HttpParams().set('Index', pageIndex),
     });
+  }
+
+  getTodotixAppKeyStatus(): Observable<TodotixAppKeyStatus> {
+    return this.http.get<TodotixAppKeyStatus>(`${this.base}/todotix-credential`);
+  }
+
+  revealTodotixAppKey(): Observable<TodotixAppKeyReveal> {
+    return this.http.get<TodotixAppKeyReveal>(`${this.base}/todotix-credential/reveal`);
+  }
+
+  updateTodotixAppKey(payload: UpdateTodotixAppKeyPayload): Observable<void> {
+    return this.http.put<void>(`${this.base}/todotix-credential`, payload);
   }
 }

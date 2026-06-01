@@ -10,7 +10,8 @@ namespace Backend.Services.Concrete.Todotix;
 
 public sealed class TodotixDebtPublisher(
     ITodotixClient todotixClient,
-    IPendingQrPaymentDao pendingQrPaymentDao) : IPaymentDebtPublisher
+    IPendingQrPaymentDao pendingQrPaymentDao,
+    ITodotixAppKeyResolver appKeyResolver) : IPaymentDebtPublisher
 {
     public async Task<PublishOutcome> PublishAsync(TodotixOutboxEvent outboxEvent, CancellationToken cancellationToken = default)
     {
@@ -31,7 +32,8 @@ public sealed class TodotixDebtPublisher(
 
         if (outboxEvent.Attempts > 0)
         {
-            PublishOutcome? alreadyRegisteredOutcome = await RejectIfAlreadyRegisteredAsync(outboxEvent.PendingId);
+            string appKey = await appKeyResolver.ResolveAsync(outboxEvent.TenantId);
+            PublishOutcome? alreadyRegisteredOutcome = await RejectIfAlreadyRegisteredAsync(outboxEvent.PendingId, appKey);
             if (alreadyRegisteredOutcome is not null)
             {
                 return alreadyRegisteredOutcome;
@@ -63,11 +65,11 @@ public sealed class TodotixDebtPublisher(
         return new PublishOutcome.TransientFailure(errorMessage);
     }
 
-    private async Task<PublishOutcome?> RejectIfAlreadyRegisteredAsync(Guid debtIdentifier)
+    private async Task<PublishOutcome?> RejectIfAlreadyRegisteredAsync(Guid debtIdentifier, string appKey)
     {
         try
         {
-            bool alreadyRegistered = await todotixClient.DebtExistsAsync(debtIdentifier);
+            bool alreadyRegistered = await todotixClient.DebtExistsAsync(debtIdentifier, appKey);
             return alreadyRegistered
                 ? new PublishOutcome.PermanentFailure("Todotix debt already registered on retry; its QR url can no longer be retrieved.")
                 : null;

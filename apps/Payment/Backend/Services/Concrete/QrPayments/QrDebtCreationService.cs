@@ -12,6 +12,7 @@ using Backend.Entities.QrPayments;
 using Backend.Entities.Todotix;
 using Backend.Results.QrPayments;
 using Backend.Services.Abstract.QrPayments;
+using Backend.Services.Abstract.Todotix;
 
 using DAMA.Software.MySqlUnitOfWork;
 
@@ -29,6 +30,7 @@ public class QrDebtCreationService : IQrDebtCreationService
     private readonly IUnitOfWork _unitOfWork;
     private readonly IClaimContext _claimContext;
     private readonly IQrPaymentCreationBuilder _creationBuilder;
+    private readonly ITodotixAppKeyResolver _appKeyResolver;
 
     public QrDebtCreationService(IDebtTemplateDao debtTemplateDao,
                                  IPendingQrPaymentDao pendingQrPaymentDao,
@@ -36,7 +38,8 @@ public class QrDebtCreationService : IQrDebtCreationService
                                  IExpirationOutboxDao expirationOutboxDao,
                                  IUnitOfWork unitOfWork,
                                  IClaimContext claimContext,
-                                 IQrPaymentCreationBuilder creationBuilder)
+                                 IQrPaymentCreationBuilder creationBuilder,
+                                 ITodotixAppKeyResolver appKeyResolver)
     {
         _debtTemplateDao = debtTemplateDao;
         _pendingQrPaymentDao = pendingQrPaymentDao;
@@ -45,6 +48,7 @@ public class QrDebtCreationService : IQrDebtCreationService
         _unitOfWork = unitOfWork;
         _claimContext = claimContext;
         _creationBuilder = creationBuilder;
+        _appKeyResolver = appKeyResolver;
     }
 
     public async Task<CreateQrDebtOutcome> CreateDebtAsync(Guid templateId, string? email, CreateQrDebtDto dto)
@@ -71,8 +75,9 @@ public class QrDebtCreationService : IQrDebtCreationService
         Guid debtIdentifier = Guid.NewGuid();
         DateTime expiresAtUtc = DateTime.UtcNow.Add(DebtExpiration);
         DateTime expirationDueAtUtc = expiresAtUtc.Add(LatePaymentGrace);
+        string appKey = await _appKeyResolver.ResolveAsync(tenantId);
         PendingQrPayment pending = _creationBuilder.BuildPendingPayment(debtIdentifier, tenantId, studentId, templateId, template, expiresAtUtc);
-        RegisterDebtRequest todotixRequest = _creationBuilder.BuildTodotixRequest(debtIdentifier, email, template, tenantTimezone, description, expiresAtUtc);
+        RegisterDebtRequest todotixRequest = _creationBuilder.BuildTodotixRequest(debtIdentifier, email, template, tenantTimezone, description, expiresAtUtc, appKey);
         TodotixOutboxEvent outboxEvent = _creationBuilder.BuildOutboxEvent(debtIdentifier, tenantId, todotixRequest);
         ExpirationOutboxEvent expirationEvent = _creationBuilder.BuildExpirationOutboxEvent(debtIdentifier, tenantId, studentId, expirationDueAtUtc);
 

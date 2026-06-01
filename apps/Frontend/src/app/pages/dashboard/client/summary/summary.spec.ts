@@ -1,14 +1,11 @@
 import { TestBed } from '@angular/core/testing';
-import { provideZonelessChangeDetection, signal } from '@angular/core';
+import { provideZonelessChangeDetection } from '@angular/core';
 import { Subject, of, throwError } from 'rxjs';
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 
 import { ClientSummary } from './summary';
-import { AuthApi, PaymentApi } from '@core/api';
-import { AuthService } from '@core/auth';
-import { NotificationService } from '@core/services';
+import { PaymentApi } from '@core/api';
 import { PaymentSummary } from '@core/models';
-import { buildJwtClaims } from '@testing';
 
 const samplePayment: PaymentSummary = {
   totalEarnings: 1000,
@@ -19,29 +16,11 @@ const samplePayment: PaymentSummary = {
 };
 
 describe('ClientSummary', () => {
-  const authApi = { updateTenantTimezone: vi.fn(() => of(undefined)) };
-  const notifications = { success: vi.fn(), error: vi.fn() };
-
   async function instantiate(api: { getSummary: () => unknown }) {
-    authApi.updateTenantTimezone.mockClear();
-    notifications.success.mockClear();
-    notifications.error.mockClear();
     TestBed.resetTestingModule();
     await TestBed.configureTestingModule({
       imports: [ClientSummary],
-      providers: [
-        provideZonelessChangeDetection(),
-        { provide: PaymentApi, useValue: api },
-        { provide: AuthApi, useValue: authApi },
-        { provide: NotificationService, useValue: notifications },
-        {
-          provide: AuthService,
-          useValue: {
-            tenantTimezone: signal('America/La_Paz'),
-            claims: signal(buildJwtClaims()),
-          },
-        },
-      ],
+      providers: [provideZonelessChangeDetection(), { provide: PaymentApi, useValue: api }],
     }).compileComponents();
     return TestBed.createComponent(ClientSummary);
   }
@@ -67,21 +46,5 @@ describe('ClientSummary', () => {
     fixture.detectChanges();
     expect(fixture.componentInstance.state().kind).toBe('error');
     expect(fixture.componentInstance.ready()).toBeNull();
-  });
-
-  it('updates the tenant timezone when a new zone is selected', async () => {
-    const fixture = await instantiate({ getSummary: () => of(samplePayment) });
-    fixture.detectChanges();
-    fixture.componentInstance.onTimezoneChange('America/Lima');
-    expect(authApi.updateTenantTimezone).toHaveBeenCalledWith(expect.any(String), {
-      timezone: 'America/Lima',
-    });
-  });
-
-  it('ignores a selection equal to the current timezone', async () => {
-    const fixture = await instantiate({ getSummary: () => of(samplePayment) });
-    fixture.detectChanges();
-    fixture.componentInstance.onTimezoneChange('America/La_Paz');
-    expect(authApi.updateTenantTimezone).not.toHaveBeenCalled();
   });
 });

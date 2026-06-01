@@ -60,10 +60,11 @@ describe('Dashboard', () => {
   }
 
   describe('tab list by role', () => {
-    it('shows 7 tabs for Client', async () => {
+    it('shows 8 tabs for Client', async () => {
       await setUp('Client');
-      expect(fixture.componentInstance.tabs()).toHaveLength(7);
+      expect(fixture.componentInstance.tabs()).toHaveLength(8);
       expect(fixture.componentInstance.tabs()[0].path).toBe('resumen');
+      expect(fixture.componentInstance.tabs().at(-1)?.path).toBe('configuracion');
     });
 
     it('shows 1 tab for Teacher', async () => {

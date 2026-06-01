@@ -1,0 +1,23 @@
+info:
+  name: "Client: Update Todotix App-Key"
+  type: http
+  seq: 22
+
+http:
+  method: PUT
+  url: "{{API_PATH}}/api/payment/todotix-credential"
+  body:
+    type: json
+    data: |-
+      {
+        "AppKey" : "51599bd3-eed3-2826-45a4-a16c2fcc2724"
+      }
+  auth:
+    type: bearer
+    token: "{{Client_JWT}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

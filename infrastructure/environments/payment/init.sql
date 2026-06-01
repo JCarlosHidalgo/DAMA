@@ -70,6 +70,42 @@ BEGIN
 END //
 DELIMITER ;
 
+-- TENANT TODOTIX CREDENTIAL
+CREATE TABLE IF NOT EXISTS TenantTodotixCredential (
+    TenantId        VARCHAR(36)  PRIMARY KEY NOT NULL,
+    EncryptedAppKey VARCHAR(512) NOT NULL,
+    CreatedAt       DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UpdatedAt       DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+DELIMITER //
+CREATE PROCEDURE GetTodotixCredentialByTenant(IN tenantId CHAR(36))
+BEGIN
+    SELECT
+        ttc.TenantId,
+        ttc.EncryptedAppKey,
+        ttc.CreatedAt,
+        ttc.UpdatedAt
+    FROM TenantTodotixCredential ttc
+    WHERE ttc.TenantId = tenantId;
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE UpsertTodotixCredentialForTenant(
+    IN tenantId        CHAR(36),
+    IN encryptedAppKey VARCHAR(512)
+)
+BEGIN
+    INSERT INTO TenantTodotixCredential (TenantId, EncryptedAppKey)
+    VALUES (tenantId, encryptedAppKey)
+    ON DUPLICATE KEY UPDATE
+        EncryptedAppKey = encryptedAppKey,
+        UpdatedAt       = CURRENT_TIMESTAMP;
+    SELECT ROW_COUNT() AS Affected;
+END //
+DELIMITER ;
+
 -- PENDING QR PAYMENT
 CREATE TABLE IF NOT EXISTS PendingQrPayment (
     Id            VARCHAR(36)  PRIMARY KEY NOT NULL,
@@ -347,6 +383,7 @@ CREATE PROCEDURE TruncateAllTables()
 BEGIN
     SET FOREIGN_KEY_CHECKS = 0;
     TRUNCATE TABLE DebtTemplate;
+    TRUNCATE TABLE TenantTodotixCredential;
     TRUNCATE TABLE PendingQrPayment;
     TRUNCATE TABLE SuccessQrPayment;
     TRUNCATE TABLE FailedQrPayment;

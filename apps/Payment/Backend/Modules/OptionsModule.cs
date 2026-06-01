@@ -1,4 +1,5 @@
 using Backend.Options;
+using Backend.Security;
 
 namespace Backend.Modules;
 
@@ -38,5 +39,9 @@ public sealed class OptionsModule : IServiceModule
             options.Password = configuration["RABBITMQ_PASSWORD"]
                 ?? throw new InvalidOperationException("RABBITMQ_PASSWORD not set.");
         });
+
+        string encryptionKeyBase64 = configuration["TODOTIX_APPKEY_ENCRYPTION_KEY"]
+            ?? throw new InvalidOperationException("TODOTIX_APPKEY_ENCRYPTION_KEY not set.");
+        services.AddSingleton<IAppKeyCipher>(_ => new AppKeyCipher(Convert.FromBase64String(encryptionKeyBase64)));
     }
 }

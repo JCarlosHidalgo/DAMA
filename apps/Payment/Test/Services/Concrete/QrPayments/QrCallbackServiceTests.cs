@@ -22,6 +22,7 @@ public class QrCallbackServiceTests
     private Mock<IFailedQrPaymentDao> failedDao = null!;
     private Mock<IOutboxEventDao> outboxEventDao = null!;
     private Mock<ITodotixClient> todotixClient = null!;
+    private Mock<ITodotixAppKeyResolver> appKeyResolver = null!;
     private Mock<IUnitOfWork> unitOfWork = null!;
     private Mock<ITransactionScope> transactionScope = null!;
     private Mock<IQrPaymentTransitionBuilder> transitionBuilder = null!;
@@ -35,6 +36,8 @@ public class QrCallbackServiceTests
         failedDao = new Mock<IFailedQrPaymentDao>(MockBehavior.Strict);
         outboxEventDao = new Mock<IOutboxEventDao>(MockBehavior.Strict);
         todotixClient = new Mock<ITodotixClient>(MockBehavior.Strict);
+        appKeyResolver = new Mock<ITodotixAppKeyResolver>(MockBehavior.Strict);
+        appKeyResolver.Setup(r => r.ResolveAsync(It.IsAny<Guid>())).ReturnsAsync("tenant-app-key");
         (unitOfWork, transactionScope) = UnitOfWorkMockHelper.BuildCommittingMocks();
         transitionBuilder = new Mock<IQrPaymentTransitionBuilder>(MockBehavior.Strict);
 
@@ -44,6 +47,7 @@ public class QrCallbackServiceTests
             failedDao.Object,
             outboxEventDao.Object,
             todotixClient.Object,
+            appKeyResolver.Object,
             unitOfWork.Object,
             transitionBuilder.Object);
     }
@@ -65,7 +69,7 @@ public class QrCallbackServiceTests
         var txId = Guid.NewGuid();
         var pending = new PendingQrPayment { Id = txId, TenantId = Guid.NewGuid(), StudentId = Guid.NewGuid(), ClassQuantity = 5, Cost = 50 };
         pendingDao.Setup(d => d.GetByIdAsync(txId)).ReturnsAsync(pending);
-        todotixClient.Setup(c => c.ConsultDebtAsync(txId)).ReturnsAsync(TodotixDebtState.Paid);
+        todotixClient.Setup(c => c.ConsultDebtAsync(txId, It.IsAny<string>())).ReturnsAsync(TodotixDebtState.Paid);
 
         var successPayment = new SuccessQrPayment { Id = txId };
         var capturedEvent = new OutboxEvent { Id = txId };
@@ -86,7 +90,7 @@ public class QrCallbackServiceTests
         var txId = Guid.NewGuid();
         var pending = new PendingQrPayment { Id = txId, TenantId = Guid.NewGuid(), StudentId = Guid.NewGuid(), ClassQuantity = 5, Cost = 50 };
         pendingDao.Setup(d => d.GetByIdAsync(txId)).ReturnsAsync(pending);
-        todotixClient.Setup(c => c.ConsultDebtAsync(txId)).ReturnsAsync(TodotixDebtState.Unpaid);
+        todotixClient.Setup(c => c.ConsultDebtAsync(txId, It.IsAny<string>())).ReturnsAsync(TodotixDebtState.Unpaid);
 
         var failedPayment = new FailedQrPayment { Id = txId };
         transitionBuilder.Setup(b => b.BuildFailedPayment(pending)).Returns(failedPayment);

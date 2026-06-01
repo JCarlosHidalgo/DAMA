@@ -11,6 +11,7 @@ DAMA injects secrets as plain environment variables through `infrastructure/.env
 | `PAYMENT_CALLBACK_SECRET` | HMAC-SHA256 key (base64url string, used UTF-8 as-is) | `openssl rand -base64 64 \| tr -d '\n=' \| tr '+/' '-_'` | Payment, Attendance |
 | `AUTH_DB_PASSWORD`, `COURSE_MANAGEMENT_DB_PASSWORD`, `ATTENDANCE_DB_PASSWORD`, `PAYMENT_DB_PASSWORD` | DB user password | any random string | the corresponding DB container + backend |
 | `TODOTIX_APPKEY` | external API key | issued by Todotix merchant panel | Payment |
+| `TODOTIX_APPKEY_ENCRYPTION_KEY` | AES-256-GCM key (base64 standard, 32 bytes) | `openssl rand -base64 32` | Payment |
 | `RABBITMQ_USER`, `RABBITMQ_PASSWORD` | broker credentials | any random string | every producer/consumer backend + broker |
 
 `JWT_PRIVATE_KEY_B64` and `JWT_PUBLIC_KEY_B64` MUST be a matching pair (derived from the same `priv.pem`). `PAYMENT_CALLBACK_SECRET` is independent — leaking either MUST NOT compromise the other, so don't reuse the JWT private key as the callback secret.
@@ -20,7 +21,8 @@ DAMA injects secrets as plain environment variables through `infrastructure/.env
 Each backend runs a `SecretsValidationModule` (Order = -100) at startup that:
 - fails immediately if a required secret is missing/blank,
 - decodes JWT keys and verifies they parse as RSA,
-- checks `PAYMENT_CALLBACK_SECRET` is at least 32 characters.
+- checks `PAYMENT_CALLBACK_SECRET` is at least 32 characters,
+- checks `TODOTIX_APPKEY_ENCRYPTION_KEY` (Payment) decodes from base64 to exactly 32 bytes.
 
 If a secret is wrong, the container dies with a message like `Required secret JWT_PRIVATE_KEY_B64 did not decode to a valid RSA private key.` — no opaque 500s at request time.
 
@@ -54,6 +56,10 @@ This signs the `sig` query parameter on the Todotix callback URL and authenticat
 2. Update the env file with the new value (both services read from the same env var).
 3. Drain pending callbacks (check `payment_callback_inbox.Status='Pending'`).
 4. Restart the stack.
+
+### `TODOTIX_APPKEY_ENCRYPTION_KEY`
+
+Encrypts each tenant's Todotix app-key at rest in `Payment.TenantTodotixCredential.EncryptedAppKey` (AES-256-GCM). **Rotating it is destructive**: every stored ciphertext was sealed with the old key and can no longer be decrypted, so the per-tenant keys silently fall back to the env `TODOTIX_APPKEY`. If you must rotate, have each Client re-enter their app-key from the Configuración tab afterwards (or decrypt-then-re-encrypt the column with a one-off script before cutover). Tenants without a stored key (e.g. Tenant Example) are unaffected — they already use the env fallback.
 
 ### DB passwords
 

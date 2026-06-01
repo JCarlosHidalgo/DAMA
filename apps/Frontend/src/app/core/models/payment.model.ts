@@ -69,3 +69,17 @@ export interface QrDebtStatus {
   qrSimpleUrl?: string | null;
   error?: string | null;
 }
+
+export interface TodotixAppKeyStatus {
+  hasCustomKey: boolean;
+  maskedAppKey: string | null;
+  updatedAt: string | null;
+}
+
+export interface TodotixAppKeyReveal {
+  appKey: string;
+}
+
+export interface UpdateTodotixAppKeyPayload {
+  appKey: string;
+}

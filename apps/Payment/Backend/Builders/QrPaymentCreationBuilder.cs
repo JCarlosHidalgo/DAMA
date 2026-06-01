@@ -27,7 +27,6 @@ public class QrPaymentCreationBuilder : IQrPaymentCreationBuilder
         _todotixOptions = todotixOptions;
     }
 
-    private string TodotixApplicationKey => _todotixOptions.Value.ApplicationKey;
     private string TodotixCallbackUrl => _todotixOptions.Value.CallbackUrl;
 
     public PendingQrPayment BuildPendingPayment(Guid debtIdentifier, Guid tenantId, Guid studentId, Guid templateId, DebtTemplate template, DateTime expiresAtUtc)
@@ -45,14 +44,14 @@ public class QrPaymentCreationBuilder : IQrPaymentCreationBuilder
         };
     }
 
-    public RegisterDebtRequest BuildTodotixRequest(Guid debtIdentifier, string? email, DebtTemplate template, string tenantTimezone, string description, DateTime expiresAtUtc)
+    public RegisterDebtRequest BuildTodotixRequest(Guid debtIdentifier, string? email, DebtTemplate template, string tenantTimezone, string description, DateTime expiresAtUtc, string appKey)
     {
         TimeZoneInfo tenantZone = TimeZoneInfo.FindSystemTimeZoneById(tenantTimezone);
         DateTime expirationDate = TimeZoneInfo.ConvertTimeFromUtc(expiresAtUtc, tenantZone);
 
         return new RegisterDebtRequest
         {
-            Appkey = TodotixApplicationKey,
+            Appkey = appKey,
             EmailCliente = string.IsNullOrEmpty(email) ? null : email,
             IdentificadorDeuda = debtIdentifier.ToString(),
             Descripcion = description,

@@ -1,15 +1,11 @@
 using System.Text.Json;
 
 using Backend.Dtos.External.Todotix;
-using Backend.Options;
 using Backend.Services.Abstract.Todotix;
-
-using Microsoft.Extensions.Options;
 
 namespace Backend.Services.Concrete.Todotix;
 
 public sealed class TodotixClient(HttpClient httpClient,
-                                  IOptions<TodotixOptions> todotixOptions,
                                   ILogger<TodotixClient> logger) : ITodotixClient
 {
     public async Task<RegisterDebtResponse> RegisterDebtAsync(RegisterDebtRequest request)
@@ -20,11 +16,11 @@ public sealed class TodotixClient(HttpClient httpClient,
         return responseBody ?? throw new InvalidOperationException("Todotix RegisterDebt returned empty body.");
     }
 
-    public async Task<bool> DebtExistsAsync(Guid debtIdentifier)
+    public async Task<bool> DebtExistsAsync(Guid debtIdentifier, string appKey)
     {
         ConsultDebtRequest request = new ConsultDebtRequest
         {
-            Appkey = todotixOptions.Value.ApplicationKey,
+            Appkey = appKey,
             Identificador = debtIdentifier.ToString("D")
         };
 
@@ -40,11 +36,11 @@ public sealed class TodotixClient(HttpClient httpClient,
         return responseBody.Error == 0 && responseBody.Datos is not null;
     }
 
-    public async Task<TodotixDebtState> ConsultDebtAsync(Guid debtIdentifier)
+    public async Task<TodotixDebtState> ConsultDebtAsync(Guid debtIdentifier, string appKey)
     {
         ConsultDebtRequest request = new ConsultDebtRequest
         {
-            Appkey = todotixOptions.Value.ApplicationKey,
+            Appkey = appKey,
             Identificador = debtIdentifier.ToString("D")
         };
 

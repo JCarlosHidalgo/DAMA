@@ -4,12 +4,10 @@ using System.Text;
 using System.Text.Json;
 
 using Backend.Dtos.External.Todotix;
-using Backend.Options;
 using Backend.Services.Abstract.Todotix;
 using Backend.Services.Concrete.Todotix;
 
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.Options;
 
 namespace Test.Services.Concrete.Todotix;
 
@@ -38,7 +36,7 @@ public class TodotixClientTests
     {
         handler = new StubHandler();
         httpClient = new HttpClient(handler) { BaseAddress = new Uri("http://todotix.test") };
-        sut = new TodotixClient(httpClient, Options.Create(new TodotixOptions { ApplicationKey = "k", CallbackUrl = "http://cb" }), NullLogger<TodotixClient>.Instance);
+        sut = new TodotixClient(httpClient, NullLogger<TodotixClient>.Instance);
     }
 
     [TearDown]
@@ -95,7 +93,7 @@ public class TodotixClientTests
             Content = new StringContent(JsonSerializer.Serialize(response), Encoding.UTF8, "application/json")
         });
 
-        bool exists = await sut.DebtExistsAsync(Guid.NewGuid());
+        bool exists = await sut.DebtExistsAsync(Guid.NewGuid(), "k");
 
         Assert.Multiple(() =>
         {
@@ -113,7 +111,7 @@ public class TodotixClientTests
             Content = new StringContent(JsonSerializer.Serialize(response), Encoding.UTF8, "application/json")
         });
 
-        bool exists = await sut.DebtExistsAsync(Guid.NewGuid());
+        bool exists = await sut.DebtExistsAsync(Guid.NewGuid(), "k");
 
         Assert.That(exists, Is.False);
     }
@@ -127,7 +125,7 @@ public class TodotixClientTests
             Content = new StringContent(JsonSerializer.Serialize(response), Encoding.UTF8, "application/json")
         });
 
-        bool exists = await sut.DebtExistsAsync(Guid.NewGuid());
+        bool exists = await sut.DebtExistsAsync(Guid.NewGuid(), "k");
 
         Assert.That(exists, Is.False);
     }
@@ -140,7 +138,7 @@ public class TodotixClientTests
             Content = new StringContent("null", Encoding.UTF8, "application/json")
         });
 
-        Assert.ThrowsAsync<InvalidOperationException>(() => sut.DebtExistsAsync(Guid.NewGuid()));
+        Assert.ThrowsAsync<InvalidOperationException>(() => sut.DebtExistsAsync(Guid.NewGuid(), "k"));
     }
 
     [Test]
@@ -152,7 +150,7 @@ public class TodotixClientTests
             Content = new StringContent(JsonSerializer.Serialize(response), Encoding.UTF8, "application/json")
         });
 
-        TodotixDebtState state = await sut.ConsultDebtAsync(Guid.NewGuid());
+        TodotixDebtState state = await sut.ConsultDebtAsync(Guid.NewGuid(), "k");
 
         Assert.That(state, Is.EqualTo(TodotixDebtState.Paid));
     }
@@ -166,7 +164,7 @@ public class TodotixClientTests
             Content = new StringContent(JsonSerializer.Serialize(response), Encoding.UTF8, "application/json")
         });
 
-        TodotixDebtState state = await sut.ConsultDebtAsync(Guid.NewGuid());
+        TodotixDebtState state = await sut.ConsultDebtAsync(Guid.NewGuid(), "k");
 
         Assert.That(state, Is.EqualTo(TodotixDebtState.Unpaid));
     }
@@ -180,7 +178,7 @@ public class TodotixClientTests
             Content = new StringContent(JsonSerializer.Serialize(response), Encoding.UTF8, "application/json")
         });
 
-        TodotixDebtState state = await sut.ConsultDebtAsync(Guid.NewGuid());
+        TodotixDebtState state = await sut.ConsultDebtAsync(Guid.NewGuid(), "k");
 
         Assert.That(state, Is.EqualTo(TodotixDebtState.Unpaid));
     }
@@ -194,7 +192,7 @@ public class TodotixClientTests
             Content = new StringContent(JsonSerializer.Serialize(response), Encoding.UTF8, "application/json")
         });
 
-        TodotixDebtState state = await sut.ConsultDebtAsync(Guid.NewGuid());
+        TodotixDebtState state = await sut.ConsultDebtAsync(Guid.NewGuid(), "k");
 
         Assert.That(state, Is.EqualTo(TodotixDebtState.Paid));
     }
@@ -208,7 +206,7 @@ public class TodotixClientTests
             Content = new StringContent(JsonSerializer.Serialize(response), Encoding.UTF8, "application/json")
         });
 
-        TodotixDebtState state = await sut.ConsultDebtAsync(Guid.NewGuid());
+        TodotixDebtState state = await sut.ConsultDebtAsync(Guid.NewGuid(), "k");
 
         Assert.That(state, Is.EqualTo(TodotixDebtState.Unpaid));
     }
@@ -221,6 +219,6 @@ public class TodotixClientTests
             Content = new StringContent("null", Encoding.UTF8, "application/json")
         });
 
-        Assert.ThrowsAsync<InvalidOperationException>(() => sut.ConsultDebtAsync(Guid.NewGuid()));
+        Assert.ThrowsAsync<InvalidOperationException>(() => sut.ConsultDebtAsync(Guid.NewGuid(), "k"));
     }
 }
