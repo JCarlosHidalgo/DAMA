@@ -25,7 +25,9 @@ public interface IUniqueClassDao : ISingleDao<UniqueClass>, IClassAggregateWrite
 
     Task<bool> UpdateForTenantAsync(UniqueClassUpdate uniqueClassUpdate, Guid tenantId, ITransactionContext transaction);
 
-    Task<bool> HasOverlapForTeacherAsync(Guid tenantId, Guid teacherId, DateOnly classDate, TimeOnly startTime, TimeOnly endTime, Guid? excludeId);
+    Task<bool> HasGroupOverlapAsync(Guid tenantId, Guid groupId, DateOnly classDate, TimeOnly startTime, TimeOnly endTime, Guid? excludeId);
+
+    Task<bool> TransferToGroupAsync(Guid tenantId, Guid id, Guid targetGroupId, ITransactionContext transaction);
 
     Task<bool> DeleteForTenantAsync(Guid tenantId, Guid id, ITransactionContext transaction);
 

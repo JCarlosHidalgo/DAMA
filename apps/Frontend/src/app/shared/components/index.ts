@@ -3,6 +3,7 @@ export * from './camera-scanner/camera-scanner';
 export * from './course-color-chip/course-color-chip';
 export * from './empty-state/empty-state';
 export * from './error-state/error-state';
+export * from './group-select/group-select';
 export * from './icon/icon';
 export * from './loading-skeleton/loading-skeleton';
 export * from './page-head/page-head';

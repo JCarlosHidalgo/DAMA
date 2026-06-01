@@ -20,6 +20,7 @@ public class UpdateUniqueClassHandlerTests
 {
     private static readonly Guid TenantId = Guid.Parse("11111111-1111-1111-1111-111111111111");
     private static readonly Guid UniqueClassId = Guid.Parse("22222222-2222-2222-2222-222222222222");
+    private static readonly Guid GroupId = Guid.Parse("44444444-4444-4444-4444-444444444444");
 
     private Mock<IUniqueClassDao> uniqueClassDao = null!;
     private Mock<IUnitOfWork> unitOfWork = null!;
@@ -57,8 +58,32 @@ public class UpdateUniqueClassHandlerTests
         Teachers = teachers
     };
 
+    private static UniqueClass Existing() => new()
+    {
+        Id = UniqueClassId,
+        TenantId = TenantId,
+        GroupId = GroupId
+    };
+
     [Test]
-    public async Task Handle_WhenTeacherHasOverlap_ReturnsTeacherConflictWithoutBeginningTransaction()
+    public async Task Handle_WhenClassNotFound_ReturnsNotFoundWithoutTransaction()
+    {
+        var teacherId = Guid.NewGuid();
+        var teacherDtos = new List<ClassTeacherDto> { new() { TeacherId = teacherId, TeacherName = "Profesor" } };
+        var teacherEntities = new List<ClassTeacher> { new() { TeacherId = teacherId, TeacherName = "Profesor" } };
+        UpdateUniqueClassDto payload = Payload(teacherDtos);
+
+        mapper.Setup(map => map.Map<List<ClassTeacherDto>, List<ClassTeacher>>(teacherDtos)).Returns(teacherEntities);
+        uniqueClassDao.Setup(dao => dao.GetByIdForTenantAsync(TenantId, UniqueClassId)).ReturnsAsync((UniqueClass?)null);
+
+        UpdateUniqueClassResult result = await handler.Handle(new UpdateUniqueClassCommand(UniqueClassId, payload));
+
+        Assert.That(result, Is.InstanceOf<UpdateUniqueClassResult.NotFound>());
+        unitOfWork.Verify(work => work.BeginAsync(), Times.Never);
+    }
+
+    [Test]
+    public async Task Handle_WhenGroupOverlap_ReturnsGroupOverlapConflictWithoutBeginningTransaction()
     {
         var conflictTeacherId = Guid.NewGuid();
         var teacherDtos = new List<ClassTeacherDto> { new() { TeacherId = conflictTeacherId, TeacherName = "Profesor" } };
@@ -66,17 +91,14 @@ public class UpdateUniqueClassHandlerTests
         UpdateUniqueClassDto payload = Payload(teacherDtos);
 
         mapper.Setup(map => map.Map<List<ClassTeacherDto>, List<ClassTeacher>>(teacherDtos)).Returns(teacherEntities);
+        uniqueClassDao.Setup(dao => dao.GetByIdForTenantAsync(TenantId, UniqueClassId)).ReturnsAsync(Existing());
         uniqueClassDao
-            .Setup(dao => dao.HasOverlapForTeacherAsync(TenantId, conflictTeacherId, payload.Date, payload.StartTime, payload.EndTime, UniqueClassId))
+            .Setup(dao => dao.HasGroupOverlapAsync(TenantId, GroupId, payload.Date, payload.StartTime, payload.EndTime, UniqueClassId))
             .ReturnsAsync(true);
 
         UpdateUniqueClassResult result = await handler.Handle(new UpdateUniqueClassCommand(UniqueClassId, payload));
 
-        Assert.Multiple(() =>
-        {
-            Assert.That(result, Is.InstanceOf<UpdateUniqueClassResult.TeacherConflict>());
-            Assert.That(((UpdateUniqueClassResult.TeacherConflict)result).TeacherName, Is.EqualTo("Profesor"));
-        });
+        Assert.That(result, Is.InstanceOf<UpdateUniqueClassResult.GroupOverlapConflict>());
         unitOfWork.Verify(work => work.BeginAsync(), Times.Never);
     }
 
@@ -89,8 +111,9 @@ public class UpdateUniqueClassHandlerTests
         UpdateUniqueClassDto payload = Payload(teacherDtos);
 
         mapper.Setup(map => map.Map<List<ClassTeacherDto>, List<ClassTeacher>>(teacherDtos)).Returns(teacherEntities);
+        uniqueClassDao.Setup(dao => dao.GetByIdForTenantAsync(TenantId, UniqueClassId)).ReturnsAsync(Existing());
         uniqueClassDao
-            .Setup(dao => dao.HasOverlapForTeacherAsync(TenantId, teacherId, payload.Date, payload.StartTime, payload.EndTime, UniqueClassId))
+            .Setup(dao => dao.HasGroupOverlapAsync(TenantId, GroupId, payload.Date, payload.StartTime, payload.EndTime, UniqueClassId))
             .ReturnsAsync(false);
         uniqueClassDao
             .Setup(dao => dao.UpdateForTenantAsync(It.Is<UniqueClassUpdate>(update => update.Id == UniqueClassId), TenantId, transactionScope.Object))
@@ -121,8 +144,9 @@ public class UpdateUniqueClassHandlerTests
         UpdateUniqueClassDto payload = Payload(teacherDtos);
 
         mapper.Setup(map => map.Map<List<ClassTeacherDto>, List<ClassTeacher>>(teacherDtos)).Returns(teacherEntities);
+        uniqueClassDao.Setup(dao => dao.GetByIdForTenantAsync(TenantId, UniqueClassId)).ReturnsAsync(Existing());
         uniqueClassDao
-            .Setup(dao => dao.HasOverlapForTeacherAsync(TenantId, It.IsAny<Guid>(), payload.Date, payload.StartTime, payload.EndTime, UniqueClassId))
+            .Setup(dao => dao.HasGroupOverlapAsync(TenantId, GroupId, payload.Date, payload.StartTime, payload.EndTime, UniqueClassId))
             .ReturnsAsync(false);
         uniqueClassDao
             .Setup(dao => dao.UpdateForTenantAsync(It.Is<UniqueClassUpdate>(update => update.Id == UniqueClassId), TenantId, transactionScope.Object))

@@ -1,0 +1,23 @@
+info:
+  name: "Client: Create Group"
+  type: http
+  seq: 20
+
+http:
+  method: POST
+  url: "{{API_PATH}}/api/course-management/course/group"
+  body:
+    type: json
+    data: |-
+      {
+        "name": "Nuevo Grupo"
+      }
+  auth:
+    type: bearer
+    token: "{{Client_JWT}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -24,7 +24,13 @@ public class UniqueClass : IEntity
     public Guid CourseId { get; set; }
 
     [Identifier]
+    public Guid GroupId { get; set; }
+
+    [Identifier]
     public Guid TenantId { get; set; }
+
+    [NotPersisted]
+    public string GroupName { get; set; } = string.Empty;
 
     [NotPersisted]
     public List<ClassTeacher> Teachers { get; set; } = new();

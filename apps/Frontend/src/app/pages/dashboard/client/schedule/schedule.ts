@@ -1,5 +1,7 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { CdkDragDrop, DragDropModule } from '@angular/cdk/drag-drop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { HttpErrorResponse } from '@angular/common/http';
 import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatCardModule } from '@angular/material/card';
@@ -7,15 +9,16 @@ import { MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/materia
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { firstValueFrom } from 'rxjs';
 
 import { AuthApi, CourseApi } from '@core/api';
 import { AuthService } from '@core/auth';
-import { Course, CourseScheduleEntry, UserListItem } from '@core/models';
+import { ClassGroup, Course, CourseScheduleEntry, UserListItem } from '@core/models';
 import { DialogService, NotificationService } from '@core/services';
 import { ClassKindStrategies } from '@core/strategies';
 import { normalizeSchedule, nowInTenant } from '@core/utils';
-import { Calendar, Icon, LoadingSkeleton, PageHead } from '@shared/components';
+import { Calendar, GroupSelect, Icon, LoadingSkeleton, PageHead } from '@shared/components';
 
 type FormKind = 'scheduled' | 'unique';
 
@@ -24,12 +27,14 @@ interface ClassDialogData {
   kind: FormKind;
   courses: Course[];
   teachers: UserListItem[];
+  groups: ClassGroup[];
   initial?: Partial<ClassDialogResult> & { id?: string };
 }
 
 interface ClassDialogResult {
   kind: FormKind;
   courseId: string;
+  groupId: string;
   teacherIds: string[];
   dayOfWeekIndex: number;
   date: string;
@@ -66,6 +71,15 @@ interface ClassDialogResult {
             <mat-select formControlName="courseId">
               @for (course of data.courses; track course.id) {
                 <mat-option [value]="course.id">{{ course.name }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Grupo</mat-label>
+            <mat-select formControlName="groupId">
+              @for (group of data.groups; track group.id) {
+                <mat-option [value]="group.id">{{ group.name }}</mat-option>
               }
             </mat-select>
           </mat-form-field>
@@ -151,6 +165,7 @@ export class ScheduleDialog {
   protected readonly form = this.formBuilder.nonNullable.group({
     kind: [this.data.kind as FormKind],
     courseId: [this.data.initial?.courseId ?? '', Validators.required],
+    groupId: [this.data.initial?.groupId ?? '', Validators.required],
     teacherIds: [this.data.initial?.teacherIds ?? ([] as string[])],
     dayOfWeekIndex: [this.data.initial?.dayOfWeekIndex ?? 1],
     date: [this.data.initial?.date ?? ''],
@@ -173,6 +188,7 @@ export class ScheduleDialog {
     this.dialogRef.close({
       kind: formValue.kind,
       courseId: formValue.courseId,
+      groupId: formValue.groupId,
       teacherIds: formValue.teacherIds,
       dayOfWeekIndex: formValue.dayOfWeekIndex,
       date: formValue.date,
@@ -187,11 +203,14 @@ export class ScheduleDialog {
   selector: 'app-client-schedule',
   imports: [
     ReactiveFormsModule,
+    DragDropModule,
     MatCardModule,
     MatFormFieldModule,
     MatSelectModule,
     MatButtonModule,
+    MatTooltipModule,
     Calendar,
+    GroupSelect,
     Icon,
     PageHead,
     LoadingSkeleton,
@@ -203,11 +222,111 @@ export class ScheduleDialog {
         mat-flat-button
         color="primary"
         (click)="onCreate()"
-        [disabled]="courses().length === 0"
+        [disabled]="courses().length === 0 || groups().length === 0"
       >
         <app-icon name="plus" /><span class="btn-label">Nueva clase</span>
       </button>
     </app-page-head>
+
+    <mat-card class="controls-card">
+      <mat-card-content class="controls">
+        <app-group-select
+          [editable]="true"
+          [selectedGroupId]="selectedGroupId()"
+          (groupChange)="onGroupChange($event)"
+          (groupsLoaded)="onGroupsLoaded($event)"
+        />
+        @if (groups().length >= 2) {
+          <button mat-stroked-button (click)="toggleTransfer()">
+            <app-icon name="transfer" />
+            <span class="btn-label">{{
+              transferMode() ? 'Cerrar transferencia' : 'Transferir clases'
+            }}</span>
+          </button>
+        }
+      </mat-card-content>
+    </mat-card>
+
+    <div class="columns" [class.split]="transferMode()">
+      <mat-card class="col-card">
+        <mat-card-content>
+          <h3 class="col-title">{{ selectedGroup()?.name ?? 'Grupo' }}</h3>
+          @if (loading()) {
+            <app-loading-skeleton [height]="320" />
+          } @else {
+            <div
+              cdkDropList
+              id="group-source-list"
+              [cdkDropListData]="selectedGroupId()"
+              [cdkDropListConnectedTo]="transferMode() ? ['group-target-list'] : []"
+              (cdkDropListDropped)="onDrop($event)"
+              class="class-list"
+            >
+              @for (entry of selectedGroupEntries(); track entry.classId) {
+                <div class="class-item" cdkDrag [cdkDragData]="entry">
+                  <div class="class-main">
+                    <span class="class-course">{{ entry.courseName }}</span>
+                    <span class="class-time">
+                      <app-icon name="clock" />
+                      {{ entry.startTime.slice(0, 5) }} – {{ entry.endTime.slice(0, 5) }}
+                    </span>
+                    <span class="class-teachers t-small">{{ teacherNames(entry) }}</span>
+                  </div>
+                  @if (!transferMode()) {
+                    <div class="class-actions">
+                      <button mat-icon-button matTooltip="Editar" (click)="onEdit(entry)">
+                        <app-icon name="edit" />
+                      </button>
+                      <button
+                        mat-icon-button
+                        matTooltip="Eliminar"
+                        class="danger-btn"
+                        (click)="onDelete(entry)"
+                      >
+                        <app-icon name="trash" />
+                      </button>
+                    </div>
+                  }
+                </div>
+              } @empty {
+                <p class="empty t-small">No hay clases en este grupo.</p>
+              }
+            </div>
+          }
+        </mat-card-content>
+      </mat-card>
+
+      @if (transferMode() && nextGroup()) {
+        <mat-card class="col-card">
+          <mat-card-content>
+            <h3 class="col-title">{{ nextGroup()?.name }}</h3>
+            <div
+              cdkDropList
+              id="group-target-list"
+              [cdkDropListData]="nextGroup()!.id"
+              [cdkDropListConnectedTo]="['group-source-list']"
+              (cdkDropListDropped)="onDrop($event)"
+              class="class-list"
+            >
+              @for (entry of nextGroupEntries(); track entry.classId) {
+                <div class="class-item" cdkDrag [cdkDragData]="entry">
+                  <div class="class-main">
+                    <span class="class-course">{{ entry.courseName }}</span>
+                    <span class="class-time">
+                      <app-icon name="clock" />
+                      {{ entry.startTime.slice(0, 5) }} – {{ entry.endTime.slice(0, 5) }}
+                    </span>
+                    <span class="class-teachers t-small">{{ teacherNames(entry) }}</span>
+                  </div>
+                </div>
+              } @empty {
+                <p class="empty t-small">No hay clases en este grupo.</p>
+              }
+            </div>
+          </mat-card-content>
+        </mat-card>
+      }
+    </div>
 
     <mat-card class="cal-card">
       <mat-card-content>
@@ -216,7 +335,7 @@ export class ScheduleDialog {
         } @else {
           @defer {
             <app-calendar
-              [entries]="entries()"
+              [entries]="selectedGroupEntries()"
               [editable]="true"
               (editClick)="onEdit($event)"
               (deleteClick)="onDelete($event)"
@@ -232,6 +351,85 @@ export class ScheduleDialog {
   styles: `
     :host {
       display: block;
+    }
+    .controls-card {
+      margin-bottom: 12px;
+    }
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .columns {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .columns.split {
+      grid-template-columns: 1fr 1fr;
+    }
+    @media (max-width: 768px) {
+      .columns.split {
+        grid-template-columns: 1fr;
+      }
+    }
+    .col-card {
+      padding: 0;
+    }
+    .col-title {
+      margin: 4px 4px 12px;
+      font-weight: 600;
+    }
+    .class-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      min-height: 60px;
+    }
+    .class-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 10px 12px;
+      border: 1px solid var(--mat-sys-outline-variant, rgba(0, 0, 0, 0.12));
+      border-radius: 8px;
+      background: var(--mat-sys-surface);
+      cursor: grab;
+    }
+    .class-main {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .class-course {
+      font-weight: 600;
+    }
+    .class-time {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-variant-numeric: tabular-nums;
+    }
+    .class-teachers {
+      color: var(--dama-text-muted);
+    }
+    .empty {
+      color: var(--dama-text-muted);
+      text-align: center;
+      padding: 16px 0;
+    }
+    .danger-btn {
+      color: var(--dama-danger);
+    }
+    .cdk-drag-preview {
+      box-shadow: 0 5px 16px rgba(0, 0, 0, 0.3);
+      border-radius: 8px;
+    }
+    .cdk-drag-placeholder {
+      opacity: 0.4;
     }
     .cal-card {
       padding: 0;
@@ -257,10 +455,87 @@ export class Schedule {
   protected readonly teachers = signal<UserListItem[]>([]);
   protected readonly entries = signal<CourseScheduleEntry[]>([]);
   protected readonly loading = signal(true);
+  protected readonly groups = signal<ClassGroup[]>([]);
+  protected readonly selectedGroupId = signal<string>('');
+  protected readonly transferMode = signal(false);
   private readonly weekIndex = signal(0);
+
+  protected readonly selectedGroup = computed<ClassGroup | undefined>(() =>
+    this.groups().find((group) => group.id === this.selectedGroupId()),
+  );
+
+  protected readonly nextGroup = computed<ClassGroup | undefined>(() => {
+    const all = this.groups();
+    if (all.length < 2) {
+      return undefined;
+    }
+    const currentIndex = all.findIndex((group) => group.id === this.selectedGroupId());
+    return all[(currentIndex + 1) % all.length];
+  });
+
+  protected readonly selectedGroupEntries = computed<CourseScheduleEntry[]>(() =>
+    this.entries().filter((entry) => entry.groupId === this.selectedGroupId()),
+  );
+
+  protected readonly nextGroupEntries = computed<CourseScheduleEntry[]>(() => {
+    const target = this.nextGroup();
+    return target ? this.entries().filter((entry) => entry.groupId === target.id) : [];
+  });
 
   constructor() {
     this.initialLoad();
+  }
+
+  protected onGroupsLoaded(groups: ClassGroup[]): void {
+    this.groups.set(groups);
+    if (!this.selectedGroupId() || !groups.some((group) => group.id === this.selectedGroupId())) {
+      this.selectedGroupId.set(groups[0]?.id ?? '');
+    }
+  }
+
+  protected onGroupChange(groupId: string): void {
+    this.selectedGroupId.set(groupId);
+  }
+
+  protected toggleTransfer(): void {
+    this.transferMode.update((active) => !active);
+  }
+
+  protected teacherNames(entry: CourseScheduleEntry): string {
+    return entry.teachers.map((teacher) => teacher.teacherName).join(', ') || 'Sin profesor';
+  }
+
+  protected async onDrop(dropEvent: CdkDragDrop<string>): Promise<void> {
+    const targetGroupId = dropEvent.container.data;
+    const sourceGroupId = dropEvent.previousContainer.data;
+    if (targetGroupId === sourceGroupId) {
+      return;
+    }
+    const entry = dropEvent.item.data as CourseScheduleEntry;
+    const targetGroup = this.groups().find((group) => group.id === targetGroupId);
+    const confirmed = await this.dialogs.confirm({
+      title: 'Transferir clase',
+      message: `¿Mover "${entry.courseName}" al grupo "${targetGroup?.name ?? ''}"?`,
+      confirmLabel: 'Transferir',
+    });
+    if (!confirmed) {
+      return;
+    }
+    try {
+      await firstValueFrom(
+        entry.classKind === 'Scheduled'
+          ? this.courseApi.transferScheduledClass(entry.classId, targetGroupId)
+          : this.courseApi.transferUniqueClass(entry.classId, targetGroupId),
+      );
+      this.notifications.success('Clase transferida.');
+      await this.reloadSchedule();
+    } catch (error: unknown) {
+      if (error instanceof HttpErrorResponse && error.status === 409) {
+        this.notifications.error('La clase se solapa con otra en el grupo destino.');
+      } else {
+        this.notifications.error('Error al transferir clase.');
+      }
+    }
   }
 
   private async initialLoad(): Promise<void> {
@@ -324,7 +599,11 @@ export class Schedule {
       kind: 'scheduled',
       courses: this.courses(),
       teachers: this.teachers(),
-      initial: { courseId: this.courses()[0]?.id ?? '' },
+      groups: this.groups(),
+      initial: {
+        courseId: this.courses()[0]?.id ?? '',
+        groupId: this.selectedGroupId() || (this.groups()[0]?.id ?? ''),
+      },
     });
     if (!result) {
       return;
@@ -336,6 +615,7 @@ export class Schedule {
       await firstValueFrom(
         strategy.create({
           courseId: result.courseId,
+          groupId: result.groupId,
           teachers: this.buildTeacherPayload(result.teacherIds),
           startTime: result.startTime,
           endTime: result.endTime,
@@ -359,9 +639,11 @@ export class Schedule {
       kind: formKind,
       courses: this.courses(),
       teachers: this.teachers(),
+      groups: this.groups(),
       initial: {
         kind: formKind,
         courseId: entry.courseId,
+        groupId: entry.groupId,
         teacherIds: entry.teachers.map((teacher) => teacher.teacherId),
         dayOfWeekIndex,
         date: entry.date,
@@ -378,6 +660,7 @@ export class Schedule {
       await firstValueFrom(
         strategy.update(entry.classId, {
           courseId: entry.courseId,
+          groupId: entry.groupId,
           teachers: this.buildTeacherPayload(result.teacherIds),
           startTime: result.startTime,
           endTime: result.endTime,

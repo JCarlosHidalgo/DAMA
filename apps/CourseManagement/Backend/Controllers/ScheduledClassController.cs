@@ -2,6 +2,7 @@ using System.Diagnostics;
 
 using Backend.Application.Mediator;
 using Backend.Application.Scheduleds;
+using Backend.Dtos.Groups.Input;
 using Backend.Dtos.Scheduleds.Input;
 using Backend.Dtos.Scheduleds.Output;
 using Backend.Results.Scheduleds;
@@ -17,6 +18,8 @@ public class ScheduledClassController : ControllerBase
 {
     private const string CourseNotFoundMessage = "Course not found for tenant.";
     private const string ScheduledClassNotFoundMessage = "ScheduledClass not found for tenant.";
+    private const string GroupNotFoundMessage = "Class group not found for tenant.";
+    private const string GroupOverlapMessage = "A class in this group already overlaps the requested time slot.";
 
     [Authorize(Roles = "Client")]
     [HttpPost]
@@ -29,7 +32,8 @@ public class ScheduledClassController : ControllerBase
             CreateScheduledClassResult.Created created => Ok(created.ScheduledClass),
             CreateScheduledClassResult.ReplayedFromIdempotency replayed => Ok(replayed.ScheduledClass),
             CreateScheduledClassResult.CourseNotFound => NotFound(CourseNotFoundMessage),
-            CreateScheduledClassResult.TeacherConflict conflict => Conflict(BuildTeacherConflictMessage(conflict.TeacherName)),
+            CreateScheduledClassResult.GroupNotFound => NotFound(GroupNotFoundMessage),
+            CreateScheduledClassResult.GroupOverlapConflict => Conflict(GroupOverlapMessage),
             _ => throw new UnreachableException()
         };
     }
@@ -44,7 +48,23 @@ public class ScheduledClassController : ControllerBase
         {
             UpdateScheduledClassResult.Updated => NoContent(),
             UpdateScheduledClassResult.NotFound => NotFound(ScheduledClassNotFoundMessage),
-            UpdateScheduledClassResult.TeacherConflict conflict => Conflict(BuildTeacherConflictMessage(conflict.TeacherName)),
+            UpdateScheduledClassResult.GroupOverlapConflict => Conflict(GroupOverlapMessage),
+            _ => throw new UnreachableException()
+        };
+    }
+
+    [Authorize(Roles = "Client")]
+    [HttpPut("{id}/transfer")]
+    public async Task<ActionResult> TransferScheduledClass(Guid id, TransferClassDto transferClassDto,
+        [FromServices] ICommandHandler<TransferScheduledClassCommand, TransferScheduledClassResult> handler)
+    {
+        TransferScheduledClassResult result = await handler.Handle(new TransferScheduledClassCommand(id, transferClassDto.TargetGroupId));
+        return result switch
+        {
+            TransferScheduledClassResult.Transferred => NoContent(),
+            TransferScheduledClassResult.NotFound => NotFound(ScheduledClassNotFoundMessage),
+            TransferScheduledClassResult.GroupNotFound => NotFound(GroupNotFoundMessage),
+            TransferScheduledClassResult.GroupOverlapConflict => Conflict(GroupOverlapMessage),
             _ => throw new UnreachableException()
         };
     }
@@ -62,7 +82,4 @@ public class ScheduledClassController : ControllerBase
             _ => throw new UnreachableException()
         };
     }
-
-    private static string BuildTeacherConflictMessage(string teacherName) =>
-        $"Teacher '{teacherName}' already has a class overlapping the requested time slot.";
 }

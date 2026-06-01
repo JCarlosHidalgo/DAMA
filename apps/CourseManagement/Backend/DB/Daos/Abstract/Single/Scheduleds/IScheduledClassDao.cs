@@ -23,7 +23,9 @@ public interface IScheduledClassDao : ISingleDao<ScheduledClass>, IClassAggregat
 
     Task<bool> UpdateForTenantAsync(ScheduledClassUpdate scheduledClassUpdate, Guid tenantId, ITransactionContext transaction);
 
-    Task<bool> HasOverlapForTeacherAsync(Guid tenantId, Guid teacherId, int dayOfWeekIndex, TimeOnly startTime, TimeOnly endTime, Guid? excludeId);
+    Task<bool> HasGroupOverlapAsync(Guid tenantId, Guid groupId, int dayOfWeekIndex, TimeOnly startTime, TimeOnly endTime, Guid? excludeId);
+
+    Task<bool> TransferToGroupAsync(Guid tenantId, Guid id, Guid targetGroupId, ITransactionContext transaction);
 
     Task<bool> DeleteForTenantAsync(Guid tenantId, Guid id, ITransactionContext transaction);
 

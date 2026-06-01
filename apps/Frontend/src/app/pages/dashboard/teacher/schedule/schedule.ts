@@ -1,21 +1,32 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 import { MatDialog } from '@angular/material/dialog';
 import { firstValueFrom } from 'rxjs';
 
 import { CourseApi } from '@core/api';
 import { AuthService } from '@core/auth';
-import { Course, CourseScheduleEntry } from '@core/models';
+import { ClassGroup, Course, CourseScheduleEntry } from '@core/models';
 import { NotificationService } from '@core/services';
 import { normalizeSchedule, nowInTenant } from '@core/utils';
-import { Calendar, LoadingSkeleton, PageHead } from '@shared/components';
+import { Calendar, GroupSelect, LoadingSkeleton, PageHead } from '@shared/components';
 import { AttendanceQrDialog, AttendanceQrDialogData } from './attendance-qr-dialog';
 
 @Component({
   selector: 'app-teacher-schedule',
-  imports: [MatCardModule, Calendar, PageHead, LoadingSkeleton],
+  imports: [MatCardModule, Calendar, GroupSelect, PageHead, LoadingSkeleton],
   template: `
     <app-page-head title="Mi horario" subtitle="Toca una clase para abrir el QR de asistencia" />
+
+    <mat-card class="controls-card">
+      <mat-card-content>
+        <app-group-select
+          source="teacher"
+          [selectedGroupId]="selectedGroupId()"
+          (groupChange)="onGroupChange($event)"
+          (groupsLoaded)="onGroupsLoaded($event)"
+        />
+      </mat-card-content>
+    </mat-card>
 
     <mat-card class="cal-card">
       <mat-card-content>
@@ -24,7 +35,7 @@ import { AttendanceQrDialog, AttendanceQrDialogData } from './attendance-qr-dial
         } @else {
           @defer {
             <app-calendar
-              [entries]="entries()"
+              [entries]="filteredEntries()"
               (eventClick)="onEvent($event)"
               (weekDelta)="onWeekDelta($event)"
             />
@@ -38,6 +49,9 @@ import { AttendanceQrDialog, AttendanceQrDialogData } from './attendance-qr-dial
   styles: `
     :host {
       display: block;
+    }
+    .controls-card {
+      margin-bottom: 12px;
     }
     .cal-card {
       padding: 0;
@@ -56,11 +70,30 @@ export class TeacherSchedule {
 
   protected readonly entries = signal<CourseScheduleEntry[]>([]);
   protected readonly loading = signal(true);
+  protected readonly selectedGroupId = signal<string>('');
   private readonly courses = signal<Course[]>([]);
   private readonly weekIndex = signal(0);
 
+  protected readonly filteredEntries = computed<CourseScheduleEntry[]>(() => {
+    const groupId = this.selectedGroupId();
+    if (!groupId) {
+      return this.entries();
+    }
+    return this.entries().filter((entry) => entry.groupId === groupId);
+  });
+
   constructor() {
     this.reload();
+  }
+
+  protected onGroupsLoaded(groups: ClassGroup[]): void {
+    if (!this.selectedGroupId() || !groups.some((group) => group.id === this.selectedGroupId())) {
+      this.selectedGroupId.set(groups[0]?.id ?? '');
+    }
+  }
+
+  protected onGroupChange(groupId: string): void {
+    this.selectedGroupId.set(groupId);
   }
 
   protected async onWeekDelta(delta: number): Promise<void> {

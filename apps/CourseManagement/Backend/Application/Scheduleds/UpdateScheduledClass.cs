@@ -40,12 +40,15 @@ public sealed class UpdateScheduledClassHandler : ICommandHandler<UpdateSchedule
         UpdateScheduledClassDto payload = command.Payload;
         List<ClassTeacher> teachers = _mapper.Map<List<ClassTeacherDto>, List<ClassTeacher>>(payload.Teachers);
 
-        foreach (ClassTeacher teacher in teachers)
+        ScheduledClass? existing = await _scheduledClassDao.GetByIdForTenantAsync(tenantId, scheduledClassId);
+        if (existing is null)
         {
-            if (await _scheduledClassDao.HasOverlapForTeacherAsync(tenantId, teacher.TeacherId, payload.DayOfWeekIndex, payload.StartTime, payload.EndTime, scheduledClassId))
-            {
-                return new UpdateScheduledClassResult.TeacherConflict(teacher.TeacherId, teacher.TeacherName);
-            }
+            return new UpdateScheduledClassResult.NotFound();
+        }
+
+        if (await _scheduledClassDao.HasGroupOverlapAsync(tenantId, existing.GroupId, payload.DayOfWeekIndex, payload.StartTime, payload.EndTime, scheduledClassId))
+        {
+            return new UpdateScheduledClassResult.GroupOverlapConflict();
         }
 
         ScheduledClassUpdate scheduledClassUpdate = new ScheduledClassUpdate(

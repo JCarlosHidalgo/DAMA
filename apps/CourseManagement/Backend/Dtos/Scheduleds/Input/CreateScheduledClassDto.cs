@@ -12,6 +12,8 @@ public class CreateScheduledClassDto : IScheduledClassPayload
 
     public required Guid CourseId { get; set; }
 
+    public required Guid GroupId { get; set; }
+
     public required List<ClassTeacherDto> Teachers { get; set; }
 
     public string? ExternalReference { get; set; }

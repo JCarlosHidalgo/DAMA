@@ -14,5 +14,9 @@ public class GetUniqueClassDto : IUniqueClassPayload
 
     public required Guid CourseId { get; set; }
 
+    public required Guid GroupId { get; set; }
+
+    public required string GroupName { get; set; }
+
     public required List<ClassTeacherDto> Teachers { get; set; }
 }

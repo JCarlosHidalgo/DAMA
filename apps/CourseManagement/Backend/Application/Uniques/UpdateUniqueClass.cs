@@ -40,12 +40,15 @@ public sealed class UpdateUniqueClassHandler : ICommandHandler<UpdateUniqueClass
         UpdateUniqueClassDto payload = command.Payload;
         List<ClassTeacher> teachers = _mapper.Map<List<ClassTeacherDto>, List<ClassTeacher>>(payload.Teachers);
 
-        foreach (ClassTeacher teacher in teachers)
+        UniqueClass? existing = await _uniqueClassDao.GetByIdForTenantAsync(tenantId, uniqueClassId);
+        if (existing is null)
         {
-            if (await _uniqueClassDao.HasOverlapForTeacherAsync(tenantId, teacher.TeacherId, payload.Date, payload.StartTime, payload.EndTime, uniqueClassId))
-            {
-                return new UpdateUniqueClassResult.TeacherConflict(teacher.TeacherId, teacher.TeacherName);
-            }
+            return new UpdateUniqueClassResult.NotFound();
+        }
+
+        if (await _uniqueClassDao.HasGroupOverlapAsync(tenantId, existing.GroupId, payload.Date, payload.StartTime, payload.EndTime, uniqueClassId))
+        {
+            return new UpdateUniqueClassResult.GroupOverlapConflict();
         }
 
         UniqueClassUpdate uniqueClassUpdate = new UniqueClassUpdate(

@@ -56,6 +56,7 @@ const TABS_BY_ROLE: Record<UserRole, TabEntry[]> = {
   Teacher: [{ label: 'Horario', icon: faCalendarDays, path: 'horario' }],
   Student: [
     { label: 'Resumen', icon: faGauge, path: 'resumen' },
+    { label: 'Horario', icon: faCalendarDays, path: 'horario' },
     { label: 'Pagar Clases', icon: faMoneyBill, path: 'pagar-clases' },
     { label: 'Estado de Deudas', icon: faReceipt, path: 'estado-deudas' },
     { label: 'Marcar Asistencia', icon: faQrcode, path: 'marcar-asistencia' },

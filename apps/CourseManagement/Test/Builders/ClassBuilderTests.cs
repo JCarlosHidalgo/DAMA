@@ -16,10 +16,11 @@ public class ClassBuilderTests
     public void SetUp() => builder = new ClassBuilder();
 
     [Test]
-    public void BuildScheduledClass_CopiesPayloadAndAssignsTenantAndTeachers()
+    public void BuildScheduledClass_CopiesPayloadAndAssignsTenantGroupAndTeachers()
     {
         var tenantId = Guid.NewGuid();
         var courseId = Guid.NewGuid();
+        var groupId = Guid.NewGuid();
         var payload = new CreateScheduledClassDto
         {
             DayOfWeekIndex = 3,
@@ -27,6 +28,7 @@ public class ClassBuilderTests
             StartTime = new TimeOnly(9, 0),
             EndTime = new TimeOnly(10, 30),
             CourseId = courseId,
+            GroupId = groupId,
             Teachers = []
         };
         var teachers = new List<ClassTeacher>
@@ -34,7 +36,7 @@ public class ClassBuilderTests
             new() { TeacherId = Guid.NewGuid(), TeacherName = "Profesor" }
         };
 
-        ScheduledClass result = builder.BuildScheduledClass(tenantId, courseId, payload, teachers);
+        ScheduledClass result = builder.BuildScheduledClass(tenantId, courseId, groupId, payload, teachers);
 
         Assert.Multiple(() =>
         {
@@ -44,6 +46,7 @@ public class ClassBuilderTests
             Assert.That(result.StartTime, Is.EqualTo(new TimeOnly(9, 0)));
             Assert.That(result.EndTime, Is.EqualTo(new TimeOnly(10, 30)));
             Assert.That(result.CourseId, Is.EqualTo(courseId));
+            Assert.That(result.GroupId, Is.EqualTo(groupId));
             Assert.That(result.TenantId, Is.EqualTo(tenantId));
             Assert.That(result.Teachers, Is.SameAs(teachers));
         });
@@ -59,21 +62,23 @@ public class ClassBuilderTests
             StartTime = new TimeOnly(8, 0),
             EndTime = new TimeOnly(9, 0),
             CourseId = Guid.NewGuid(),
+            GroupId = Guid.NewGuid(),
             Teachers = []
         };
         var teachers = new List<ClassTeacher>();
 
-        ScheduledClass first = builder.BuildScheduledClass(Guid.NewGuid(), payload.CourseId, payload, teachers);
-        ScheduledClass second = builder.BuildScheduledClass(Guid.NewGuid(), payload.CourseId, payload, teachers);
+        ScheduledClass first = builder.BuildScheduledClass(Guid.NewGuid(), payload.CourseId, payload.GroupId, payload, teachers);
+        ScheduledClass second = builder.BuildScheduledClass(Guid.NewGuid(), payload.CourseId, payload.GroupId, payload, teachers);
 
         Assert.That(first.Id, Is.Not.EqualTo(second.Id));
     }
 
     [Test]
-    public void BuildUniqueClass_CopiesPayloadAndAssignsTenantAndTeachers()
+    public void BuildUniqueClass_CopiesPayloadAndAssignsTenantGroupAndTeachers()
     {
         var tenantId = Guid.NewGuid();
         var courseId = Guid.NewGuid();
+        var groupId = Guid.NewGuid();
         var date = new DateOnly(2025, 7, 4);
         var payload = new CreateUniqueClassDto
         {
@@ -82,6 +87,7 @@ public class ClassBuilderTests
             StartTime = new TimeOnly(14, 0),
             EndTime = new TimeOnly(15, 30),
             CourseId = courseId,
+            GroupId = groupId,
             Teachers = []
         };
         var teachers = new List<ClassTeacher>
@@ -89,7 +95,7 @@ public class ClassBuilderTests
             new() { TeacherId = Guid.NewGuid(), TeacherName = "Profesor" }
         };
 
-        UniqueClass result = builder.BuildUniqueClass(tenantId, courseId, payload, teachers);
+        UniqueClass result = builder.BuildUniqueClass(tenantId, courseId, groupId, payload, teachers);
 
         Assert.Multiple(() =>
         {
@@ -99,6 +105,7 @@ public class ClassBuilderTests
             Assert.That(result.StartTime, Is.EqualTo(new TimeOnly(14, 0)));
             Assert.That(result.EndTime, Is.EqualTo(new TimeOnly(15, 30)));
             Assert.That(result.CourseId, Is.EqualTo(courseId));
+            Assert.That(result.GroupId, Is.EqualTo(groupId));
             Assert.That(result.TenantId, Is.EqualTo(tenantId));
             Assert.That(result.Teachers, Is.SameAs(teachers));
         });
@@ -114,12 +121,13 @@ public class ClassBuilderTests
             StartTime = new TimeOnly(8, 0),
             EndTime = new TimeOnly(9, 0),
             CourseId = Guid.NewGuid(),
+            GroupId = Guid.NewGuid(),
             Teachers = []
         };
         var teachers = new List<ClassTeacher>();
 
-        UniqueClass first = builder.BuildUniqueClass(Guid.NewGuid(), payload.CourseId, payload, teachers);
-        UniqueClass second = builder.BuildUniqueClass(Guid.NewGuid(), payload.CourseId, payload, teachers);
+        UniqueClass first = builder.BuildUniqueClass(Guid.NewGuid(), payload.CourseId, payload.GroupId, payload, teachers);
+        UniqueClass second = builder.BuildUniqueClass(Guid.NewGuid(), payload.CourseId, payload.GroupId, payload, teachers);
 
         Assert.That(first.Id, Is.Not.EqualTo(second.Id));
     }

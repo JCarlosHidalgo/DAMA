@@ -8,5 +8,5 @@ public abstract record UpdateUniqueClassResult
 
     public sealed record NotFound : UpdateUniqueClassResult;
 
-    public sealed record TeacherConflict(Guid TeacherId, string TeacherName) : UpdateUniqueClassResult;
+    public sealed record GroupOverlapConflict : UpdateUniqueClassResult;
 }

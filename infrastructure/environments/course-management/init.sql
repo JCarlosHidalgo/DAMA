@@ -23,6 +23,14 @@ BEGIN
 END //
 DELIMITER ;
 
+-- CLASS GROUP (tenant-scoped grouping of classes; overlap validation is per group)
+CREATE TABLE IF NOT EXISTS ClassGroup(
+    Id       VARCHAR(36) PRIMARY KEY NOT NULL,
+    Name     VARCHAR(200) NOT NULL,
+    TenantId VARCHAR(36)  NOT NULL,
+    INDEX idx_classgroup_tenant (TenantId)
+);
+
 -- SCHEDULED CLASS
 CREATE TABLE IF NOT EXISTS ScheduledClass(
     Id VARCHAR(36) PRIMARY KEY NOT NULL,
@@ -31,9 +39,12 @@ CREATE TABLE IF NOT EXISTS ScheduledClass(
     StartTime TIME,
     EndTime TIME,
     CourseId VARCHAR(36),
+    GroupId VARCHAR(36) NOT NULL,
     TenantId VARCHAR(36) NOT NULL,
     FOREIGN KEY (CourseId) REFERENCES Course(Id),
-    INDEX idx_scheduledclass_tenant (TenantId)
+    FOREIGN KEY (GroupId) REFERENCES ClassGroup(Id),
+    INDEX idx_scheduledclass_tenant (TenantId),
+    INDEX idx_scheduledclass_group (GroupId)
 );
 
 -- UNIQUE CLASS
@@ -44,9 +55,12 @@ CREATE TABLE IF NOT EXISTS UniqueClass (
     StartTime TIME,
     EndTime TIME,
     CourseId VARCHAR(36),
+    GroupId VARCHAR(36) NOT NULL,
     TenantId VARCHAR(36) NOT NULL,
     FOREIGN KEY (CourseId) REFERENCES Course(Id),
-    INDEX idx_uniqueclass_tenant (TenantId)
+    FOREIGN KEY (GroupId) REFERENCES ClassGroup(Id),
+    INDEX idx_uniqueclass_tenant (TenantId),
+    INDEX idx_uniqueclass_group (GroupId)
 );
 
 -- M:N JOIN TABLES (teacher membership with denormalized name snapshot)
@@ -80,11 +94,14 @@ BEGIN
         sc.StartTime,
         sc.EndTime,
         sc.CourseId,
+        sc.GroupId,
+        cg.Name AS GroupName,
         sc.TenantId,
         CONCAT('[', IFNULL(GROUP_CONCAT(
             JSON_OBJECT('TeacherId', t.TeacherId, 'TeacherName', t.TeacherName)
         ), ''), ']') AS Teachers
     FROM ScheduledClass sc
+    LEFT JOIN ClassGroup cg ON cg.Id = sc.GroupId
     LEFT JOIN ScheduledClassTeacher t ON t.ScheduledClassId = sc.Id
     WHERE sc.CourseId = courseId
     GROUP BY sc.Id;
@@ -101,11 +118,14 @@ BEGIN
         uc.StartTime,
         uc.EndTime,
         uc.CourseId,
+        uc.GroupId,
+        cg.Name AS GroupName,
         uc.TenantId,
         CONCAT('[', IFNULL(GROUP_CONCAT(
             JSON_OBJECT('TeacherId', t.TeacherId, 'TeacherName', t.TeacherName)
         ), ''), ']') AS Teachers
     FROM UniqueClass uc
+    LEFT JOIN ClassGroup cg ON cg.Id = uc.GroupId
     LEFT JOIN UniqueClassTeacher t ON t.UniqueClassId = uc.Id
     WHERE uc.CourseId = courseId
       AND YEAR(uc.Date) = YEAR(dateInput)
@@ -145,14 +165,16 @@ CREATE PROCEDURE CreateScheduledClass(
     IN startTime       TIME,
     IN endTime         TIME,
     IN courseId        CHAR(36),
+    IN groupId         CHAR(36),
     IN tenantId        CHAR(36)
 )
 BEGIN
-    INSERT INTO ScheduledClass (Id, DayOfWeekIndex, MaxStudentLimit, StartTime, EndTime, CourseId, TenantId)
-    SELECT id, dayOfWeekIndex, maxStudentLimit, startTime, endTime, courseId, tenantId
+    INSERT INTO ScheduledClass (Id, DayOfWeekIndex, MaxStudentLimit, StartTime, EndTime, CourseId, GroupId, TenantId)
+    SELECT id, dayOfWeekIndex, maxStudentLimit, startTime, endTime, courseId, groupId, tenantId
     FROM Course c
     WHERE c.Id = courseId
-      AND c.TenantId = tenantId;
+      AND c.TenantId = tenantId
+      AND EXISTS (SELECT 1 FROM ClassGroup g WHERE g.Id = groupId AND g.TenantId = tenantId);
     SELECT ROW_COUNT() AS Inserted;
 END //
 DELIMITER ;
@@ -165,14 +187,16 @@ CREATE PROCEDURE CreateUniqueClass(
     IN startTime       TIME,
     IN endTime         TIME,
     IN courseId        CHAR(36),
+    IN groupId         CHAR(36),
     IN tenantId        CHAR(36)
 )
 BEGIN
-    INSERT INTO UniqueClass (Id, Date, MaxStudentLimit, StartTime, EndTime, CourseId, TenantId)
-    SELECT id, classDate, maxStudentLimit, startTime, endTime, courseId, tenantId
+    INSERT INTO UniqueClass (Id, Date, MaxStudentLimit, StartTime, EndTime, CourseId, GroupId, TenantId)
+    SELECT id, classDate, maxStudentLimit, startTime, endTime, courseId, groupId, tenantId
     FROM Course c
     WHERE c.Id = courseId
-      AND c.TenantId = tenantId;
+      AND c.TenantId = tenantId
+      AND EXISTS (SELECT 1 FROM ClassGroup g WHERE g.Id = groupId AND g.TenantId = tenantId);
     SELECT ROW_COUNT() AS Inserted;
 END //
 DELIMITER ;
@@ -308,6 +332,8 @@ BEGIN
         sc.StartTime,
         sc.EndTime,
         sc.CourseId,
+        sc.GroupId,
+        cg.Name AS GroupName,
         sc.TenantId,
         CONCAT('[', IFNULL(GROUP_CONCAT(
             JSON_OBJECT('TeacherId', t2.TeacherId, 'TeacherName', t2.TeacherName)
@@ -317,6 +343,7 @@ BEGIN
         ON tm.ScheduledClassId = sc.Id
        AND tm.TeacherId = teacherId
        AND tm.TenantId  = tenantId
+    LEFT JOIN ClassGroup cg ON cg.Id = sc.GroupId
     LEFT JOIN ScheduledClassTeacher t2 ON t2.ScheduledClassId = sc.Id
     WHERE sc.TenantId = tenantId
     GROUP BY sc.Id;
@@ -333,6 +360,8 @@ BEGIN
         uc.StartTime,
         uc.EndTime,
         uc.CourseId,
+        uc.GroupId,
+        cg.Name AS GroupName,
         uc.TenantId,
         CONCAT('[', IFNULL(GROUP_CONCAT(
             JSON_OBJECT('TeacherId', t2.TeacherId, 'TeacherName', t2.TeacherName)
@@ -342,6 +371,7 @@ BEGIN
         ON tm.UniqueClassId = uc.Id
        AND tm.TeacherId = teacherId
        AND tm.TenantId  = tenantId
+    LEFT JOIN ClassGroup cg ON cg.Id = uc.GroupId
     LEFT JOIN UniqueClassTeacher t2 ON t2.UniqueClassId = uc.Id
     WHERE uc.TenantId = tenantId
     GROUP BY uc.Id;
@@ -358,11 +388,14 @@ BEGIN
         sc.StartTime,
         sc.EndTime,
         sc.CourseId,
+        sc.GroupId,
+        cg.Name AS GroupName,
         sc.TenantId,
         CONCAT('[', IFNULL(GROUP_CONCAT(
             JSON_OBJECT('TeacherId', t.TeacherId, 'TeacherName', t.TeacherName)
         ), ''), ']') AS Teachers
     FROM ScheduledClass sc
+    LEFT JOIN ClassGroup cg ON cg.Id = sc.GroupId
     LEFT JOIN ScheduledClassTeacher t ON t.ScheduledClassId = sc.Id
     WHERE sc.Id = id
       AND sc.TenantId = tenantId
@@ -380,11 +413,14 @@ BEGIN
         uc.StartTime,
         uc.EndTime,
         uc.CourseId,
+        uc.GroupId,
+        cg.Name AS GroupName,
         uc.TenantId,
         CONCAT('[', IFNULL(GROUP_CONCAT(
             JSON_OBJECT('TeacherId', t.TeacherId, 'TeacherName', t.TeacherName)
         ), ''), ']') AS Teachers
     FROM UniqueClass uc
+    LEFT JOIN ClassGroup cg ON cg.Id = uc.GroupId
     LEFT JOIN UniqueClassTeacher t ON t.UniqueClassId = uc.Id
     WHERE uc.Id = id
       AND uc.TenantId = tenantId
@@ -402,11 +438,14 @@ BEGIN
         sc.StartTime,
         sc.EndTime,
         sc.CourseId,
+        sc.GroupId,
+        cg.Name AS GroupName,
         sc.TenantId,
         CONCAT('[', IFNULL(GROUP_CONCAT(
             JSON_OBJECT('TeacherId', t.TeacherId, 'TeacherName', t.TeacherName)
         ), ''), ']') AS Teachers
     FROM ScheduledClass sc
+    LEFT JOIN ClassGroup cg ON cg.Id = sc.GroupId
     LEFT JOIN ScheduledClassTeacher t ON t.ScheduledClassId = sc.Id
     WHERE sc.TenantId = tenantId
     GROUP BY sc.Id;
@@ -423,11 +462,14 @@ BEGIN
         uc.StartTime,
         uc.EndTime,
         uc.CourseId,
+        uc.GroupId,
+        cg.Name AS GroupName,
         uc.TenantId,
         CONCAT('[', IFNULL(GROUP_CONCAT(
             JSON_OBJECT('TeacherId', t.TeacherId, 'TeacherName', t.TeacherName)
         ), ''), ']') AS Teachers
     FROM UniqueClass uc
+    LEFT JOIN ClassGroup cg ON cg.Id = uc.GroupId
     LEFT JOIN UniqueClassTeacher t ON t.UniqueClassId = uc.Id
     WHERE uc.TenantId = tenantId
       AND uc.Date BETWEEN
@@ -448,6 +490,8 @@ BEGIN
         uc.StartTime,
         uc.EndTime,
         uc.CourseId,
+        uc.GroupId,
+        cg.Name AS GroupName,
         uc.TenantId,
         CONCAT('[', IFNULL(GROUP_CONCAT(
             JSON_OBJECT('TeacherId', t2.TeacherId, 'TeacherName', t2.TeacherName)
@@ -457,6 +501,7 @@ BEGIN
         ON tm.UniqueClassId = uc.Id
        AND tm.TeacherId = teacherId
        AND tm.TenantId  = tenantId
+    LEFT JOIN ClassGroup cg ON cg.Id = uc.GroupId
     LEFT JOIN UniqueClassTeacher t2 ON t2.UniqueClassId = uc.Id
     WHERE uc.TenantId = tenantId
       AND uc.Date BETWEEN
@@ -477,48 +522,152 @@ CREATE TABLE IF NOT EXISTS CourseIdempotency (
     PRIMARY KEY (TenantId, ExternalReference)
 );
 
--- TEACHER OVERLAP CHECKS
+-- CLASS GROUP MANAGEMENT
 DELIMITER //
-CREATE PROCEDURE HasScheduledClassOverlapForTeacher(
-    IN tenantId CHAR(36),
-    IN teacherId CHAR(36),
-    IN dayOfWeekIndex INT,
-    IN startTime TIME,
-    IN endTime TIME,
-    IN excludeId CHAR(36)
+CREATE PROCEDURE CreateClassGroup(
+    IN id       CHAR(36),
+    IN name     VARCHAR(200),
+    IN tenantId CHAR(36)
 )
 BEGIN
-    SELECT COUNT(*)
-    FROM ScheduledClass sc
-    JOIN ScheduledClassTeacher sct ON sct.ScheduledClassId = sc.Id
-    WHERE sc.TenantId = tenantId
-      AND sct.TeacherId = teacherId
-      AND sc.DayOfWeekIndex = dayOfWeekIndex
-      AND sc.StartTime < endTime
-      AND sc.EndTime > startTime
-      AND (excludeId IS NULL OR sc.Id <> excludeId);
+    INSERT INTO ClassGroup (Id, Name, TenantId)
+    VALUES (id, name, tenantId);
+    SELECT ROW_COUNT() AS Inserted;
 END //
 DELIMITER ;
 
 DELIMITER //
-CREATE PROCEDURE HasUniqueClassOverlapForTeacher(
-    IN tenantId CHAR(36),
-    IN teacherId CHAR(36),
-    IN classDate DATE,
-    IN startTime TIME,
-    IN endTime TIME,
-    IN excludeId CHAR(36)
+CREATE PROCEDURE UpdateClassGroupForTenant(
+    IN id       CHAR(36),
+    IN newName  VARCHAR(200),
+    IN tenantId CHAR(36)
 )
 BEGIN
-    SELECT COUNT(*)
-    FROM UniqueClass uc
-    JOIN UniqueClassTeacher uct ON uct.UniqueClassId = uc.Id
-    WHERE uc.TenantId = tenantId
-      AND uct.TeacherId = teacherId
-      AND uc.Date = classDate
-      AND uc.StartTime < endTime
-      AND uc.EndTime > startTime
-      AND (excludeId IS NULL OR uc.Id <> excludeId);
+    UPDATE ClassGroup g
+    SET g.Name = newName
+    WHERE g.Id = id
+      AND g.TenantId = tenantId;
+    SELECT ROW_COUNT() AS Updated;
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE DeleteClassGroupForTenant(IN id CHAR(36), IN tenantId CHAR(36))
+BEGIN
+    DELETE g FROM ClassGroup g
+    WHERE g.Id = id
+      AND g.TenantId = tenantId
+      AND NOT EXISTS (SELECT 1 FROM ScheduledClass sc WHERE sc.GroupId = id)
+      AND NOT EXISTS (SELECT 1 FROM UniqueClass uc WHERE uc.GroupId = id);
+    SELECT ROW_COUNT() AS Deleted;
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE GetClassGroupsForTenant(IN tenantId CHAR(36))
+BEGIN
+    SELECT g.Id, g.Name, g.TenantId
+    FROM ClassGroup g
+    WHERE g.TenantId = tenantId
+    ORDER BY g.Name;
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE GetClassGroupsByTeacherForTenant(IN tenantId CHAR(36), IN teacherId CHAR(36))
+BEGIN
+    SELECT g.Id, g.Name, g.TenantId
+    FROM ClassGroup g
+    WHERE g.TenantId = tenantId
+      AND (
+            EXISTS (
+                SELECT 1
+                FROM ScheduledClass sc
+                JOIN ScheduledClassTeacher sct ON sct.ScheduledClassId = sc.Id
+                WHERE sc.GroupId = g.Id AND sct.TeacherId = teacherId
+            )
+         OR EXISTS (
+                SELECT 1
+                FROM UniqueClass uc
+                JOIN UniqueClassTeacher uct ON uct.UniqueClassId = uc.Id
+                WHERE uc.GroupId = g.Id AND uct.TeacherId = teacherId
+            )
+      )
+    ORDER BY g.Name;
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE ExistsClassGroupForTenant(IN tenantId CHAR(36), IN groupId CHAR(36))
+BEGIN
+    SELECT 1
+    FROM ClassGroup g
+    WHERE g.Id = groupId
+      AND g.TenantId = tenantId
+    LIMIT 1;
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE TransferScheduledClassToGroup(IN id CHAR(36), IN targetGroupId CHAR(36), IN tenantId CHAR(36))
+BEGIN
+    UPDATE ScheduledClass sc
+    SET sc.GroupId = targetGroupId
+    WHERE sc.Id = id
+      AND sc.TenantId = tenantId;
+    SELECT ROW_COUNT() AS Updated;
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE TransferUniqueClassToGroup(IN id CHAR(36), IN targetGroupId CHAR(36), IN tenantId CHAR(36))
+BEGIN
+    UPDATE UniqueClass uc
+    SET uc.GroupId = targetGroupId
+    WHERE uc.Id = id
+      AND uc.TenantId = tenantId;
+    SELECT ROW_COUNT() AS Updated;
+END //
+DELIMITER ;
+
+-- GROUP OVERLAP CHECK (cross-kind: scheduled recurrence vs unique date)
+DELIMITER //
+CREATE PROCEDURE HasGroupClassOverlap(
+    IN tenantId       CHAR(36),
+    IN groupId        CHAR(36),
+    IN candidateKind  VARCHAR(16),
+    IN dayOfWeekIndex INT,
+    IN classDate      DATE,
+    IN startTime      TIME,
+    IN endTime        TIME,
+    IN excludeId      CHAR(36)
+)
+BEGIN
+    SELECT (
+        EXISTS (
+            SELECT 1
+            FROM ScheduledClass sc
+            WHERE sc.TenantId = tenantId
+              AND sc.GroupId = groupId
+              AND sc.DayOfWeekIndex = dayOfWeekIndex
+              AND sc.StartTime < endTime
+              AND sc.EndTime > startTime
+              AND (excludeId IS NULL OR sc.Id <> excludeId)
+        )
+        OR EXISTS (
+            SELECT 1
+            FROM UniqueClass uc
+            WHERE uc.TenantId = tenantId
+              AND uc.GroupId = groupId
+              AND uc.StartTime < endTime
+              AND uc.EndTime > startTime
+              AND (
+                    (candidateKind = 'Scheduled' AND (WEEKDAY(uc.Date) + 1) = dayOfWeekIndex)
+                 OR (candidateKind = 'Unique'    AND uc.Date = classDate)
+              )
+              AND (excludeId IS NULL OR uc.Id <> excludeId)
+        )
+    ) AS HasOverlap;
 END //
 DELIMITER ;
 
@@ -544,6 +693,7 @@ CREATE PROCEDURE TruncateAllTables()
 BEGIN
     SET FOREIGN_KEY_CHECKS = 0;
     TRUNCATE TABLE Course;
+    TRUNCATE TABLE ClassGroup;
     TRUNCATE TABLE ScheduledClass;
     TRUNCATE TABLE UniqueClass;
     TRUNCATE TABLE ScheduledClassTeacher;

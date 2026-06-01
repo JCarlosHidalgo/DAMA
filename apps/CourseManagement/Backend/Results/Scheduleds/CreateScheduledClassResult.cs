@@ -12,5 +12,7 @@ public abstract record CreateScheduledClassResult
 
     public sealed record CourseNotFound : CreateScheduledClassResult;
 
-    public sealed record TeacherConflict(Guid TeacherId, string TeacherName) : CreateScheduledClassResult;
+    public sealed record GroupNotFound : CreateScheduledClassResult;
+
+    public sealed record GroupOverlapConflict : CreateScheduledClassResult;
 }

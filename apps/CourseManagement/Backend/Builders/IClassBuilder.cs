@@ -8,7 +8,7 @@ namespace Backend.Builders;
 
 public interface IClassBuilder
 {
-    UniqueClass BuildUniqueClass(Guid tenantId, Guid courseId, IUniqueClassPayload payload, List<ClassTeacher> teachers);
+    UniqueClass BuildUniqueClass(Guid tenantId, Guid courseId, Guid groupId, IUniqueClassPayload payload, List<ClassTeacher> teachers);
 
-    ScheduledClass BuildScheduledClass(Guid tenantId, Guid courseId, IScheduledClassPayload payload, List<ClassTeacher> teachers);
+    ScheduledClass BuildScheduledClass(Guid tenantId, Guid courseId, Guid groupId, IScheduledClassPayload payload, List<ClassTeacher> teachers);
 }
