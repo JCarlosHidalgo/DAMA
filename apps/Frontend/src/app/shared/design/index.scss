@@ -1,5 +1,0 @@
-// Allows components to consume mixins + tokens:
-//   @use 'src/app/shared/design/mixins' as dm;
-//   @use 'src/app/shared/design/tokens' as t;
-@forward 'tokens';
-@forward 'mixins';

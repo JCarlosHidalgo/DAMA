@@ -29,7 +29,7 @@ describe('Paginator', () => {
 
   it('renders the 1-based current/total label', () => {
     instantiate({ currentIndex: 2, maxIndex: 4 });
-    const label = fixture.nativeElement.querySelector('.page-label') as HTMLElement;
+    const label = fixture.nativeElement.querySelector('nav > span') as HTMLElement;
     expect(label.textContent?.replace(/\s+/g, ' ').trim()).toContain('3 / 5');
   });
 

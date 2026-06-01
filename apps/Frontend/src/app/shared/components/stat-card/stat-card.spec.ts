@@ -25,7 +25,7 @@ describe('StatCard', () => {
     fixture.componentRef.setInput('value', '142');
     const host = render();
     expect(host.querySelector('.t-label-up')?.textContent).toContain('Estudiantes');
-    expect(host.querySelector('.value')?.textContent).toContain('142');
+    expect(host.querySelector('.t-num-lg')?.textContent).toContain('142');
   });
 
   it('does not render the icon container when icon input is null', () => {
@@ -44,38 +44,38 @@ describe('StatCard', () => {
   it('does not render the delta block when delta input is null', () => {
     fixture.componentRef.setInput('label', 'l');
     fixture.componentRef.setInput('value', 'v');
-    expect(render().querySelector('.delta')).toBeNull();
+    expect(render().querySelector('.rounded-full')).toBeNull();
   });
 
-  it('renders the delta value with is-up class for sign=up', () => {
+  it('renders the delta value with up-tone styling for sign=up', () => {
     fixture.componentRef.setInput('label', 'l');
     fixture.componentRef.setInput('value', 'v');
     fixture.componentRef.setInput('delta', { sign: 'up', value: '+12%' });
-    const delta = render().querySelector('.delta') as HTMLElement;
+    const delta = render().querySelector('.rounded-full') as HTMLElement;
     expect(delta.textContent).toContain('+12%');
-    expect(delta.classList.contains('is-up')).toBe(true);
-    expect(delta.classList.contains('is-down')).toBe(false);
+    expect(delta.classList.contains('text-success')).toBe(true);
+    expect(delta.classList.contains('text-danger')).toBe(false);
   });
 
-  it('renders the delta with is-down class for sign=down', () => {
+  it('renders the delta with down-tone styling for sign=down', () => {
     fixture.componentRef.setInput('label', 'l');
     fixture.componentRef.setInput('value', 'v');
     fixture.componentRef.setInput('delta', { sign: 'down', value: '-3%' });
-    const delta = render().querySelector('.delta') as HTMLElement;
-    expect(delta.classList.contains('is-down')).toBe(true);
-    expect(delta.classList.contains('is-up')).toBe(false);
+    const delta = render().querySelector('.rounded-full') as HTMLElement;
+    expect(delta.classList.contains('text-danger')).toBe(true);
+    expect(delta.classList.contains('text-success')).toBe(false);
   });
 
   it('does not render sub when input is null', () => {
     fixture.componentRef.setInput('label', 'l');
     fixture.componentRef.setInput('value', 'v');
-    expect(render().querySelector('.sub')).toBeNull();
+    expect(render().querySelector('.t-small')).toBeNull();
   });
 
   it('renders sub text when provided', () => {
     fixture.componentRef.setInput('label', 'l');
     fixture.componentRef.setInput('value', 'v');
     fixture.componentRef.setInput('sub', 'últimos 30 días');
-    expect(render().querySelector('.sub')?.textContent).toContain('últimos 30 días');
+    expect(render().querySelector('.t-small')?.textContent).toContain('últimos 30 días');
   });
 });

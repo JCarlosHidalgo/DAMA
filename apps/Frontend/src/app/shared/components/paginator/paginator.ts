@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { MatIconButton } from '@angular/material/button';
 import { Icon } from '@shared/components/icon';
+import { paginatorStyles } from './paginator.variants';
 
 export interface PageInfo {
   currentIndex: number;
@@ -12,9 +13,10 @@ export interface PageInfo {
   imports: [MatIconButton, Icon],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './paginator.html',
-  styleUrl: './paginator.scss',
+  host: { class: 'block' },
 })
 export class Paginator {
+  protected readonly styles = paginatorStyles();
   readonly page = input.required<PageInfo>();
   readonly pageChange = output<number>();
 

@@ -35,6 +35,8 @@ import {
 
 import { AuthService, UserRole } from '@core/auth';
 
+import { dashboardStyles } from './dashboard.variants';
+
 interface TabEntry {
   label: string;
   icon: IconDefinition;
@@ -74,7 +76,6 @@ const TABS_BY_ROLE: Record<UserRole, TabEntry[]> = {
     FaIconComponent,
   ],
   templateUrl: './dashboard.html',
-  styleUrl: './dashboard.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Dashboard {
@@ -86,6 +87,8 @@ export class Dashboard {
   readonly sidenav = viewChild.required<MatSidenav>('sidenav');
   readonly isHandset = signal(this.breakpoints.isMatched(Breakpoints.Handset));
   readonly expanded = signal(!this.breakpoints.isMatched(Breakpoints.Handset));
+  readonly collapsed = computed(() => !this.expanded() && !this.isHandset());
+  protected readonly styles = computed(() => dashboardStyles({ collapsed: this.collapsed() }));
   readonly tabs = computed<TabEntry[]>(() => {
     const role = this.authService.currentRole();
     return role ? TABS_BY_ROLE[role] : [];

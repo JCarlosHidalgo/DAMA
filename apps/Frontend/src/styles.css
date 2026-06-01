@@ -1,0 +1,143 @@
+@layer theme, base, components, utilities;
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/utilities.css' layer(utilities);
+@import './app/shared/design/tokens.css';
+@import './app/shared/design/typography.css';
+@import './app/shared/design/resets.css';
+@import './app/shared/design/material-overrides.css';
+@import './app/shared/design/fullcalendar-overrides.css';
+
+@theme {
+  --color-bg: var(--dama-bg);
+  --color-bg-2: var(--dama-bg-2);
+  --color-surface: var(--dama-surface);
+  --color-surface-2: var(--dama-surface-2);
+  --color-surface-hover: var(--dama-surface-hover);
+  --color-sidenav: var(--dama-sidenav);
+  --color-border: var(--dama-border);
+  --color-border-strong: var(--dama-border-strong);
+  --color-divider: var(--dama-divider);
+  --color-text: var(--dama-text);
+  --color-text-strong: var(--dama-text-strong);
+  --color-text-muted: var(--dama-text-muted);
+  --color-text-faint: var(--dama-text-faint);
+  --color-primary: var(--dama-primary);
+  --color-primary-hover: var(--dama-primary-hover);
+  --color-primary-soft: var(--dama-primary-soft);
+  --color-primary-fg: var(--dama-primary-fg);
+  --color-success: var(--dama-success);
+  --color-success-soft: var(--dama-success-soft);
+  --color-warning: var(--dama-warning);
+  --color-warning-soft: var(--dama-warning-soft);
+  --color-danger: var(--dama-danger);
+  --color-danger-soft: var(--dama-danger-soft);
+
+  --text-display: 36px;
+  --text-h1: 22px;
+  --text-h2: 16px;
+  --text-body: 14px;
+  --text-body-md: 15px;
+  --text-small: 12px;
+
+  --breakpoint-sm: 600px;
+  --breakpoint-md: 960px;
+  --breakpoint-lg: 1280px;
+  --breakpoint-xl: 1600px;
+}
+
+@utility t-display {
+  font-size: 36px;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1.15;
+}
+
+@utility t-h1 {
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+  color: var(--dama-text-strong);
+}
+
+@utility t-h2 {
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+  color: var(--dama-text-strong);
+}
+
+@utility t-body {
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: -0.005em;
+  line-height: 1.5;
+  color: var(--dama-text);
+}
+
+@utility t-body-md {
+  font-size: 15px;
+  font-weight: 400;
+  letter-spacing: -0.005em;
+  line-height: 1.5;
+  color: var(--dama-text);
+}
+
+@utility t-small {
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--dama-text-muted);
+}
+
+@utility t-xs {
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--dama-text-muted);
+}
+
+@utility t-label-up {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--dama-text-faint);
+}
+
+@utility t-num-lg {
+  font-size: 32px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  color: var(--dama-text-strong);
+}
+
+@utility t-num-xl {
+  font-size: 56px;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  font-variant-numeric: tabular-nums;
+  color: var(--dama-text-strong);
+  line-height: 1.05;
+}
+
+@keyframes dama-skel-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+app-camera-scanner zxing-scanner {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+app-camera-scanner zxing-scanner video {
+  height: 100% !important;
+}

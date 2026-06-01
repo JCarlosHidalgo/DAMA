@@ -1,4 +1,6 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+
+import { tagStyles } from './tag.variants';
 
 export type TagVariant = 'neutral' | 'primary' | 'success' | 'warning' | 'danger';
 
@@ -6,9 +8,13 @@ export type TagVariant = 'neutral' | 'primary' | 'success' | 'warning' | 'danger
   selector: 'app-tag',
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './tag.html',
-  styleUrl: './tag.scss',
+  host: {
+    class: 'inline-flex',
+  },
 })
 export class Tag {
   readonly variant = input<TagVariant>('neutral');
   readonly dot = input<boolean>(false);
+
+  protected readonly styles = computed(() => tagStyles({ variant: this.variant() }));
 }

@@ -1,6 +1,7 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { Icon } from '@shared/components/icon';
 import type { IconName } from '@shared/components/icon';
+import { statCardStyles } from './stat-card.variants';
 
 export interface StatDelta {
   sign: 'up' | 'down';
@@ -12,7 +13,7 @@ export interface StatDelta {
   imports: [Icon],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './stat-card.html',
-  styleUrl: './stat-card.scss',
+  host: { class: 'block' },
 })
 export class StatCard {
   readonly label = input.required<string>();
@@ -20,4 +21,6 @@ export class StatCard {
   readonly delta = input<StatDelta | null>(null);
   readonly sub = input<string | null>(null);
   readonly icon = input<IconName | null>(null);
+
+  protected readonly styles = computed(() => statCardStyles({ sign: this.delta()?.sign }));
 }

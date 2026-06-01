@@ -27,31 +27,31 @@ describe('Tag', () => {
 
   function renderedSpan(): HTMLElement {
     fixture.detectChanges();
-    return fixture.nativeElement.querySelector('.dama-tag');
+    return fixture.nativeElement.querySelector('span');
   }
 
   it('renders the projected content', () => {
     expect(renderedSpan().textContent?.trim()).toContain('Etiqueta');
   });
 
-  it('applies is-neutral class by default', () => {
-    expect(renderedSpan().className).toContain('is-neutral');
+  it('applies the neutral tone styling by default', () => {
+    expect(renderedSpan().className).toContain('text-text-muted');
   });
 
   it.each<TagVariant>(['primary', 'success', 'warning', 'danger'])(
-    'applies is-%s class when variant is "%s"',
+    'applies the %s tone styling when variant is "%s"',
     (variant) => {
       fixture.componentInstance.variant = variant;
-      expect(renderedSpan().className).toContain(`is-${variant}`);
+      expect(renderedSpan().className).toContain(`text-${variant}`);
     },
   );
 
   it('does not render a dot by default', () => {
-    expect(renderedSpan().querySelector('.dot')).toBeNull();
+    expect(renderedSpan().querySelector('span')).toBeNull();
   });
 
   it('renders a dot element when dot input is true', () => {
     fixture.componentInstance.dot = true;
-    expect(renderedSpan().querySelector('.dot')).not.toBeNull();
+    expect(renderedSpan().querySelector('span')).not.toBeNull();
   });
 });

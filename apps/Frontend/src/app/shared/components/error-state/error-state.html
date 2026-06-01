@@ -1,5 +1,5 @@
-<div class="dama-error">
-  <app-icon name="warning" />
-  <p class="t-body">{{ message() }}</p>
+<div [class]="styles.root()">
+  <app-icon name="warning" [class]="styles.icon()" />
+  <p [class]="styles.message()">{{ message() }}</p>
   <ng-content select="[action]" />
 </div>

@@ -23,9 +23,9 @@ describe('CameraScanner', () => {
 
   it('renders the scanner wrapper with the bracket overlays', () => {
     fixture.detectChanges();
-    const wrapper = fixture.nativeElement.querySelector('.scanner-wrap');
+    const wrapper = fixture.nativeElement.querySelector('div');
     expect(wrapper).not.toBeNull();
-    expect(wrapper.querySelectorAll('.bracket').length).toBe(4);
+    expect(wrapper.querySelectorAll('span').length).toBe(4);
   });
 
   it('emits the scanned payload via the scanned output', () => {
