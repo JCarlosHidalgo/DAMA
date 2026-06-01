@@ -1,15 +1,14 @@
-<mat-sidenav-container class="dashboard-container">
+<mat-sidenav-container [class]="styles().container()">
   <mat-sidenav
     #sidenav
-    class="dashboard-sidenav"
     [mode]="isHandset() ? 'over' : 'side'"
     [opened]="!isHandset()"
-    [class.collapsed]="!expanded() && !isHandset()"
+    [class.collapsed]="collapsed()"
     autoFocus="dialog"
   >
-    <div class="brand">
-      <fa-icon class="brand-icon" [icon]="faSchool" />
-      <span class="brand-text">DAMA</span>
+    <div [class]="styles().brand()">
+      <fa-icon [class]="styles().brandIcon()" [icon]="faSchool" />
+      <span [class]="styles().brandText()">DAMA</span>
     </div>
     <mat-nav-list>
       @for (tab of tabs(); track tab.path) {
@@ -20,7 +19,7 @@
           [title]="tab.label"
         >
           <fa-icon matListItemIcon [icon]="tab.icon" />
-          <span matListItemTitle class="nav-label">{{ tab.label }}</span>
+          <span matListItemTitle [class]="styles().navLabel()">{{ tab.label }}</span>
         </a>
       }
     </mat-nav-list>
@@ -30,13 +29,13 @@
       <button mat-icon-button (click)="toggleSidenav()" aria-label="Alternar menú">
         <fa-icon [icon]="faMenu" />
       </button>
-      <span class="toolbar-spacer"></span>
-      <span class="user-label">{{ displayName() }}</span>
+      <span [class]="styles().toolbarSpacer()"></span>
+      <span [class]="styles().userLabel()">{{ displayName() }}</span>
       <button mat-icon-button (click)="onLogout()" aria-label="Cerrar sesión">
         <fa-icon [icon]="faLogout" />
       </button>
     </mat-toolbar>
-    <main class="dashboard-content">
+    <main [class]="styles().content()">
       <router-outlet />
     </main>
   </mat-sidenav-content>

@@ -24,13 +24,13 @@ describe('CourseColorChip', () => {
   it('renders the course name', () => {
     fixture.componentRef.setInput('courseId', 'course-1');
     fixture.componentRef.setInput('name', 'Yoga avanzado');
-    expect(render().querySelector('.name')?.textContent).toContain('Yoga avanzado');
+    expect(render().textContent).toContain('Yoga avanzado');
   });
 
   it('derives a non-empty dot background color from courseId', () => {
     fixture.componentRef.setInput('courseId', 'course-42');
     fixture.componentRef.setInput('name', 'X');
-    const dot = render().querySelector('.dot') as HTMLElement;
+    const dot = render().querySelector('span[style]') as HTMLElement;
     expect(dot.style.background).not.toBe('');
   });
 
@@ -45,11 +45,11 @@ describe('CourseColorChip', () => {
     fixture.componentRef.setInput('courseId', 'a');
     fixture.componentRef.setInput('name', 'X');
     fixture.detectChanges();
-    const firstColor = (render().querySelector('.dot') as HTMLElement).style.background;
+    const firstColor = (render().querySelector('span[style]') as HTMLElement).style.background;
 
     fixture.componentRef.setInput('courseId', 'b');
     fixture.detectChanges();
-    const secondColor = (render().querySelector('.dot') as HTMLElement).style.background;
+    const secondColor = (render().querySelector('span[style]') as HTMLElement).style.background;
 
     expect(firstColor).not.toBe(secondColor);
   });

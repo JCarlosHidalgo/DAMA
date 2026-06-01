@@ -1,5 +1,5 @@
-<div class="qr-card">
-  <div class="qr-wrap">
+<div [class]="styles.root()">
+  <div [class]="styles.wrap()">
     <qrcode
       [qrdata]="payload()"
       [width]="size()"
@@ -9,12 +9,12 @@
     />
   </div>
   @if (title() || subtitle()) {
-    <div class="meta">
+    <div [class]="styles.meta()">
       @if (title()) {
-        <div class="t-h2">{{ title() }}</div>
+        <div [class]="styles.title()">{{ title() }}</div>
       }
       @if (subtitle()) {
-        <div class="t-small">{{ subtitle() }}</div>
+        <div [class]="styles.subtitle()">{{ subtitle() }}</div>
       }
     </div>
   }

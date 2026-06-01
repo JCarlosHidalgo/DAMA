@@ -150,7 +150,7 @@ export class DebtTemplateDialog {
               </ng-container>
               <ng-container matColumnDef="cost">
                 <th mat-header-cell *matHeaderCellDef class="num">Costo</th>
-                <td mat-cell *matCellDef="let template" class="num tnum">
+                <td mat-cell *matCellDef="let template" class="num tabular-nums">
                   {{ template.cost | money }}
                 </td>
               </ng-container>

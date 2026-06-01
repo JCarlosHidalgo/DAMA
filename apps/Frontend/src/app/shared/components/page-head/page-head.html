@@ -1,11 +1,11 @@
-<header class="page-head">
-  <div class="text">
-    <h1 class="t-h1">{{ title() }}</h1>
+<header [class]="styles.root()">
+  <div [class]="styles.text()">
+    <h1 [class]="styles.title()">{{ title() }}</h1>
     @if (subtitle()) {
-      <p class="t-small">{{ subtitle() }}</p>
+      <p [class]="styles.subtitle()">{{ subtitle() }}</p>
     }
   </div>
-  <div class="actions">
+  <div [class]="styles.actions()">
     <ng-content select="[actions]" />
   </div>
 </header>

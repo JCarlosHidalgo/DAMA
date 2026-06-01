@@ -1,4 +1,4 @@
-<nav class="dama-paginator">
+<nav [class]="styles.root()">
   <button
     mat-icon-button
     [disabled]="page().currentIndex <= 0"
@@ -7,7 +7,7 @@
   >
     <app-icon name="chevron-left" />
   </button>
-  <span class="page-label tnum"> {{ page().currentIndex + 1 }} / {{ page().maxIndex + 1 }} </span>
+  <span [class]="styles.label()"> {{ page().currentIndex + 1 }} / {{ page().maxIndex + 1 }} </span>
   <button
     mat-icon-button
     [disabled]="page().currentIndex >= page().maxIndex"

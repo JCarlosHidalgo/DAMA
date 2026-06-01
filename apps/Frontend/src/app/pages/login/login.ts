@@ -14,6 +14,8 @@ import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import { AuthService } from '@core/auth';
 import { defaultRouteForRole } from '@core/router';
 
+import { loginStyles } from './login.variants';
+
 @Component({
   selector: 'app-login',
   imports: [
@@ -26,13 +28,15 @@ import { defaultRouteForRole } from '@core/router';
     FaIconComponent,
   ],
   templateUrl: './login.html',
-  styleUrl: './login.scss',
+  host: { class: 'block min-h-dvh bg-bg' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Login {
   private readonly formBuilder = inject(FormBuilder);
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
+
+  protected readonly styles = loginStyles();
 
   readonly loading = signal(false);
   readonly errorMessage = signal<string | null>(null);

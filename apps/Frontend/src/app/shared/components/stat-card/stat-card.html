@@ -1,17 +1,17 @@
-<div class="stat-card">
-  <div class="head">
-    <span class="t-label-up">{{ label() }}</span>
+<div [class]="styles().root()">
+  <div [class]="styles().head()">
+    <span [class]="styles().label()">{{ label() }}</span>
     @if (icon()) {
       <app-icon [name]="icon()!" />
     }
   </div>
-  <div class="value t-num-lg tnum">{{ value() }}</div>
+  <div [class]="styles().value()">{{ value() }}</div>
   @if (delta(); as d) {
-    <div class="delta" [class.is-up]="d.sign === 'up'" [class.is-down]="d.sign === 'down'">
+    <div [class]="styles().delta()">
       {{ d.value }}
     </div>
   }
   @if (sub()) {
-    <div class="sub t-small">{{ sub() }}</div>
+    <div [class]="styles().sub()">{{ sub() }}</div>
   }
 </div>

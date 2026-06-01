@@ -58,13 +58,13 @@ type TabKind = 'pending' | 'success' | 'failed';
                     </ng-container>
                     <ng-container matColumnDef="cost">
                       <th mat-header-cell *matHeaderCellDef class="num">Costo</th>
-                      <td mat-cell *matCellDef="let payment" class="num tnum">
+                      <td mat-cell *matCellDef="let payment" class="num tabular-nums">
                         {{ payment.cost | money }}
                       </td>
                     </ng-container>
                     <ng-container matColumnDef="ref">
                       <th mat-header-cell *matHeaderCellDef>Referencia</th>
-                      <td mat-cell *matCellDef="let payment" class="dama-mono tnum">
+                      <td mat-cell *matCellDef="let payment" class="dama-mono tabular-nums">
                         {{ payment.externalReference }}
                       </td>
                     </ng-container>
@@ -122,7 +122,7 @@ type TabKind = 'pending' | 'success' | 'failed';
                     </ng-container>
                     <ng-container matColumnDef="cost">
                       <th mat-header-cell *matHeaderCellDef class="num">Costo</th>
-                      <td mat-cell *matCellDef="let payment" class="num tnum">
+                      <td mat-cell *matCellDef="let payment" class="num tabular-nums">
                         {{ payment.cost | money }}
                       </td>
                     </ng-container>
@@ -170,7 +170,7 @@ type TabKind = 'pending' | 'success' | 'failed';
                     </ng-container>
                     <ng-container matColumnDef="cost">
                       <th mat-header-cell *matHeaderCellDef class="num">Costo</th>
-                      <td mat-cell *matCellDef="let payment" class="num tnum">
+                      <td mat-cell *matCellDef="let payment" class="num tabular-nums">
                         {{ payment.cost | money }}
                       </td>
                     </ng-container>

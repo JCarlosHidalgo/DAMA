@@ -1,12 +1,10 @@
-@use 'mixins' as dm;
-
-/* ─── Buttons ────────────────────────────────────────────────── */
 .mat-mdc-button-base {
   letter-spacing: -0.005em;
   font-weight: 600;
 
   &.mat-mdc-icon-button {
-    @include dm.touch-target;
+    min-width: 48px;
+    min-height: 48px;
   }
 }
 
@@ -36,7 +34,6 @@
   }
 }
 
-/* ─── Inputs / Form fields ───────────────────────────────────── */
 .mat-mdc-form-field.mat-form-field-appearance-outline {
   --mdc-outlined-text-field-outline-color: var(--dama-border-strong);
   --mdc-outlined-text-field-hover-outline-color: var(--dama-border-strong);
@@ -46,7 +43,6 @@
   --mdc-outlined-text-field-container-shape: 8px;
 }
 
-/* ─── Cards ──────────────────────────────────────────────────── */
 .mat-mdc-card {
   --mdc-elevated-card-container-color: var(--dama-surface);
   --mdc-elevated-card-container-shape: var(--dama-radius-md);
@@ -73,7 +69,6 @@
   margin-top: 2px;
 }
 
-/* ─── Tables ─────────────────────────────────────────────────── */
 .mat-mdc-table {
   background: transparent;
 
@@ -107,7 +102,6 @@
   }
 }
 
-/* ─── Dialogs ────────────────────────────────────────────────── */
 .mat-mdc-dialog-surface {
   --mdc-dialog-container-shape: var(--dama-radius-lg);
   --mdc-dialog-container-color: var(--dama-surface);
@@ -132,7 +126,7 @@
   gap: 8px;
 }
 
-@include dm.down('mobile') {
+@media (max-width: 599px) {
   .mat-mdc-dialog-surface {
     --mdc-dialog-container-shape: 0;
     min-height: 100vh;
@@ -141,11 +135,13 @@
   }
 }
 
-/* ─── Sidenav ────────────────────────────────────────────────── */
-.mat-drawer.mat-drawer-side {
+.mat-drawer {
   background: var(--dama-sidenav);
   border-right: 1px solid var(--dama-border);
   width: var(--dama-sidenav-w);
+}
+
+.mat-drawer.mat-drawer-side {
   transition: width 200ms var(--dama-easing);
 
   &.collapsed {
@@ -182,7 +178,6 @@
   }
 }
 
-/* ─── Toolbar ────────────────────────────────────────────────── */
 .mat-toolbar.mat-primary,
 .mat-toolbar {
   background: var(--dama-surface);
@@ -193,13 +188,12 @@
   padding: 0 24px;
 }
 
-@include dm.down('mobile') {
+@media (max-width: 599px) {
   .mat-toolbar {
     padding: 0 12px;
   }
 }
 
-/* ─── Tabs ───────────────────────────────────────────────────── */
 .mat-mdc-tab-group {
   --mat-tab-header-active-label-text-color: var(--dama-primary);
   --mat-tab-header-active-ripple-color: var(--dama-primary);
@@ -215,7 +209,6 @@
   }
 }
 
-/* ─── Snackbar ───────────────────────────────────────────────── */
 .mat-mdc-snack-bar-container {
   --mdc-snackbar-container-shape: 10px;
   --mdc-snackbar-container-color: var(--dama-text-strong);
@@ -224,7 +217,6 @@
   box-shadow: var(--dama-shadow-md);
 }
 
-/* ─── Spinner ────────────────────────────────────────────────── */
 .mat-mdc-progress-spinner {
   --mdc-circular-progress-active-indicator-color: var(--dama-primary);
 }

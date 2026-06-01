@@ -1,13 +1,17 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { Icon } from '@shared/components/icon';
 
+import { errorStateStyles } from './error-state.variants';
+
 @Component({
   selector: 'app-error-state',
   imports: [Icon],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './error-state.html',
-  styleUrl: './error-state.scss',
+  host: { class: 'block' },
 })
 export class ErrorState {
   readonly message = input.required<string>();
+
+  protected readonly styles = errorStateStyles();
 }

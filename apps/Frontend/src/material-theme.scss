@@ -1,6 +1,5 @@
 @use '@angular/material' as mat;
 
-// Light scheme (default).
 html {
   color-scheme: light;
   @include mat.theme(
@@ -21,7 +20,6 @@ html {
   );
 }
 
-// Dark scheme (opt-in via .dark on <html>). No UI toggle wired yet.
 html.dark {
   color-scheme: dark;
   @include mat.theme(

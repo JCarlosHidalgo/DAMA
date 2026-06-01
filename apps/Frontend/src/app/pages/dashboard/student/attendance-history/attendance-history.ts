@@ -55,13 +55,13 @@ type TabKind = 'scheduled' | 'unique';
                     </ng-container>
                     <ng-container matColumnDef="date">
                       <th mat-header-cell *matHeaderCellDef>Fecha</th>
-                      <td mat-cell *matCellDef="let attendance" class="tnum">
+                      <td mat-cell *matCellDef="let attendance" class="tabular-nums">
                         {{ attendance.classDate | tenantDate }}
                       </td>
                     </ng-container>
                     <ng-container matColumnDef="time">
                       <th mat-header-cell *matHeaderCellDef>Horario</th>
-                      <td mat-cell *matCellDef="let attendance" class="tnum">
+                      <td mat-cell *matCellDef="let attendance" class="tabular-nums">
                         {{ formatTimeRange(attendance.startTime, attendance.endTime) }}
                       </td>
                     </ng-container>
@@ -104,13 +104,13 @@ type TabKind = 'scheduled' | 'unique';
                     </ng-container>
                     <ng-container matColumnDef="date">
                       <th mat-header-cell *matHeaderCellDef>Fecha</th>
-                      <td mat-cell *matCellDef="let attendance" class="tnum">
+                      <td mat-cell *matCellDef="let attendance" class="tabular-nums">
                         {{ attendance.classDate | tenantDate }}
                       </td>
                     </ng-container>
                     <ng-container matColumnDef="time">
                       <th mat-header-cell *matHeaderCellDef>Horario</th>
-                      <td mat-cell *matCellDef="let attendance" class="tnum">
+                      <td mat-cell *matCellDef="let attendance" class="tabular-nums">
                         {{ formatTimeRange(attendance.startTime, attendance.endTime) }}
                       </td>
                     </ng-container>

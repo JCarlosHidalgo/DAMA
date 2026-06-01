@@ -7,14 +7,7 @@ import { ICON_REGISTRY, type IconName } from './icon-registry';
   imports: [FaIconComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `<fa-icon [icon]="def()" [fixedWidth]="true" />`,
-  styles: [
-    `
-      :host {
-        display: inline-flex;
-        line-height: 1;
-      }
-    `,
-  ],
+  host: { class: 'inline-flex leading-none' },
 })
 export class Icon {
   readonly name = input.required<IconName>();

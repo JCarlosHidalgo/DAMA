@@ -1,6 +1,6 @@
-<span class="dama-tag" [class]="'is-' + variant()">
+<span [class]="styles().root()">
   @if (dot()) {
-    <span class="dot"></span>
+    <span [class]="styles().dot()"></span>
   }
   <ng-content />
 </span>

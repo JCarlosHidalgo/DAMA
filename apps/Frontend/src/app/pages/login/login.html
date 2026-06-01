@@ -1,21 +1,21 @@
-<div class="login-grid">
-  <aside class="brand-panel">
-    <div class="brand">
-      <div class="brand-mark">D</div>
-      <div class="brand-name">DAMA</div>
+<div [class]="styles.grid()">
+  <aside [class]="styles.brandPanel()">
+    <div [class]="styles.brand()">
+      <div [class]="styles.brandMark()">D</div>
+      <div [class]="styles.brandName()">DAMA</div>
     </div>
-    <h2 class="t-display">Bienvenido de nuevo.</h2>
-    <p class="t-body-md tagline">Gestiona clases, asistencia y pagos en un solo lugar.</p>
+    <h2 [class]="styles.title()">Bienvenido de nuevo.</h2>
+    <p [class]="styles.tagline()">Gestiona clases, asistencia y pagos en un solo lugar.</p>
   </aside>
 
-  <section class="card-panel">
-    <mat-card class="login-card">
+  <section [class]="styles.cardPanel()">
+    <mat-card [class]="styles.card()">
       <mat-card-header>
         <mat-card-title>Inicia sesión</mat-card-title>
         <mat-card-subtitle>Ingresa con tu cuenta para continuar</mat-card-subtitle>
       </mat-card-header>
       <mat-card-content>
-        <form [formGroup]="form" (ngSubmit)="onSubmit()" class="login-form">
+        <form [formGroup]="form" (ngSubmit)="onSubmit()" [class]="styles.form()">
           <mat-form-field appearance="outline">
             <mat-label>Usuario</mat-label>
             <input
@@ -50,14 +50,14 @@
           </mat-form-field>
 
           @if (errorMessage()) {
-            <p class="error-text">{{ errorMessage() }}</p>
+            <p [class]="styles.error()">{{ errorMessage() }}</p>
           }
 
           <button
             mat-flat-button
             color="primary"
             type="submit"
-            class="submit-btn"
+            [class]="styles.submit()"
             [disabled]="loading()"
           >
             @if (loading()) {

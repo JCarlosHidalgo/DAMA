@@ -203,7 +203,7 @@ export class PayDialog {
                   >{{ template.classQuantity }} clase(s)</app-tag
                 >
               </div>
-              <div class="t-num-lg price tnum">{{ template.cost | money }}</div>
+              <div class="t-num-lg price tabular-nums">{{ template.cost | money }}</div>
             </mat-card-content>
             <mat-card-actions align="end">
               <button

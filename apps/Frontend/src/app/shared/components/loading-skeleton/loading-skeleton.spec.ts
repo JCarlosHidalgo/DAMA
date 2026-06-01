@@ -17,7 +17,7 @@ describe('LoadingSkeleton', () => {
 
   function renderedDiv(): HTMLElement {
     fixture.detectChanges();
-    return fixture.nativeElement.querySelector('.dama-skel');
+    return fixture.nativeElement.querySelector('div');
   }
 
   it('renders with default height 16px and width 100%', () => {

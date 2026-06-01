@@ -35,7 +35,7 @@ type RemainState =
               </div>
               <div class="count">
                 <app-icon [name]="remainStatus.numberOfClasses === 0 ? 'ban' : 'calendar-check'" />
-                <span class="t-num-xl tnum">{{ remainStatus.numberOfClasses }}</span>
+                <span class="t-num-xl tabular-nums">{{ remainStatus.numberOfClasses }}</span>
               </div>
               <p class="t-small">
                 @if (remainStatus.numberOfClasses === 0) {
