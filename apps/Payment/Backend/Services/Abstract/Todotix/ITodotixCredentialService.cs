@@ -13,4 +13,6 @@ public interface ITodotixCredentialService
     Task<TodotixAppKeyRevealDto> RevealAsync();
 
     Task<UpdateTodotixAppKeyOutcome> UpdateAsync(UpdateTodotixAppKeyDto dto);
+
+    Task<TestTodotixCredentialOutcome> TestAsync();
 }

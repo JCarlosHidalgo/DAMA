@@ -55,4 +55,18 @@ public class TodotixCredentialController : ControllerBase
             _ => throw new UnreachableException()
         };
     }
+
+    [Authorize(Roles = "Client")]
+    [HttpPost("test")]
+    public async Task<ActionResult> Test()
+    {
+        TestTodotixCredentialOutcome testOutcome = await _service.TestAsync();
+        return testOutcome switch
+        {
+            TestTodotixCredentialOutcome.Works => Ok(),
+            TestTodotixCredentialOutcome.NotConfigured => Conflict(),
+            TestTodotixCredentialOutcome.Failed => UnprocessableEntity(),
+            _ => throw new UnreachableException()
+        };
+    }
 }

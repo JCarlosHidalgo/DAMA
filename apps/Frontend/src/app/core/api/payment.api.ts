@@ -87,4 +87,8 @@ export class PaymentApi {
   updateTodotixAppKey(payload: UpdateTodotixAppKeyPayload): Observable<void> {
     return this.http.put<void>(`${this.base}/todotix-credential`, payload);
   }
+
+  testTodotixCredential(): Observable<void> {
+    return this.http.post<void>(`${this.base}/todotix-credential/test`, {});
+  }
 }

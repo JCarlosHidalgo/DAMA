@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection, signal } from '@angular/core';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 import { ClientConfiguration } from './configuration';
@@ -20,6 +20,7 @@ describe('ClientConfiguration', () => {
     getTodotixAppKeyStatus: vi.fn(() => of(sampleStatus)),
     revealTodotixAppKey: vi.fn(() => of({ appKey: '51599bd3-eed3-2826-45a4-a16c2fcc2724' })),
     updateTodotixAppKey: vi.fn(() => of(undefined)),
+    testTodotixCredential: vi.fn(() => of(undefined)),
   };
   const authApi = { updateTenantTimezone: vi.fn(() => of(undefined)) };
   const notifications = { success: vi.fn(), error: vi.fn() };
@@ -31,6 +32,7 @@ describe('ClientConfiguration', () => {
       of({ appKey: '51599bd3-eed3-2826-45a4-a16c2fcc2724' }),
     );
     paymentApi.updateTodotixAppKey.mockReturnValue(of(undefined));
+    paymentApi.testTodotixCredential.mockReturnValue(of(undefined));
     authApi.updateTenantTimezone.mockReturnValue(of(undefined));
   });
 
@@ -111,5 +113,24 @@ describe('ClientConfiguration', () => {
     });
     expect(notifications.success).toHaveBeenCalled();
     expect(paymentApi.getTodotixAppKeyStatus).toHaveBeenCalled();
+  });
+
+  it('tests the saved credential and shows the success toast', async () => {
+    const fixture = await instantiate();
+    fixture.detectChanges();
+    fixture.componentInstance.testCredential();
+    expect(paymentApi.testTodotixCredential).toHaveBeenCalled();
+    expect(notifications.success).toHaveBeenCalledWith('La credencial funciona');
+    expect(fixture.componentInstance.testing()).toBe(false);
+  });
+
+  it('shows an error toast when the credential test fails', async () => {
+    const fixture = await instantiate();
+    fixture.detectChanges();
+    paymentApi.testTodotixCredential.mockReturnValueOnce(throwError(() => new Error('fail')));
+    fixture.componentInstance.testCredential();
+    expect(notifications.error).toHaveBeenCalled();
+    expect(notifications.success).not.toHaveBeenCalled();
+    expect(fixture.componentInstance.testing()).toBe(false);
   });
 });

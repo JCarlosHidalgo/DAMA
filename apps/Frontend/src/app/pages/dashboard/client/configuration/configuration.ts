@@ -90,6 +90,18 @@ const APP_KEY_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-
                 {{ revealedKey() ? 'Ocultar' : 'Mostrar' }}
               </button>
             </div>
+            @if (state.status.hasCustomKey) {
+              <div class="status-row">
+                <button
+                  mat-stroked-button
+                  type="button"
+                  [disabled]="testing()"
+                  (click)="testCredential()"
+                >
+                  Probar Credencial
+                </button>
+              </div>
+            }
           }
 
           <form [formGroup]="form" (ngSubmit)="saveAppKey()" class="edit-form">
@@ -173,6 +185,7 @@ export class ClientConfiguration {
   readonly appKeyState = signal<AppKeyState>({ kind: 'loading' });
   readonly revealedKey = signal<string | null>(null);
   readonly saving = signal(false);
+  readonly testing = signal(false);
 
   readonly form = this.formBuilder.nonNullable.group({
     appKey: ['', [Validators.required, Validators.pattern(APP_KEY_PATTERN)]],
@@ -227,6 +240,23 @@ export class ClientConfiguration {
       error: () => {
         this.notifications.error('No se pudo actualizar la app-key.');
         this.saving.set(false);
+      },
+    });
+  }
+
+  testCredential(): void {
+    if (this.testing()) {
+      return;
+    }
+    this.testing.set(true);
+    this.paymentApi.testTodotixCredential().subscribe({
+      next: () => {
+        this.notifications.success('La credencial funciona');
+        this.testing.set(false);
+      },
+      error: () => {
+        this.notifications.error('La credencial no funciona.');
+        this.testing.set(false);
       },
     });
   }
