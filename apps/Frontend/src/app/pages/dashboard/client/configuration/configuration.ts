@@ -63,7 +63,8 @@ const APP_KEY_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-
     <section class="config-card">
       <h2 class="t-title-sm">App-key de Todotix</h2>
       <p class="t-body-sm hint">
-        Clave de tu canal de cobro Todotix. Si no defines una propia, se usa la del sistema.
+        Clave de tu canal de cobro Todotix. Sin una credencial configurada y válida no podrás
+        recibir pagos.
       </p>
 
       @switch (appKeyState().kind) {
@@ -78,7 +79,7 @@ const APP_KEY_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-
             <div class="status-row">
               <span class="t-label-up">Estado</span>
               <span class="t-body-md">
-                {{ state.status.hasCustomKey ? 'Personalizada' : 'Usando la del sistema' }}
+                {{ state.status.hasCustomKey ? 'Configurada' : 'No configurada' }}
               </span>
             </div>
             <div class="status-row">

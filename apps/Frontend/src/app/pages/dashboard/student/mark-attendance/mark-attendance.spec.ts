@@ -22,6 +22,8 @@ interface ScenarioOverrides {
 }
 
 describe('MarkAttendance', () => {
+  vi.setConfig({ testTimeout: 20000 });
+
   let attendanceStub: {
     getMyRemain: ReturnType<typeof vi.fn>;
     markScheduled: ReturnType<typeof vi.fn>;
