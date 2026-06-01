@@ -11,8 +11,6 @@ public sealed class OptionsModule : IServiceModule
     {
         services.Configure<TodotixOptions>(options =>
         {
-            options.ApplicationKey = configuration["TODOTIX_APPKEY"]
-                ?? throw new InvalidOperationException("TODOTIX_APPKEY not set.");
             options.CallbackUrl = configuration["TODOTIX_CALLBACK_URL"]
                 ?? throw new InvalidOperationException("TODOTIX_CALLBACK_URL not set.");
         });

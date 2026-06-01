@@ -94,6 +94,20 @@ public class QrDebtCreationServiceTests
     }
 
     [Test]
+    public async Task CreateDebtAsync_WhenTenantHasNoCredential_ReturnsPaymentNotConfigured()
+    {
+        var templateId = Guid.NewGuid();
+        var template = new DebtTemplate { Id = templateId, TenantId = tenantId, Description = "d", ClassQuantity = 1, Cost = 10 };
+        debtTemplateDao.Setup(d => d.GetByIdForTenantAsync(tenantId, templateId)).ReturnsAsync(template);
+        pendingDao.Setup(d => d.CountActiveForTemplateAsync(tenantId, studentId, templateId, It.IsAny<DateTime>())).ReturnsAsync(0);
+        appKeyResolver.Setup(r => r.ResolveAsync(It.IsAny<Guid>())).ReturnsAsync((string?)null);
+
+        CreateQrDebtOutcome outcome = await sut.CreateDebtAsync(templateId, "a@b.com", new CreateQrDebtDto());
+
+        Assert.That(outcome, Is.TypeOf<CreateQrDebtOutcome.PaymentNotConfigured>());
+    }
+
+    [Test]
     public async Task CreateDebtAsync_HappyPath_ReturnsSuccessAndCommits()
     {
         var templateId = Guid.NewGuid();

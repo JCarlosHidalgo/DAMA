@@ -14,7 +14,6 @@ public class TodotixDebtPublisherTests
 {
     private Mock<ITodotixClient> todotixClient = null!;
     private Mock<IPendingQrPaymentDao> pendingDao = null!;
-    private Mock<ITodotixAppKeyResolver> appKeyResolver = null!;
     private TodotixDebtPublisher sut = null!;
 
     [SetUp]
@@ -22,9 +21,7 @@ public class TodotixDebtPublisherTests
     {
         todotixClient = new Mock<ITodotixClient>(MockBehavior.Strict);
         pendingDao = new Mock<IPendingQrPaymentDao>(MockBehavior.Strict);
-        appKeyResolver = new Mock<ITodotixAppKeyResolver>(MockBehavior.Strict);
-        appKeyResolver.Setup(r => r.ResolveAsync(It.IsAny<Guid>())).ReturnsAsync("tenant-app-key");
-        sut = new TodotixDebtPublisher(todotixClient.Object, pendingDao.Object, appKeyResolver.Object);
+        sut = new TodotixDebtPublisher(todotixClient.Object, pendingDao.Object);
     }
 
     private const string ValidPayload = "{\"appkey\":\"k\",\"identificador_deuda\":\"x\",\"descripcion\":\"d\",\"callback_url\":\"u\",\"lineas_detalle_deuda\":[]}";

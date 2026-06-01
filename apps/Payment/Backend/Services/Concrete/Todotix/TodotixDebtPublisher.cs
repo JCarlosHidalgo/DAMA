@@ -10,8 +10,7 @@ namespace Backend.Services.Concrete.Todotix;
 
 public sealed class TodotixDebtPublisher(
     ITodotixClient todotixClient,
-    IPendingQrPaymentDao pendingQrPaymentDao,
-    ITodotixAppKeyResolver appKeyResolver) : IPaymentDebtPublisher
+    IPendingQrPaymentDao pendingQrPaymentDao) : IPaymentDebtPublisher
 {
     public async Task<PublishOutcome> PublishAsync(TodotixOutboxEvent outboxEvent, CancellationToken cancellationToken = default)
     {
@@ -32,8 +31,7 @@ public sealed class TodotixDebtPublisher(
 
         if (outboxEvent.Attempts > 0)
         {
-            string appKey = await appKeyResolver.ResolveAsync(outboxEvent.TenantId);
-            PublishOutcome? alreadyRegisteredOutcome = await RejectIfAlreadyRegisteredAsync(outboxEvent.PendingId, appKey);
+            PublishOutcome? alreadyRegisteredOutcome = await RejectIfAlreadyRegisteredAsync(outboxEvent.PendingId, registerDebtRequest.Appkey);
             if (alreadyRegisteredOutcome is not null)
             {
                 return alreadyRegisteredOutcome;

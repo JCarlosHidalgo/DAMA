@@ -48,7 +48,12 @@ public class QrCallbackService : IQrCallbackService
             return;
         }
 
-        string appKey = await _appKeyResolver.ResolveAsync(pending.TenantId);
+        string? appKey = await _appKeyResolver.ResolveAsync(pending.TenantId);
+        if (appKey is null)
+        {
+            return;
+        }
+
         TodotixDebtState debtState = await _todotixClient.ConsultDebtAsync(transactionId, appKey);
 
         if (debtState == TodotixDebtState.Paid)

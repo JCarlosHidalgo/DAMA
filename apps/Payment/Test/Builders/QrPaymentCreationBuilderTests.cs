@@ -29,7 +29,6 @@ public class QrPaymentCreationBuilderTests
         callbackSignature = new Mock<ICallbackSignature>(MockBehavior.Strict);
         todotixOptions = new TodotixOptions
         {
-            ApplicationKey = "appkey-xyz",
             CallbackUrl = "https://payment.example.com/api/payment/qr/callback"
         };
         sut = new QrPaymentCreationBuilder(callbackSignature.Object, Options.Create(todotixOptions));

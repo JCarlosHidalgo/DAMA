@@ -11,4 +11,6 @@ public abstract record CreateQrDebtOutcome
     public sealed record TemplateNotFound : CreateQrDebtOutcome;
 
     public sealed record ActiveDebtForTemplate : CreateQrDebtOutcome;
+
+    public sealed record PaymentNotConfigured : CreateQrDebtOutcome;
 }

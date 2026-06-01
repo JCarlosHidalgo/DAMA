@@ -72,10 +72,15 @@ public class QrDebtCreationService : IQrDebtCreationService
             return new CreateQrDebtOutcome.ActiveDebtForTemplate();
         }
 
+        string? appKey = await _appKeyResolver.ResolveAsync(tenantId);
+        if (appKey is null)
+        {
+            return new CreateQrDebtOutcome.PaymentNotConfigured();
+        }
+
         Guid debtIdentifier = Guid.NewGuid();
         DateTime expiresAtUtc = DateTime.UtcNow.Add(DebtExpiration);
         DateTime expirationDueAtUtc = expiresAtUtc.Add(LatePaymentGrace);
-        string appKey = await _appKeyResolver.ResolveAsync(tenantId);
         PendingQrPayment pending = _creationBuilder.BuildPendingPayment(debtIdentifier, tenantId, studentId, templateId, template, expiresAtUtc);
         RegisterDebtRequest todotixRequest = _creationBuilder.BuildTodotixRequest(debtIdentifier, email, template, tenantTimezone, description, expiresAtUtc, appKey);
         TodotixOutboxEvent outboxEvent = _creationBuilder.BuildOutboxEvent(debtIdentifier, tenantId, todotixRequest);
