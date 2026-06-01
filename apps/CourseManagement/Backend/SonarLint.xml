@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<AnalysisInput>
+  <Settings/>
+  <Rules>
+    <Rule>
+      <Key>S3776</Key>
+      <Parameters>
+        <Parameter><Key>threshold</Key><Value>10</Value></Parameter>
+        <Parameter><Key>propertyThreshold</Key><Value>3</Value></Parameter>
+      </Parameters>
+    </Rule>
+    <Rule>
+      <Key>S1541</Key>
+      <Parameters>
+        <Parameter><Key>maximumFunctionComplexityThreshold</Key><Value>20</Value></Parameter>
+      </Parameters>
+    </Rule>
+    <Rule>
+      <Key>S134</Key>
+      <Parameters>
+        <Parameter><Key>maximumNestingLevel</Key><Value>3</Value></Parameter>
+      </Parameters>
+    </Rule>
+    <Rule>
+      <Key>S1067</Key>
+      <Parameters>
+        <Parameter><Key>max</Key><Value>3</Value></Parameter>
+      </Parameters>
+    </Rule>
+  </Rules>
+</AnalysisInput>

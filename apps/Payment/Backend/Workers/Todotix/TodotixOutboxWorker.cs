@@ -29,26 +29,7 @@ public sealed class TodotixOutboxWorker : BackgroundService
         {
             try
             {
-                using var scope = _serviceProvider.CreateScope();
-                var todotixOutboxDao = scope.ServiceProvider.GetRequiredService<ITodotixOutboxDao>();
-                var debtPublisher = scope.ServiceProvider.GetRequiredService<IPaymentDebtPublisher>();
-
-                var leasedEvents = await todotixOutboxDao.LeasePendingAsync(BatchSize, LeaseDuration);
-
-                foreach (var outboxEvent in leasedEvents)
-                {
-                    if (cancellationToken.IsCancellationRequested)
-                    {
-                        return;
-                    }
-
-                    await DispatchAsync(todotixOutboxDao, debtPublisher, outboxEvent, cancellationToken);
-                }
-
-                if (leasedEvents.Count == 0)
-                {
-                    await Task.Delay(IdleDelay, cancellationToken);
-                }
+                await ProcessPendingBatchAsync(cancellationToken);
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
@@ -61,6 +42,30 @@ public sealed class TodotixOutboxWorker : BackgroundService
                 { await Task.Delay(ErrorBackoff, cancellationToken); }
                 catch (OperationCanceledException) { return; }
             }
+        }
+    }
+
+    private async Task ProcessPendingBatchAsync(CancellationToken cancellationToken)
+    {
+        using var scope = _serviceProvider.CreateScope();
+        var todotixOutboxDao = scope.ServiceProvider.GetRequiredService<ITodotixOutboxDao>();
+        var debtPublisher = scope.ServiceProvider.GetRequiredService<IPaymentDebtPublisher>();
+
+        var leasedEvents = await todotixOutboxDao.LeasePendingAsync(BatchSize, LeaseDuration);
+
+        foreach (var outboxEvent in leasedEvents)
+        {
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return;
+            }
+
+            await DispatchAsync(todotixOutboxDao, debtPublisher, outboxEvent, cancellationToken);
+        }
+
+        if (leasedEvents.Count == 0)
+        {
+            await Task.Delay(IdleDelay, cancellationToken);
         }
     }
 
