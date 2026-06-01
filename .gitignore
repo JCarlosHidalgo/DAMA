@@ -5,7 +5,6 @@ CLAUDE.md
 
 # Secrets (real values; never publish). Templates *.example ARE tracked.
 infrastructure/.env.dev
-infrastructure/.env.staging
 infrastructure/.env.prod
 infrastructure/tls/
 

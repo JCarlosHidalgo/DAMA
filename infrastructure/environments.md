@@ -74,7 +74,7 @@ Alternatively, run the same `.sql` files through DbGate once the stack is up (st
 
 ### 3. Generate fresh production secrets
 
-Never reuse dev/staging values. Full inventory and rotation playbook live in
+Never reuse dev values in production. Full inventory and rotation playbook live in
 `infrastructure/SECRETS.md`. For prod you need, generated on the host:
 
 - JWT RSA pair → `JWT_PRIVATE_KEY_B64` / `JWT_PUBLIC_KEY_B64`:
