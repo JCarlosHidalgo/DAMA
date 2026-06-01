@@ -14,6 +14,7 @@ export type ClassKind = 'Scheduled' | 'Unique';
 
 export interface ClassFormPayload {
   courseId: string;
+  groupId: string;
   teachers: ClassTeacherPayload[];
   startTime: string;
   endTime: string;
@@ -50,6 +51,7 @@ export class ScheduledClassStrategy implements ClassKindStrategy {
   create(payload: ClassFormPayload): Observable<ScheduledClass> {
     return this.courseApi.createScheduledClass({
       courseId: payload.courseId,
+      groupId: payload.groupId,
       dayOfWeekIndex: payload.dayOfWeekIndex,
       maxStudentLimit: payload.maxStudentLimit,
       startTime: payload.startTime,
@@ -95,6 +97,7 @@ export class UniqueClassStrategy implements ClassKindStrategy {
   create(payload: ClassFormPayload): Observable<UniqueClass> {
     return this.courseApi.createUniqueClass({
       courseId: payload.courseId,
+      groupId: payload.groupId,
       date: payload.date,
       maxStudentLimit: payload.maxStudentLimit,
       startTime: payload.startTime,

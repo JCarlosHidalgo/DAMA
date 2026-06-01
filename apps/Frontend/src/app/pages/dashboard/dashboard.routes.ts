@@ -26,7 +26,7 @@ export const dashboardRoutes: Routes = [
   {
     path: 'horario',
     canActivate: [roleGuard],
-    data: { roles: ['Client', 'Teacher'] as UserRole[] },
+    data: { roles: ['Client', 'Teacher', 'Student'] as UserRole[] },
     loadComponent: () => import('./shared/schedule-router').then((m) => m.ScheduleRouter),
   },
   {

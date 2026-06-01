@@ -2,6 +2,7 @@ using System.Diagnostics;
 
 using Backend.Application.Mediator;
 using Backend.Application.Uniques;
+using Backend.Dtos.Groups.Input;
 using Backend.Dtos.Uniques.Input;
 using Backend.Dtos.Uniques.Output;
 using Backend.Results.Uniques;
@@ -17,6 +18,8 @@ public class UniqueClassController : ControllerBase
 {
     private const string CourseNotFoundMessage = "Course not found for tenant.";
     private const string UniqueClassNotFoundMessage = "UniqueClass not found for tenant.";
+    private const string GroupNotFoundMessage = "Class group not found for tenant.";
+    private const string GroupOverlapMessage = "A class in this group already overlaps the requested time slot.";
 
     [Authorize(Roles = "Client")]
     [HttpPost]
@@ -29,7 +32,8 @@ public class UniqueClassController : ControllerBase
             CreateUniqueClassResult.Created created => Ok(created.UniqueClass),
             CreateUniqueClassResult.ReplayedFromIdempotency replayed => Ok(replayed.UniqueClass),
             CreateUniqueClassResult.CourseNotFound => NotFound(CourseNotFoundMessage),
-            CreateUniqueClassResult.TeacherConflict conflict => Conflict(BuildTeacherConflictMessage(conflict.TeacherName)),
+            CreateUniqueClassResult.GroupNotFound => NotFound(GroupNotFoundMessage),
+            CreateUniqueClassResult.GroupOverlapConflict => Conflict(GroupOverlapMessage),
             _ => throw new UnreachableException()
         };
     }
@@ -44,7 +48,23 @@ public class UniqueClassController : ControllerBase
         {
             UpdateUniqueClassResult.Updated => NoContent(),
             UpdateUniqueClassResult.NotFound => NotFound(UniqueClassNotFoundMessage),
-            UpdateUniqueClassResult.TeacherConflict conflict => Conflict(BuildTeacherConflictMessage(conflict.TeacherName)),
+            UpdateUniqueClassResult.GroupOverlapConflict => Conflict(GroupOverlapMessage),
+            _ => throw new UnreachableException()
+        };
+    }
+
+    [Authorize(Roles = "Client")]
+    [HttpPut("{id}/transfer")]
+    public async Task<ActionResult> TransferUniqueClass(Guid id, TransferClassDto transferClassDto,
+        [FromServices] ICommandHandler<TransferUniqueClassCommand, TransferUniqueClassResult> handler)
+    {
+        TransferUniqueClassResult result = await handler.Handle(new TransferUniqueClassCommand(id, transferClassDto.TargetGroupId));
+        return result switch
+        {
+            TransferUniqueClassResult.Transferred => NoContent(),
+            TransferUniqueClassResult.NotFound => NotFound(UniqueClassNotFoundMessage),
+            TransferUniqueClassResult.GroupNotFound => NotFound(GroupNotFoundMessage),
+            TransferUniqueClassResult.GroupOverlapConflict => Conflict(GroupOverlapMessage),
             _ => throw new UnreachableException()
         };
     }
@@ -62,7 +82,4 @@ public class UniqueClassController : ControllerBase
             _ => throw new UnreachableException()
         };
     }
-
-    private static string BuildTeacherConflictMessage(string teacherName) =>
-        $"Teacher '{teacherName}' already has a class overlapping the requested time slot.";
 }

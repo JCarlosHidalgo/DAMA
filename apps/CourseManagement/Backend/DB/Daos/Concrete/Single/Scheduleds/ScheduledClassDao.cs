@@ -53,7 +53,9 @@ public sealed class ScheduledClassDao : MySQLSingleDao<ScheduledClass>, ISchedul
             StartTime = TimeOnly.FromTimeSpan(rawStartTime),
             EndTime = TimeOnly.FromTimeSpan(rawEndTime),
             CourseId = _mySqlReader!.GetGuid("CourseId"),
+            GroupId = _mySqlReader!.GetGuid("GroupId"),
             TenantId = _mySqlReader!.GetGuid("TenantId"),
+            GroupName = _mySqlReader!.GetString("GroupName"),
             Teachers = ClassTeachersJsonParser.Parse(_mySqlReader!.GetString("Teachers"))
         };
     }
@@ -80,6 +82,8 @@ public sealed class ScheduledClassDao : MySQLSingleDao<ScheduledClass>, ISchedul
         com.Parameters["@endTime"].Direction = ParameterDirection.Input;
         com.Parameters.AddWithValue("@courseId", scheduledClass.CourseId.ToString());
         com.Parameters["@courseId"].Direction = ParameterDirection.Input;
+        com.Parameters.AddWithValue("@groupId", scheduledClass.GroupId.ToString());
+        com.Parameters["@groupId"].Direction = ParameterDirection.Input;
         com.Parameters.AddWithValue("@tenantId", tenantId.ToString());
         com.Parameters["@tenantId"].Direction = ParameterDirection.Input;
         object? scalar = await com.ExecuteScalarAsync();
@@ -252,17 +256,21 @@ public sealed class ScheduledClassDao : MySQLSingleDao<ScheduledClass>, ISchedul
         });
     }
 
-    public async Task<bool> HasOverlapForTeacherAsync(Guid tenantId, Guid teacherId, int dayOfWeekIndex, TimeOnly startTime, TimeOnly endTime, Guid? excludeId)
+    public async Task<bool> HasGroupOverlapAsync(Guid tenantId, Guid groupId, int dayOfWeekIndex, TimeOnly startTime, TimeOnly endTime, Guid? excludeId)
     {
         return await MySQLRetryPolicy.ExecuteAsync(_connection, async () =>
         {
-            MySqlCommand com = GetCommandStoredProcedure("HasScheduledClassOverlapForTeacher");
+            MySqlCommand com = GetCommandStoredProcedure("HasGroupClassOverlap");
             com.Parameters.AddWithValue("@tenantId", tenantId.ToString());
             com.Parameters["@tenantId"].Direction = ParameterDirection.Input;
-            com.Parameters.AddWithValue("@teacherId", teacherId.ToString());
-            com.Parameters["@teacherId"].Direction = ParameterDirection.Input;
+            com.Parameters.AddWithValue("@groupId", groupId.ToString());
+            com.Parameters["@groupId"].Direction = ParameterDirection.Input;
+            com.Parameters.AddWithValue("@candidateKind", "Scheduled");
+            com.Parameters["@candidateKind"].Direction = ParameterDirection.Input;
             com.Parameters.AddWithValue("@dayOfWeekIndex", dayOfWeekIndex);
             com.Parameters["@dayOfWeekIndex"].Direction = ParameterDirection.Input;
+            com.Parameters.AddWithValue("@classDate", DBNull.Value);
+            com.Parameters["@classDate"].Direction = ParameterDirection.Input;
             com.Parameters.AddWithValue("@startTime", startTime.ToTimeSpan());
             com.Parameters["@startTime"].Direction = ParameterDirection.Input;
             com.Parameters.AddWithValue("@endTime", endTime.ToTimeSpan());
@@ -273,5 +281,19 @@ public sealed class ScheduledClassDao : MySQLSingleDao<ScheduledClass>, ISchedul
             object? scalar = await com.ExecuteScalarAsync();
             return Convert.ToInt64(scalar) > 0;
         });
+    }
+
+    public async Task<bool> TransferToGroupAsync(Guid tenantId, Guid id, Guid targetGroupId, ITransactionContext transaction)
+    {
+        MySqlTransaction sqlTransaction = MySqlTransactionContextAccessor.Unwrap(transaction);
+        MySqlCommand com = new MySqlCommand("TransferScheduledClassToGroup", _connection, sqlTransaction) { CommandType = CommandType.StoredProcedure };
+        com.Parameters.AddWithValue("@id", id.ToString());
+        com.Parameters["@id"].Direction = ParameterDirection.Input;
+        com.Parameters.AddWithValue("@targetGroupId", targetGroupId.ToString());
+        com.Parameters["@targetGroupId"].Direction = ParameterDirection.Input;
+        com.Parameters.AddWithValue("@tenantId", tenantId.ToString());
+        com.Parameters["@tenantId"].Direction = ParameterDirection.Input;
+        object? scalar = await com.ExecuteScalarAsync();
+        return Convert.ToInt64(scalar) > 0;
     }
 }

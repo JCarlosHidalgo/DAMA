@@ -12,5 +12,7 @@ public abstract record CreateUniqueClassResult
 
     public sealed record CourseNotFound : CreateUniqueClassResult;
 
-    public sealed record TeacherConflict(Guid TeacherId, string TeacherName) : CreateUniqueClassResult;
+    public sealed record GroupNotFound : CreateUniqueClassResult;
+
+    public sealed record GroupOverlapConflict : CreateUniqueClassResult;
 }

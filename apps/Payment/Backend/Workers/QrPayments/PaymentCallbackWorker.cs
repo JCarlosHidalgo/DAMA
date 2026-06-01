@@ -28,26 +28,7 @@ public sealed class PaymentCallbackWorker : BackgroundService
         {
             try
             {
-                using var scope = _serviceProvider.CreateScope();
-                var callbackInboxDao = scope.ServiceProvider.GetRequiredService<IPaymentCallbackInboxDao>();
-                var callbackService = scope.ServiceProvider.GetRequiredService<IQrCallbackService>();
-
-                var leasedCallbacks = await callbackInboxDao.LeasePendingAsync(BatchSize, LeaseDuration);
-
-                foreach (var callback in leasedCallbacks)
-                {
-                    if (cancellationToken.IsCancellationRequested)
-                    {
-                        return;
-                    }
-
-                    await DispatchAsync(callbackInboxDao, callbackService, callback, cancellationToken);
-                }
-
-                if (leasedCallbacks.Count == 0)
-                {
-                    await Task.Delay(IdleDelay, cancellationToken);
-                }
+                await ProcessPendingBatchAsync(cancellationToken);
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
@@ -60,6 +41,30 @@ public sealed class PaymentCallbackWorker : BackgroundService
                 { await Task.Delay(ErrorBackoff, cancellationToken); }
                 catch (OperationCanceledException) { return; }
             }
+        }
+    }
+
+    private async Task ProcessPendingBatchAsync(CancellationToken cancellationToken)
+    {
+        using var scope = _serviceProvider.CreateScope();
+        var callbackInboxDao = scope.ServiceProvider.GetRequiredService<IPaymentCallbackInboxDao>();
+        var callbackService = scope.ServiceProvider.GetRequiredService<IQrCallbackService>();
+
+        var leasedCallbacks = await callbackInboxDao.LeasePendingAsync(BatchSize, LeaseDuration);
+
+        foreach (var callback in leasedCallbacks)
+        {
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return;
+            }
+
+            await DispatchAsync(callbackInboxDao, callbackService, callback, cancellationToken);
+        }
+
+        if (leasedCallbacks.Count == 0)
+        {
+            await Task.Delay(IdleDelay, cancellationToken);
         }
     }
 

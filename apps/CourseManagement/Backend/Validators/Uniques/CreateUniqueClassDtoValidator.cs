@@ -10,6 +10,7 @@ public class CreateUniqueClassDtoValidator : AbstractValidator<CreateUniqueClass
 {
     private const string InvalidTimeRangeMessage = "StartTime debe ser menor que EndTime";
     private const string InvalidCourseIdMessage = "CourseId es requerido";
+    private const string InvalidGroupIdMessage = "GroupId es requerido";
     private const string InvalidDateMessage = "Date fuera de rango razonable";
     private const string TooLongExternalReferenceMessage = "ExternalReference no debe exceder 128 caracteres";
 
@@ -31,6 +32,9 @@ public class CreateUniqueClassDtoValidator : AbstractValidator<CreateUniqueClass
 
         RuleFor(uniqueClass => uniqueClass.CourseId)
             .NotEqual(Guid.Empty).WithMessage(InvalidCourseIdMessage);
+
+        RuleFor(uniqueClass => uniqueClass.GroupId)
+            .NotEqual(Guid.Empty).WithMessage(InvalidGroupIdMessage);
 
         RuleFor(uniqueClass => uniqueClass.Date)
             .InclusiveBetween(MinDate, MaxDate).WithMessage(InvalidDateMessage);

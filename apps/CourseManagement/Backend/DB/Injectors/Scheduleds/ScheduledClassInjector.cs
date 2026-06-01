@@ -13,7 +13,7 @@ public sealed class ScheduledClassInjector : DataInjector
         .Append("INTO TABLE ScheduledClass ")
         .Append("FIELDS TERMINATED BY ',' ")
         .Append("IGNORE 1 LINES ")
-        .Append("(Id, DayOfWeekIndex, StartTime, EndTime, CourseId, TenantId)");
+        .Append("(Id, DayOfWeekIndex, StartTime, EndTime, CourseId, GroupId, TenantId)");
         _injectionCommand = sb.ToString();
     }
 }

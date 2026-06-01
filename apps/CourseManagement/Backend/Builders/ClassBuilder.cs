@@ -8,7 +8,7 @@ namespace Backend.Builders;
 
 public sealed class ClassBuilder : IClassBuilder
 {
-    public UniqueClass BuildUniqueClass(Guid tenantId, Guid courseId, IUniqueClassPayload payload, List<ClassTeacher> teachers)
+    public UniqueClass BuildUniqueClass(Guid tenantId, Guid courseId, Guid groupId, IUniqueClassPayload payload, List<ClassTeacher> teachers)
     {
         return new UniqueClass
         {
@@ -18,12 +18,13 @@ public sealed class ClassBuilder : IClassBuilder
             StartTime = payload.StartTime,
             EndTime = payload.EndTime,
             CourseId = courseId,
+            GroupId = groupId,
             TenantId = tenantId,
             Teachers = teachers
         };
     }
 
-    public ScheduledClass BuildScheduledClass(Guid tenantId, Guid courseId, IScheduledClassPayload payload, List<ClassTeacher> teachers)
+    public ScheduledClass BuildScheduledClass(Guid tenantId, Guid courseId, Guid groupId, IScheduledClassPayload payload, List<ClassTeacher> teachers)
     {
         return new ScheduledClass
         {
@@ -33,6 +34,7 @@ public sealed class ClassBuilder : IClassBuilder
             StartTime = payload.StartTime,
             EndTime = payload.EndTime,
             CourseId = courseId,
+            GroupId = groupId,
             TenantId = tenantId,
             Teachers = teachers
         };

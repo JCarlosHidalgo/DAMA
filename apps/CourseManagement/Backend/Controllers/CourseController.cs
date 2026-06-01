@@ -120,6 +120,21 @@ public class CourseController : ControllerBase
         };
     }
 
+    [Authorize(Roles = "Student")]
+    [HttpGet("student/schedule")]
+    public async Task<ActionResult<GetCourseScheduleDto>> GetStudentSchedule(
+        [FromQuery] WeekPointerDto requestParameters,
+        [FromServices] IQueryHandler<GetTenantScheduleQuery, GetTenantScheduleResult> handler)
+    {
+        DateOnly classDatePointer = ResolveWeekPointer(requestParameters.WeekPaginationIndex);
+        GetTenantScheduleResult result = await handler.Handle(new GetTenantScheduleQuery(classDatePointer));
+        return result switch
+        {
+            GetTenantScheduleResult.Found found => Ok(found.Schedule),
+            _ => throw new UnreachableException()
+        };
+    }
+
     [Authorize(Roles = "Client")]
     [HttpGet("schedule")]
     public async Task<ActionResult<GetCourseScheduleDto>> GetCourseSchedule(

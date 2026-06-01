@@ -1,0 +1,17 @@
+info:
+  name: "Client: Delete Group"
+  type: http
+  seq: 23
+
+http:
+  method: DELETE
+  url: "{{API_PATH}}/api/course-management/course/group/5a555555-5555-4555-8555-555555555555"
+  auth:
+    type: bearer
+    token: "{{Client_JWT}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

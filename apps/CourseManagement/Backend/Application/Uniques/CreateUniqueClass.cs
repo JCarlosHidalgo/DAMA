@@ -6,6 +6,7 @@ using Backend.Application.Infrastructure;
 using Backend.Application.Mediator;
 using Backend.Builders;
 using Backend.Claims;
+using Backend.DB.Daos.Abstract.Single.Groups;
 using Backend.DB.Daos.Abstract.Single.Uniques;
 using Backend.Dtos;
 using Backend.Dtos.Uniques.Input;
@@ -23,18 +24,21 @@ public sealed class CreateUniqueClassHandler : ICommandHandler<CreateUniqueClass
     private const string UniqueClassEntityType = "UniqueClass";
 
     private readonly IUniqueClassDao _uniqueClassDao;
+    private readonly IClassGroupDao _classGroupDao;
     private readonly IClassCreationCoordinator<UniqueClass> _coordinator;
     private readonly IClaimContext _claimContext;
     private readonly IClassBuilder _classBuilder;
     private readonly IMapper _mapper;
 
     public CreateUniqueClassHandler(IUniqueClassDao uniqueClassDao,
+                                    IClassGroupDao classGroupDao,
                                     IClassCreationCoordinator<UniqueClass> coordinator,
                                     IClaimContext claimContext,
                                     IClassBuilder classBuilder,
                                     IMapper mapper)
     {
         _uniqueClassDao = uniqueClassDao;
+        _classGroupDao = classGroupDao;
         _coordinator = coordinator;
         _claimContext = claimContext;
         _classBuilder = classBuilder;
@@ -47,15 +51,17 @@ public sealed class CreateUniqueClassHandler : ICommandHandler<CreateUniqueClass
         CreateUniqueClassDto payload = command.Payload;
         List<ClassTeacher> teachers = _mapper.Map<List<ClassTeacherDto>, List<ClassTeacher>>(payload.Teachers);
 
-        foreach (ClassTeacher teacher in teachers)
+        if (!await _classGroupDao.ExistsForTenantAsync(tenantId, payload.GroupId))
         {
-            if (await _uniqueClassDao.HasOverlapForTeacherAsync(tenantId, teacher.TeacherId, payload.Date, payload.StartTime, payload.EndTime, null))
-            {
-                return new CreateUniqueClassResult.TeacherConflict(teacher.TeacherId, teacher.TeacherName);
-            }
+            return new CreateUniqueClassResult.GroupNotFound();
         }
 
-        UniqueClass newUniqueClass = _classBuilder.BuildUniqueClass(tenantId, payload.CourseId, payload, teachers);
+        if (await _uniqueClassDao.HasGroupOverlapAsync(tenantId, payload.GroupId, payload.Date, payload.StartTime, payload.EndTime, null))
+        {
+            return new CreateUniqueClassResult.GroupOverlapConflict();
+        }
+
+        UniqueClass newUniqueClass = _classBuilder.BuildUniqueClass(tenantId, payload.CourseId, payload.GroupId, payload, teachers);
 
         ClassCreationOutcome<UniqueClass> outcome = await _coordinator.CreateAsync(
             tenantId,

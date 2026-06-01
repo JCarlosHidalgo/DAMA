@@ -18,6 +18,11 @@ export interface ClassTeacher {
   teacherName: string;
 }
 
+export interface ClassGroup {
+  id: string;
+  name: string;
+}
+
 export interface ScheduledClass {
   id: string;
   courseId: string;
@@ -28,6 +33,8 @@ export interface ScheduledClass {
   startTime: string;
   endTime: string;
   teachers: ClassTeacher[];
+  groupId: string;
+  groupName: string;
 }
 
 export interface UniqueClass {
@@ -40,6 +47,8 @@ export interface UniqueClass {
   startTime: string;
   endTime: string;
   teachers: ClassTeacher[];
+  groupId: string;
+  groupName: string;
 }
 
 export interface ClassTeacherPayload {
@@ -49,6 +58,7 @@ export interface ClassTeacherPayload {
 
 export interface CreateScheduledClassPayload {
   courseId: string;
+  groupId: string;
   dayOfWeekIndex: number;
   maxStudentLimit: number;
   startTime: string;
@@ -67,6 +77,7 @@ export interface UpdateScheduledClassPayload {
 
 export interface CreateUniqueClassPayload {
   courseId: string;
+  groupId: string;
   date: string;
   maxStudentLimit: number;
   startTime: string;
@@ -96,6 +107,8 @@ export interface GetScheduledClassDTO {
   endTime: string;
   courseId: string;
   teachers: ClassTeacher[];
+  groupId: string;
+  groupName: string;
 }
 
 export interface GetUniqueClassDTO {
@@ -106,6 +119,8 @@ export interface GetUniqueClassDTO {
   endTime: string;
   courseId: string;
   teachers: ClassTeacher[];
+  groupId: string;
+  groupName: string;
 }
 
 export interface GetCourseScheduleDTO {
@@ -124,4 +139,6 @@ export interface CourseScheduleEntry {
   teachers: ClassTeacher[];
   dayOfWeekIndex?: number;
   maxStudentLimit: number;
+  groupId: string;
+  groupName: string;
 }

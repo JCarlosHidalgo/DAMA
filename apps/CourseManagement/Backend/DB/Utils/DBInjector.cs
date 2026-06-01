@@ -2,6 +2,7 @@ using System.Data;
 
 using Backend.DB.Injectors;
 using Backend.DB.Injectors.Courses;
+using Backend.DB.Injectors.Groups;
 using Backend.DB.Injectors.Scheduleds;
 using Backend.DB.Injectors.Uniques;
 
@@ -23,6 +24,9 @@ public static class DBInjector
     public static void InjectData(MySqlConnection connection)
     {
         IDataInjector injector = new CourseInjector();
+        injector.InjectData(connection);
+
+        injector = new ClassGroupInjector();
         injector.InjectData(connection);
 
         injector = new ScheduledClassInjector();

@@ -6,6 +6,7 @@ using Backend.Application.Infrastructure;
 using Backend.Application.Mediator;
 using Backend.Builders;
 using Backend.Claims;
+using Backend.DB.Daos.Abstract.Single.Groups;
 using Backend.DB.Daos.Abstract.Single.Scheduleds;
 using Backend.Dtos;
 using Backend.Dtos.Scheduleds.Input;
@@ -23,18 +24,21 @@ public sealed class CreateScheduledClassHandler : ICommandHandler<CreateSchedule
     private const string ScheduledClassEntityType = "ScheduledClass";
 
     private readonly IScheduledClassDao _scheduledClassDao;
+    private readonly IClassGroupDao _classGroupDao;
     private readonly IClassCreationCoordinator<ScheduledClass> _coordinator;
     private readonly IClaimContext _claimContext;
     private readonly IClassBuilder _classBuilder;
     private readonly IMapper _mapper;
 
     public CreateScheduledClassHandler(IScheduledClassDao scheduledClassDao,
+                                       IClassGroupDao classGroupDao,
                                        IClassCreationCoordinator<ScheduledClass> coordinator,
                                        IClaimContext claimContext,
                                        IClassBuilder classBuilder,
                                        IMapper mapper)
     {
         _scheduledClassDao = scheduledClassDao;
+        _classGroupDao = classGroupDao;
         _coordinator = coordinator;
         _claimContext = claimContext;
         _classBuilder = classBuilder;
@@ -47,15 +51,17 @@ public sealed class CreateScheduledClassHandler : ICommandHandler<CreateSchedule
         CreateScheduledClassDto payload = command.Payload;
         List<ClassTeacher> teachers = _mapper.Map<List<ClassTeacherDto>, List<ClassTeacher>>(payload.Teachers);
 
-        foreach (ClassTeacher teacher in teachers)
+        if (!await _classGroupDao.ExistsForTenantAsync(tenantId, payload.GroupId))
         {
-            if (await _scheduledClassDao.HasOverlapForTeacherAsync(tenantId, teacher.TeacherId, payload.DayOfWeekIndex, payload.StartTime, payload.EndTime, null))
-            {
-                return new CreateScheduledClassResult.TeacherConflict(teacher.TeacherId, teacher.TeacherName);
-            }
+            return new CreateScheduledClassResult.GroupNotFound();
         }
 
-        ScheduledClass newScheduledClass = _classBuilder.BuildScheduledClass(tenantId, payload.CourseId, payload, teachers);
+        if (await _scheduledClassDao.HasGroupOverlapAsync(tenantId, payload.GroupId, payload.DayOfWeekIndex, payload.StartTime, payload.EndTime, null))
+        {
+            return new CreateScheduledClassResult.GroupOverlapConflict();
+        }
+
+        ScheduledClass newScheduledClass = _classBuilder.BuildScheduledClass(tenantId, payload.CourseId, payload.GroupId, payload, teachers);
 
         ClassCreationOutcome<ScheduledClass> outcome = await _coordinator.CreateAsync(
             tenantId,

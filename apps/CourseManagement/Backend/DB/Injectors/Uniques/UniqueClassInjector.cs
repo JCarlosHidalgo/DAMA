@@ -13,7 +13,7 @@ public sealed class UniqueClassInjector : DataInjector
         .Append("INTO TABLE UniqueClass ")
         .Append("FIELDS TERMINATED BY ',' ")
         .Append("IGNORE 1 LINES ")
-        .Append("(Id, Date, StartTime, EndTime, CourseId, TenantId)");
+        .Append("(Id, Date, StartTime, EndTime, CourseId, GroupId, TenantId)");
         _injectionCommand = sb.ToString();
     }
 }

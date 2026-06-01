@@ -14,6 +14,7 @@ import {
   CreateUniqueClassPayload,
   UpdateUniqueClassPayload,
   GetCourseScheduleDTO,
+  ClassGroup,
 } from '@core/models';
 
 @Injectable({ providedIn: 'root' })
@@ -83,5 +84,39 @@ export class CourseApi {
     return this.http.get<GetCourseScheduleDTO>(`${this.base}/tenant/schedule`, {
       params: new HttpParams().set('WeekPaginationIndex', weekPaginationIndex),
     });
+  }
+
+  getStudentSchedule(weekPaginationIndex: number): Observable<GetCourseScheduleDTO> {
+    return this.http.get<GetCourseScheduleDTO>(`${this.base}/student/schedule`, {
+      params: new HttpParams().set('WeekPaginationIndex', weekPaginationIndex),
+    });
+  }
+
+  getGroups(): Observable<ClassGroup[]> {
+    return this.http.get<ClassGroup[]>(`${this.base}/group`);
+  }
+
+  getTeacherGroups(): Observable<ClassGroup[]> {
+    return this.http.get<ClassGroup[]>(`${this.base}/group/teacher/me`);
+  }
+
+  createGroup(name: string): Observable<ClassGroup> {
+    return this.http.post<ClassGroup>(`${this.base}/group`, { name });
+  }
+
+  renameGroup(id: string, name: string): Observable<void> {
+    return this.http.put<void>(`${this.base}/group/${id}`, { name });
+  }
+
+  deleteGroup(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.base}/group/${id}`);
+  }
+
+  transferScheduledClass(id: string, targetGroupId: string): Observable<void> {
+    return this.http.put<void>(`${this.base}/scheduled/${id}/transfer`, { targetGroupId });
+  }
+
+  transferUniqueClass(id: string, targetGroupId: string): Observable<void> {
+    return this.http.put<void>(`${this.base}/unique/${id}/transfer`, { targetGroupId });
   }
 }

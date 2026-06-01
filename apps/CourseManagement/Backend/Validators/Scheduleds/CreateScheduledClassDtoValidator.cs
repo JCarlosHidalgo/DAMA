@@ -16,6 +16,7 @@ public class CreateScheduledClassDtoValidator : AbstractValidator<CreateSchedule
     private const string InvalidDayOfWeekMessage = "DayOfWeekIndex debe estar entre 1 y 7";
     private const string InvalidTimeRangeMessage = "StartTime debe ser menor que EndTime";
     private const string InvalidCourseIdMessage = "CourseId es requerido";
+    private const string InvalidGroupIdMessage = "GroupId es requerido";
     private const string TooLongExternalReferenceMessage = "ExternalReference no debe exceder 128 caracteres";
 
     public CreateScheduledClassDtoValidator()
@@ -35,6 +36,9 @@ public class CreateScheduledClassDtoValidator : AbstractValidator<CreateSchedule
 
         RuleFor(scheduledClass => scheduledClass.CourseId)
             .NotEqual(Guid.Empty).WithMessage(InvalidCourseIdMessage);
+
+        RuleFor(scheduledClass => scheduledClass.GroupId)
+            .NotEqual(Guid.Empty).WithMessage(InvalidGroupIdMessage);
 
         this.MustBeValidTeacherList(scheduledClass => scheduledClass.Teachers);
 

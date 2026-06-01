@@ -12,6 +12,7 @@ public class CreateUniqueClassDtoValidatorTests
 {
     private const string InvalidTimeRangeMessage = "StartTime debe ser menor que EndTime";
     private const string InvalidCourseIdMessage = "CourseId es requerido";
+    private const string InvalidGroupIdMessage = "GroupId es requerido";
     private const string InvalidDateMessage = "Date fuera de rango razonable";
     private const string TooLongExternalReferenceMessage = "ExternalReference no debe exceder 128 caracteres";
     private const string EmptyTeachersMessage = "Teachers debe contener al menos un docente";
@@ -29,6 +30,7 @@ public class CreateUniqueClassDtoValidatorTests
         StartTime = new TimeOnly(9, 0),
         EndTime = new TimeOnly(10, 0),
         CourseId = Guid.NewGuid(),
+        GroupId = Guid.NewGuid(),
         Teachers =
         [
             new ClassTeacherDto { TeacherId = Guid.NewGuid(), TeacherName = "Profesor" }
@@ -161,6 +163,21 @@ public class CreateUniqueClassDtoValidatorTests
         ValidationResult result = await validator.ValidateAsync(request);
 
         Assert.That(result.IsValid, Is.True);
+    }
+
+    [Test]
+    public async Task Validate_WithEmptyGroupId_FailsWithInvalidGroupIdMessage()
+    {
+        CreateUniqueClassDto request = ValidPayload();
+        request.GroupId = Guid.Empty;
+
+        ValidationResult result = await validator.ValidateAsync(request);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.IsValid, Is.False);
+            Assert.That(result.Errors.Any(error => error.ErrorMessage == InvalidGroupIdMessage), Is.True);
+        });
     }
 
     [Test]

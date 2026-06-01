@@ -15,6 +15,7 @@ http:
         "startTime": "10:00:00",
         "endTime": "11:30:00",
         "courseId": "733922e4-1c68-429a-9014-27ef751846f5",
+        "groupId": "1a111111-1111-4111-8111-111111111111",
         "teachers": [
           {
             "teacherId": "13a6111c-8b17-4340-beef-ffe7a6f9cac9",

@@ -1,0 +1,23 @@
+info:
+  name: "Client: Transfer Scheduled Class"
+  type: http
+  seq: 25
+
+http:
+  method: PUT
+  url: "{{API_PATH}}/api/course-management/course/scheduled/9abead96-0939-4c86-818f-61a2143e6661/transfer"
+  body:
+    type: json
+    data: |-
+      {
+        "targetGroupId": "1a111111-1111-4111-8111-111111111111"
+      }
+  auth:
+    type: bearer
+    token: "{{Client_JWT}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

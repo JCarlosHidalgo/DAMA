@@ -12,6 +12,7 @@ public class CreateScheduledClassDtoValidatorTests
     private const string InvalidDayOfWeekMessage = "DayOfWeekIndex debe estar entre 1 y 7";
     private const string InvalidTimeRangeMessage = "StartTime debe ser menor que EndTime";
     private const string InvalidCourseIdMessage = "CourseId es requerido";
+    private const string InvalidGroupIdMessage = "GroupId es requerido";
     private const string TooLongExternalReferenceMessage = "ExternalReference no debe exceder 128 caracteres";
     private const string EmptyTeachersMessage = "Teachers debe contener al menos un docente";
     private const string DuplicateTeacherMessage = "Teachers contiene TeacherId duplicados";
@@ -28,6 +29,7 @@ public class CreateScheduledClassDtoValidatorTests
         StartTime = new TimeOnly(9, 0),
         EndTime = new TimeOnly(10, 0),
         CourseId = Guid.NewGuid(),
+        GroupId = Guid.NewGuid(),
         Teachers =
         [
             new ClassTeacherDto { TeacherId = Guid.NewGuid(), TeacherName = "Profesor" }
@@ -171,6 +173,21 @@ public class CreateScheduledClassDtoValidatorTests
         {
             Assert.That(result.IsValid, Is.False);
             Assert.That(result.Errors.Any(error => error.ErrorMessage == InvalidCourseIdMessage), Is.True);
+        });
+    }
+
+    [Test]
+    public async Task Validate_WithEmptyGroupId_FailsWithInvalidGroupIdMessage()
+    {
+        CreateScheduledClassDto request = ValidPayload();
+        request.GroupId = Guid.Empty;
+
+        ValidationResult result = await validator.ValidateAsync(request);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.IsValid, Is.False);
+            Assert.That(result.Errors.Any(error => error.ErrorMessage == InvalidGroupIdMessage), Is.True);
         });
     }
 

@@ -1,0 +1,6 @@
+[*.cs]
+dotnet_analyzer_diagnostic.severity = none
+dotnet_diagnostic.S3776.severity = error
+dotnet_diagnostic.S1541.severity = error
+dotnet_diagnostic.S134.severity = error
+dotnet_diagnostic.S1067.severity = error

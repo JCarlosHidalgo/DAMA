@@ -42,6 +42,8 @@ export function normalizeSchedule(
       teachers: scheduledClass.teachers ?? [],
       dayOfWeekIndex: scheduledClass.dayOfWeekIndex,
       maxStudentLimit: scheduledClass.maxStudentLimit,
+      groupId: scheduledClass.groupId,
+      groupName: scheduledClass.groupName,
     });
   }
 
@@ -56,6 +58,8 @@ export function normalizeSchedule(
       endTime: uniqueClass.endTime,
       teachers: uniqueClass.teachers ?? [],
       maxStudentLimit: uniqueClass.maxStudentLimit,
+      groupId: uniqueClass.groupId,
+      groupName: uniqueClass.groupName,
     });
   }
 
