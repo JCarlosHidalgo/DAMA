@@ -127,7 +127,8 @@ services:
       - "80"
       - "81"
     environment:
-      ASPNETCORE_HTTP_PORTS: 80
+      Kestrel__Endpoints__Http__Url: http://*:80
+      Kestrel__Endpoints__Http__Protocols: Http1
       Kestrel__Endpoints__Grpc__Url: https://*:81
       Kestrel__Endpoints__Grpc__Protocols: Http2
       Kestrel__Endpoints__Grpc__Certificate__Path: /etc/dama/tls/course-management.crt
