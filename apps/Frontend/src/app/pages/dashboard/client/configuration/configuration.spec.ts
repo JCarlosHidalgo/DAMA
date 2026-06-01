@@ -13,7 +13,6 @@ import { buildJwtClaims } from '@testing';
 const sampleStatus: TodotixAppKeyStatus = {
   hasCustomKey: true,
   maskedAppKey: '••••••••2724',
-  updatedAt: '2026-05-30T00:00:00Z',
 };
 
 describe('ClientConfiguration', () => {

@@ -1,5 +1,5 @@
-using Backend.DB.Daos.Abstract.Single.Todotix;
-using Backend.Entities.Todotix;
+using Backend.DB.Daos.Abstract.Single.PaymentCredentials;
+using Backend.Entities.PaymentCredentials;
 using Backend.Options;
 using Backend.Security;
 using Backend.Services.Concrete.Todotix;
@@ -13,7 +13,7 @@ namespace Test.Services.Concrete.Todotix;
 [TestFixture]
 public class TodotixAppKeyResolverTests
 {
-    private Mock<ITenantTodotixCredentialReader> credentialReader = null!;
+    private Mock<ITenantPaymentCredentialReader> credentialReader = null!;
     private Mock<IAppKeyCipher> appKeyCipher = null!;
     private TodotixOptions todotixOptions = null!;
     private TodotixAppKeyResolver sut = null!;
@@ -21,7 +21,7 @@ public class TodotixAppKeyResolverTests
     [SetUp]
     public void Setup()
     {
-        credentialReader = new Mock<ITenantTodotixCredentialReader>(MockBehavior.Strict);
+        credentialReader = new Mock<ITenantPaymentCredentialReader>(MockBehavior.Strict);
         appKeyCipher = new Mock<IAppKeyCipher>(MockBehavior.Strict);
         todotixOptions = new TodotixOptions { ApplicationKey = "env-app-key", CallbackUrl = "http://cb" };
         sut = new TodotixAppKeyResolver(credentialReader.Object, appKeyCipher.Object, Options.Create(todotixOptions));
@@ -31,7 +31,7 @@ public class TodotixAppKeyResolverTests
     public async Task ResolveAsync_WhenCredentialExists_ReturnsDecryptedKey()
     {
         var tenantId = Guid.NewGuid();
-        var credential = new TenantTodotixCredential { TenantId = tenantId, EncryptedAppKey = "cipher" };
+        var credential = new TenantPaymentCredential { TenantId = tenantId, TodotixAppKey = "cipher" };
         credentialReader.Setup(r => r.GetByTenantAsync(tenantId)).ReturnsAsync(credential);
         appKeyCipher.Setup(c => c.Decrypt("cipher")).Returns("tenant-app-key");
 
@@ -44,7 +44,7 @@ public class TodotixAppKeyResolverTests
     public async Task ResolveAsync_WhenNoCredential_FallsBackToEnvKey()
     {
         var tenantId = Guid.NewGuid();
-        credentialReader.Setup(r => r.GetByTenantAsync(tenantId)).ReturnsAsync((TenantTodotixCredential?)null);
+        credentialReader.Setup(r => r.GetByTenantAsync(tenantId)).ReturnsAsync((TenantPaymentCredential?)null);
 
         string resolved = await sut.ResolveAsync(tenantId);
 

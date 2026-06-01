@@ -59,7 +59,7 @@ This signs the `sig` query parameter on the Todotix callback URL and authenticat
 
 ### `TODOTIX_APPKEY_ENCRYPTION_KEY`
 
-Encrypts each tenant's Todotix app-key at rest in `Payment.TenantTodotixCredential.EncryptedAppKey` (AES-256-GCM). **Rotating it is destructive**: every stored ciphertext was sealed with the old key and can no longer be decrypted, so the per-tenant keys silently fall back to the env `TODOTIX_APPKEY`. If you must rotate, have each Client re-enter their app-key from the Configuración tab afterwards (or decrypt-then-re-encrypt the column with a one-off script before cutover). Tenants without a stored key (e.g. Tenant Example) are unaffected — they already use the env fallback.
+Encrypts each tenant's Todotix app-key at rest in `Payment.TenantPaymentCredentials.TodotixAppKey` (AES-256-GCM). **Rotating it is destructive**: every stored ciphertext was sealed with the old key and can no longer be decrypted, so the per-tenant keys silently fall back to the env `TODOTIX_APPKEY`. If you must rotate, have each Client re-enter their app-key from the Configuración tab afterwards (or decrypt-then-re-encrypt the column with a one-off script before cutover). The dev seed encrypts `TODOTIX_APPKEY` with the **current** key at seed time, so changing the key requires re-seeding (`down -v`). Tenants with no stored row use the env fallback.
 
 ### DB passwords
 

@@ -70,38 +70,33 @@ BEGIN
 END //
 DELIMITER ;
 
--- TENANT TODOTIX CREDENTIAL
-CREATE TABLE IF NOT EXISTS TenantTodotixCredential (
-    TenantId        VARCHAR(36)  PRIMARY KEY NOT NULL,
-    EncryptedAppKey VARCHAR(512) NOT NULL,
-    CreatedAt       DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    UpdatedAt       DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP
+-- TENANT PAYMENT CREDENTIALS
+CREATE TABLE IF NOT EXISTS TenantPaymentCredentials (
+    TenantId      VARCHAR(36)  PRIMARY KEY NOT NULL,
+    TodotixAppKey VARCHAR(512) NOT NULL
 );
 
 DELIMITER //
-CREATE PROCEDURE GetTodotixCredentialByTenant(IN tenantId CHAR(36))
+CREATE PROCEDURE GetPaymentCredentialsByTenant(IN tenantId CHAR(36))
 BEGIN
     SELECT
-        ttc.TenantId,
-        ttc.EncryptedAppKey,
-        ttc.CreatedAt,
-        ttc.UpdatedAt
-    FROM TenantTodotixCredential ttc
-    WHERE ttc.TenantId = tenantId;
+        tpc.TenantId,
+        tpc.TodotixAppKey
+    FROM TenantPaymentCredentials tpc
+    WHERE tpc.TenantId = tenantId;
 END //
 DELIMITER ;
 
 DELIMITER //
-CREATE PROCEDURE UpsertTodotixCredentialForTenant(
-    IN tenantId        CHAR(36),
-    IN encryptedAppKey VARCHAR(512)
+CREATE PROCEDURE UpsertPaymentCredentialsForTenant(
+    IN tenantId      CHAR(36),
+    IN todotixAppKey VARCHAR(512)
 )
 BEGIN
-    INSERT INTO TenantTodotixCredential (TenantId, EncryptedAppKey)
-    VALUES (tenantId, encryptedAppKey)
+    INSERT INTO TenantPaymentCredentials (TenantId, TodotixAppKey)
+    VALUES (tenantId, todotixAppKey)
     ON DUPLICATE KEY UPDATE
-        EncryptedAppKey = encryptedAppKey,
-        UpdatedAt       = CURRENT_TIMESTAMP;
+        TodotixAppKey = todotixAppKey;
     SELECT ROW_COUNT() AS Affected;
 END //
 DELIMITER ;
@@ -383,7 +378,7 @@ CREATE PROCEDURE TruncateAllTables()
 BEGIN
     SET FOREIGN_KEY_CHECKS = 0;
     TRUNCATE TABLE DebtTemplate;
-    TRUNCATE TABLE TenantTodotixCredential;
+    TRUNCATE TABLE TenantPaymentCredentials;
     TRUNCATE TABLE PendingQrPayment;
     TRUNCATE TABLE SuccessQrPayment;
     TRUNCATE TABLE FailedQrPayment;

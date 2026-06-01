@@ -1,9 +1,9 @@
 using Backend.Builders;
 using Backend.Claims;
-using Backend.DB.Daos.Abstract.Single.Todotix;
+using Backend.DB.Daos.Abstract.Single.PaymentCredentials;
 using Backend.Dtos.Todotix.Input;
 using Backend.Dtos.Todotix.Output;
-using Backend.Entities.Todotix;
+using Backend.Entities.PaymentCredentials;
 using Backend.Results.Todotix;
 using Backend.Security;
 using Backend.Services.Abstract.Todotix;
@@ -12,15 +12,15 @@ namespace Backend.Services.Concrete.Todotix;
 
 public sealed class TodotixCredentialService : ITodotixCredentialService
 {
-    private readonly ITenantTodotixCredentialReader _credentialReader;
-    private readonly ITenantTodotixCredentialWriter _credentialWriter;
+    private readonly ITenantPaymentCredentialReader _credentialReader;
+    private readonly ITenantPaymentCredentialWriter _credentialWriter;
     private readonly IAppKeyCipher _appKeyCipher;
     private readonly ITodotixAppKeyResolver _appKeyResolver;
     private readonly IClaimContext _claimContext;
     private readonly ITodotixCredentialViewBuilder _viewBuilder;
 
-    public TodotixCredentialService(ITenantTodotixCredentialReader credentialReader,
-                                    ITenantTodotixCredentialWriter credentialWriter,
+    public TodotixCredentialService(ITenantPaymentCredentialReader credentialReader,
+                                    ITenantPaymentCredentialWriter credentialWriter,
                                     IAppKeyCipher appKeyCipher,
                                     ITodotixAppKeyResolver appKeyResolver,
                                     IClaimContext claimContext,
@@ -37,9 +37,9 @@ public sealed class TodotixCredentialService : ITodotixCredentialService
     public async Task<TodotixAppKeyStatusDto> GetStatusAsync()
     {
         Guid tenantId = _claimContext.TenantId;
-        TenantTodotixCredential? credential = await _credentialReader.GetByTenantAsync(tenantId);
+        TenantPaymentCredential? credential = await _credentialReader.GetByTenantAsync(tenantId);
         string effectiveAppKey = await _appKeyResolver.ResolveAsync(tenantId);
-        return _viewBuilder.BuildStatus(credential is not null, effectiveAppKey, credential?.UpdatedAt);
+        return _viewBuilder.BuildStatus(credential is not null, effectiveAppKey);
     }
 
     public async Task<TodotixAppKeyRevealDto> RevealAsync()

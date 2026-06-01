@@ -73,7 +73,6 @@ export interface QrDebtStatus {
 export interface TodotixAppKeyStatus {
   hasCustomKey: boolean;
   maskedAppKey: string | null;
-  updatedAt: string | null;
 }
 
 export interface TodotixAppKeyReveal {

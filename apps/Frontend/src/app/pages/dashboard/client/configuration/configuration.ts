@@ -90,12 +90,6 @@ const APP_KEY_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-
                 {{ revealedKey() ? 'Ocultar' : 'Mostrar' }}
               </button>
             </div>
-            @if (state.status.updatedAt) {
-              <div class="status-row">
-                <span class="t-label-up">Última actualización</span>
-                <span class="t-body-md">{{ state.status.updatedAt }}</span>
-              </div>
-            }
           }
 
           <form [formGroup]="form" (ngSubmit)="saveAppKey()" class="edit-form">
