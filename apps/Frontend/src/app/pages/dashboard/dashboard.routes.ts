@@ -1,10 +1,11 @@
 import { inject } from '@angular/core';
 import { Routes } from '@angular/router';
+import { provideTanStackQuery, QueryClient } from '@tanstack/angular-query-experimental';
 
 import { AuthService, roleGuard, UserRole } from '@core/auth';
 import { defaultRouteForRole } from '@core/router';
 
-export const dashboardRoutes: Routes = [
+const dashboardChildRoutes: Routes = [
   {
     path: 'resumen',
     canActivate: [roleGuard],
@@ -87,5 +88,26 @@ export const dashboardRoutes: Routes = [
       const role = inject(AuthService).currentRole();
       return role ? defaultRouteForRole(role) : '/';
     },
+  },
+];
+
+export const dashboardRoutes: Routes = [
+  {
+    path: '',
+    providers: [
+      provideTanStackQuery(
+        new QueryClient({
+          defaultOptions: {
+            queries: {
+              staleTime: 60_000,
+              gcTime: 5 * 60_000,
+              refetchOnWindowFocus: false,
+              retry: 1,
+            },
+          },
+        }),
+      ),
+    ],
+    children: dashboardChildRoutes,
   },
 ];

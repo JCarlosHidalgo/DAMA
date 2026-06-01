@@ -8,7 +8,9 @@ import { AuthService } from '@core/auth';
 import { ClassGroup, Course, CourseScheduleEntry } from '@core/models';
 import { NotificationService } from '@core/services';
 import { normalizeSchedule, nowInTenant } from '@core/utils';
-import { Calendar, GroupSelect, LoadingSkeleton, PageHead } from '@shared/components';
+import { LoadingSkeleton, PageHead } from '@shared/components';
+import { Calendar } from '@shared/components/calendar';
+import { GroupSelect } from '@shared/components/group-select/group-select';
 import { AttendanceQrDialog, AttendanceQrDialogData } from './attendance-qr-dialog';
 
 @Component({

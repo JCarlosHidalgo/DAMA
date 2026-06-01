@@ -18,7 +18,8 @@ import { AuthService } from '@core/auth';
 import { CourseScheduleEntry } from '@core/models';
 import { ClassKindStrategies, RosterEntry } from '@core/strategies';
 import { encodeQr } from '@core/utils';
-import { LoadingSkeleton, QrCard } from '@shared/components';
+import { LoadingSkeleton } from '@shared/components';
+import { QrCard } from '@shared/components/qr-card/qr-card';
 
 export interface AttendanceQrDialogData {
   entry: CourseScheduleEntry;

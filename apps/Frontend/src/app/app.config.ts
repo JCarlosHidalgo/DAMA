@@ -8,7 +8,6 @@ import { provideRouter, withComponentInputBinding, withPreloading } from '@angul
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideServiceWorker } from '@angular/service-worker';
-import { provideTanStackQuery, QueryClient } from '@tanstack/angular-query-experimental';
 
 import { routes } from './app.routes';
 import { authInterceptor } from '@core/auth';
@@ -25,17 +24,5 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes, withComponentInputBinding(), withPreloading(RoleAwarePreloadStrategy)),
     provideHttpClient(withInterceptors([authInterceptor])),
     provideAnimationsAsync(),
-    provideTanStackQuery(
-      new QueryClient({
-        defaultOptions: {
-          queries: {
-            staleTime: 60_000,
-            gcTime: 5 * 60_000,
-            refetchOnWindowFocus: false,
-            retry: 1,
-          },
-        },
-      }),
-    ),
   ],
 };

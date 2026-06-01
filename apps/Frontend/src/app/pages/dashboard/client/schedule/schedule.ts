@@ -18,7 +18,9 @@ import { ClassGroup, Course, CourseScheduleEntry, UserListItem } from '@core/mod
 import { DialogService, NotificationService } from '@core/services';
 import { ClassKindStrategies } from '@core/strategies';
 import { normalizeSchedule, nowInTenant } from '@core/utils';
-import { Calendar, GroupSelect, Icon, LoadingSkeleton, PageHead } from '@shared/components';
+import { Icon, LoadingSkeleton, PageHead } from '@shared/components';
+import { Calendar } from '@shared/components/calendar';
+import { GroupSelect } from '@shared/components/group-select/group-select';
 
 type FormKind = 'scheduled' | 'unique';
 

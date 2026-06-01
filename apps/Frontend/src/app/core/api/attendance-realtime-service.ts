@@ -1,10 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import {
-  HubConnection,
-  HubConnectionBuilder,
-  HubConnectionState,
-  LogLevel,
-} from '@microsoft/signalr';
+import type { HubConnection } from '@microsoft/signalr';
 import { Observable, Subject } from 'rxjs';
 
 import { environment } from '@env/environment';
@@ -12,10 +7,12 @@ import { AuthService } from '@core/auth';
 import { ScheduledClassAttendance, UniqueClassAttendance } from '@core/models';
 
 type AttendanceMessage = ScheduledClassAttendance | UniqueClassAttendance;
+type SignalrModule = typeof import('@microsoft/signalr');
 
 @Injectable({ providedIn: 'root' })
 export class AttendanceRealtimeService {
   private readonly authService = inject(AuthService);
+  private signalr: SignalrModule | null = null;
   private hubConnection: HubConnection | null = null;
   private startingPromise: Promise<void> | null = null;
   private readonly subjectByGroup = new Map<string, Subject<AttendanceMessage>>();
@@ -65,7 +62,11 @@ export class AttendanceRealtimeService {
         if (nextCount <= 0) {
           this.subscriberCountByGroup.delete(groupKey);
           this.subjectByGroup.delete(groupKey);
-          if (this.hubConnection && this.hubConnection.state === HubConnectionState.Connected) {
+          if (
+            this.hubConnection &&
+            this.signalr &&
+            this.hubConnection.state === this.signalr.HubConnectionState.Connected
+          ) {
             leave(this.hubConnection).catch(() => undefined);
           }
           if (this.subscriberCountByGroup.size === 0) {
@@ -79,7 +80,11 @@ export class AttendanceRealtimeService {
   }
 
   private async ensureStarted(): Promise<HubConnection> {
-    if (this.hubConnection && this.hubConnection.state === HubConnectionState.Connected) {
+    if (
+      this.hubConnection &&
+      this.signalr &&
+      this.hubConnection.state === this.signalr.HubConnectionState.Connected
+    ) {
       return this.hubConnection;
     }
     if (this.startingPromise) {
@@ -87,12 +92,13 @@ export class AttendanceRealtimeService {
       return this.hubConnection!;
     }
 
-    const newHubConnection = new HubConnectionBuilder()
+    const signalr = (this.signalr ??= await import('@microsoft/signalr'));
+    const newHubConnection = new signalr.HubConnectionBuilder()
       .withUrl(`${environment.apiBaseUrl}/api/attendance/hubs/attendance`, {
         accessTokenFactory: () => this.authService.accessToken ?? '',
       })
       .withAutomaticReconnect()
-      .configureLogging(LogLevel.Warning)
+      .configureLogging(signalr.LogLevel.Warning)
       .build();
 
     newHubConnection.on('AttendanceMarked', (incomingMessage: AttendanceMessage) => {

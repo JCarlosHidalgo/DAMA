@@ -11,7 +11,8 @@ import { AuthService } from '@core/auth';
 import { NotificationService } from '@core/services';
 import { ClassKindStrategies } from '@core/strategies';
 import { AttendanceMarkedDialog, decodeQr, todayDateOnlyInTenant } from '@core/utils';
-import { CameraScanner, Icon, LoadingSkeleton, PageHead } from '@shared/components';
+import { Icon, LoadingSkeleton, PageHead } from '@shared/components';
+import { CameraScanner } from '@shared/components/camera-scanner/camera-scanner';
 
 type ScanState = 'idle' | 'submitting' | 'success' | 'error';
 
