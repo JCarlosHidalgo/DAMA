@@ -31,7 +31,7 @@ public sealed class TodotixDebtPublisher(
 
         if (outboxEvent.Attempts > 0)
         {
-            PublishOutcome? alreadyRegisteredOutcome = await SkipIfAlreadyRegisteredAsync(outboxEvent.PendingId);
+            PublishOutcome? alreadyRegisteredOutcome = await RejectIfAlreadyRegisteredAsync(outboxEvent.PendingId);
             if (alreadyRegisteredOutcome is not null)
             {
                 return alreadyRegisteredOutcome;
@@ -56,19 +56,21 @@ public sealed class TodotixDebtPublisher(
 
         if (registerDebtResponse.Existente != 0)
         {
-            return new PublishOutcome.Success();
+            return new PublishOutcome.PermanentFailure($"Todotix reports debt already registered without a retrievable QR url. existente={registerDebtResponse.Existente} mensaje={registerDebtResponse.Mensaje}");
         }
 
         string errorMessage = $"Todotix error={registerDebtResponse.Error} mensaje={registerDebtResponse.Mensaje} existente={registerDebtResponse.Existente}";
         return new PublishOutcome.TransientFailure(errorMessage);
     }
 
-    private async Task<PublishOutcome?> SkipIfAlreadyRegisteredAsync(Guid debtIdentifier)
+    private async Task<PublishOutcome?> RejectIfAlreadyRegisteredAsync(Guid debtIdentifier)
     {
         try
         {
             bool alreadyRegistered = await todotixClient.DebtExistsAsync(debtIdentifier);
-            return alreadyRegistered ? new PublishOutcome.Success() : null;
+            return alreadyRegistered
+                ? new PublishOutcome.PermanentFailure("Todotix debt already registered on retry; its QR url can no longer be retrieved.")
+                : null;
         }
         catch (Exception consultException) when (consultException is not OperationCanceledException)
         {

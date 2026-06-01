@@ -98,15 +98,16 @@ public class TodotixDebtPublisherTests
     }
 
     [Test]
-    public async Task PublishAsync_OnRetryWhenDebtAlreadyExists_ReturnsSuccessWithoutRegistering()
+    public async Task PublishAsync_OnRetryWhenDebtAlreadyExists_ReturnsPermanentFailureWithoutRegistering()
     {
         TodotixOutboxEvent outboxEvent = NewRetryEvent(ValidPayload);
         todotixClient.Setup(c => c.DebtExistsAsync(outboxEvent.PendingId)).ReturnsAsync(true);
 
         PublishOutcome outcome = await sut.PublishAsync(outboxEvent);
 
-        Assert.That(outcome, Is.TypeOf<PublishOutcome.Success>());
+        Assert.That(outcome, Is.TypeOf<PublishOutcome.PermanentFailure>());
         todotixClient.Verify(c => c.RegisterDebtAsync(It.IsAny<RegisterDebtRequest>()), Times.Never);
+        pendingDao.Verify(d => d.UpdateQrImageUrlAsync(It.IsAny<Guid>(), It.IsAny<string>()), Times.Never);
     }
 
     [Test]
@@ -138,7 +139,7 @@ public class TodotixDebtPublisherTests
     }
 
     [Test]
-    public async Task PublishAsync_WhenRegisterReportsAlreadyExists_ReturnsSuccess()
+    public async Task PublishAsync_WhenRegisterReportsAlreadyExistsWithoutQr_ReturnsPermanentFailure()
     {
         TodotixOutboxEvent outboxEvent = NewEvent(ValidPayload);
         todotixClient.Setup(c => c.RegisterDebtAsync(It.IsAny<RegisterDebtRequest>()))
@@ -146,7 +147,21 @@ public class TodotixDebtPublisherTests
 
         PublishOutcome outcome = await sut.PublishAsync(outboxEvent);
 
-        Assert.That(outcome, Is.TypeOf<PublishOutcome.Success>());
+        Assert.That(outcome, Is.TypeOf<PublishOutcome.PermanentFailure>());
         pendingDao.Verify(d => d.UpdateQrImageUrlAsync(It.IsAny<Guid>(), It.IsAny<string>()), Times.Never);
+    }
+
+    [Test]
+    public async Task PublishAsync_WhenRegisterReturnsQrEvenIfExistente_PersistsQrAndReturnsSuccess()
+    {
+        TodotixOutboxEvent outboxEvent = NewEvent(ValidPayload);
+        todotixClient.Setup(c => c.RegisterDebtAsync(It.IsAny<RegisterDebtRequest>()))
+                     .ReturnsAsync(new RegisterDebtResponse { Error = 0, QrSimpleUrl = "http://qr", Existente = 1 });
+        pendingDao.Setup(d => d.UpdateQrImageUrlAsync(outboxEvent.PendingId, "http://qr")).Returns(Task.CompletedTask);
+
+        PublishOutcome outcome = await sut.PublishAsync(outboxEvent);
+
+        Assert.That(outcome, Is.TypeOf<PublishOutcome.Success>());
+        pendingDao.Verify(d => d.UpdateQrImageUrlAsync(outboxEvent.PendingId, "http://qr"), Times.Once);
     }
 }
