@@ -2,7 +2,9 @@
 
 DAMA runs in two shapes. **Dev** is the full local stack (`compose.dev.yaml`, MySQL containers
 included) — see `infrastructure/CLAUDE.md` for the wrappers — and is also published behind Cloudflare
-at `https://dev.dama-software.org` (frontend) / `https://api.dev.dama-software.org` (gateway).
+at `https://dev.dama-software.org` (frontend) / `https://api-dev.dama-software.org` (gateway — a
+single-level subdomain so Cloudflare's `*.dama-software.org` Universal SSL cert covers it; a
+two-level `api.dev.…` host would fail TLS since the wildcard matches only one label).
 **Production** runs on **Dokploy** with managed databases and is the subject of this document.
 
 Per-environment public URLs are never hardcoded: each `.env.*` carries `FRONTEND_API_BASE_URL` (baked
