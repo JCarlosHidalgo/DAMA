@@ -28,6 +28,14 @@ public class TodotixCredentialController : ControllerBase
         return Ok(status);
     }
 
+    [Authorize(Roles = "Student")]
+    [HttpGet("availability")]
+    public async Task<ActionResult> GetAvailability()
+    {
+        var availability = await _service.GetAvailabilityAsync();
+        return Ok(availability);
+    }
+
     [Authorize(Roles = "Client")]
     [HttpGet("reveal")]
     public async Task<ActionResult> Reveal()

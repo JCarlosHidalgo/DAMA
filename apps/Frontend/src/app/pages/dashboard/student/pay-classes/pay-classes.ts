@@ -87,6 +87,33 @@ export class QrImageDialog {
 }
 
 @Component({
+  selector: 'app-no-payment-credentials-dialog',
+  imports: [MatDialogModule, MatButtonModule],
+  template: `
+    <h2 mat-dialog-title>Pagos no disponibles</h2>
+    <mat-dialog-content>
+      <p class="message t-body">
+        Tu escuela no tiene credenciales de pago configuradas, comunícate con los administradores.
+      </p>
+    </mat-dialog-content>
+    <mat-dialog-actions align="end">
+      <button mat-flat-button color="primary" (click)="dialogRef.close()">Entendido</button>
+    </mat-dialog-actions>
+  `,
+  styles: `
+    .message {
+      margin: 0;
+      min-width: 280px;
+      color: var(--dama-text);
+    }
+  `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class NoPaymentCredentialsDialog {
+  readonly dialogRef = inject(MatDialogRef<NoPaymentCredentialsDialog>);
+}
+
+@Component({
   selector: 'app-pay-dialog',
   imports: [
     ReactiveFormsModule,
@@ -184,6 +211,16 @@ export class PayDialog {
   template: `
     <app-page-head title="Comprar clases" subtitle="Elige un paquete y paga con QR." />
 
+    @if (!loading() && !paymentConfigured()) {
+      <div class="no-credentials-banner">
+        <app-icon name="warning" />
+        <span
+          >Tu escuela no tiene credenciales de pago configuradas, comunícate con los
+          administradores.</span
+        >
+      </div>
+    }
+
     @if (loading()) {
       <div class="grid">
         <app-loading-skeleton [height]="180" />
@@ -209,7 +246,7 @@ export class PayDialog {
               <button
                 mat-flat-button
                 color="primary"
-                [disabled]="paying() === template.id"
+                [disabled]="!paymentConfigured() || paying() === template.id"
                 (click)="onPay(template)"
               >
                 @if (paying() === template.id) {
@@ -227,6 +264,17 @@ export class PayDialog {
   styles: `
     :host {
       display: block;
+    }
+    .no-credentials-banner {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 16px;
+      margin-bottom: var(--dama-space-4);
+      border-radius: var(--dama-radius);
+      background: color-mix(in oklab, var(--dama-warning) 14%, transparent);
+      color: var(--dama-text-strong);
+      border: 1px solid color-mix(in oklab, var(--dama-warning) 40%, transparent);
     }
     .grid {
       display: grid;
@@ -262,6 +310,7 @@ export class PayClasses {
   protected readonly templates = signal<DebtTemplate[]>([]);
   protected readonly loading = signal(true);
   protected readonly paying = signal<string | null>(null);
+  protected readonly paymentConfigured = signal(true);
 
   constructor() {
     this.load();
@@ -270,8 +319,15 @@ export class PayClasses {
   private async load(): Promise<void> {
     this.loading.set(true);
     try {
-      const templates = await firstValueFrom(this.paymentApi.listDebtTemplates());
+      const [templates, availability] = await Promise.all([
+        firstValueFrom(this.paymentApi.listDebtTemplates()),
+        firstValueFrom(this.paymentApi.getPaymentAvailability()),
+      ]);
       this.templates.set(templates ?? []);
+      this.paymentConfigured.set(availability.hasPaymentCredentials);
+      if (!availability.hasPaymentCredentials) {
+        this.matDialog.open(NoPaymentCredentialsDialog, { width: '420px' });
+      }
     } catch {
       this.notifications.error('Error al cargar paquetes.');
     } finally {
@@ -280,6 +336,10 @@ export class PayClasses {
   }
 
   async onPay(template: DebtTemplate): Promise<void> {
+    if (!this.paymentConfigured()) {
+      return;
+    }
+
     const result = await this.dialogs.openForm<PayDialog, PayDialogData, PayDialogResult>(
       PayDialog,
       { template },

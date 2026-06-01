@@ -42,6 +42,12 @@ public sealed class TodotixCredentialService : ITodotixCredentialService
         return _viewBuilder.BuildStatus(credential is not null, effectiveAppKey);
     }
 
+    public async Task<PaymentAvailabilityDto> GetAvailabilityAsync()
+    {
+        TenantPaymentCredential? credential = await _credentialReader.GetByTenantAsync(_claimContext.TenantId);
+        return new PaymentAvailabilityDto { HasPaymentCredentials = credential is not null };
+    }
+
     public async Task<TodotixAppKeyRevealDto> RevealAsync()
     {
         string effectiveAppKey = await _appKeyResolver.ResolveAsync(_claimContext.TenantId);

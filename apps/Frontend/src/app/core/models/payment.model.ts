@@ -82,3 +82,7 @@ export interface TodotixAppKeyReveal {
 export interface UpdateTodotixAppKeyPayload {
   appKey: string;
 }
+
+export interface PaymentAvailability {
+  hasPaymentCredentials: boolean;
+}

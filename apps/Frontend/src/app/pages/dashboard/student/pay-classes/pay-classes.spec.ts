@@ -4,7 +4,7 @@ import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dial
 import { of, throwError } from 'rxjs';
 import { describe, it, expect, vi } from 'vitest';
 
-import { PayClasses, PayDialog, QrImageDialog } from './pay-classes';
+import { PayClasses, PayDialog, QrImageDialog, NoPaymentCredentialsDialog } from './pay-classes';
 import { PaymentApi } from '@core/api';
 import { DialogService, NotificationService } from '@core/services';
 import { DebtTemplate, QrDebtStatus } from '@core/models';
@@ -28,6 +28,7 @@ function pending(): QrDebtStatus {
 describe('PayClasses', () => {
   let paymentApi: {
     listDebtTemplates: ReturnType<typeof vi.fn>;
+    getPaymentAvailability: ReturnType<typeof vi.fn>;
     createQrDebt: ReturnType<typeof vi.fn>;
     getQrDebtStatus: ReturnType<typeof vi.fn>;
   };
@@ -43,6 +44,7 @@ describe('PayClasses', () => {
     TestBed.resetTestingModule();
     paymentApi = {
       listDebtTemplates: vi.fn(() => of([TEMPLATE])),
+      getPaymentAvailability: vi.fn(() => of({ hasPaymentCredentials: true })),
       createQrDebt: vi.fn(() => of({ identificadorDeuda: 'debt-1', status: 'Pending' })),
       getQrDebtStatus: vi.fn(() => of(pending())),
     };
@@ -149,11 +151,44 @@ describe('PayClasses', () => {
     });
   });
 
+  describe('payment availability', () => {
+    it('keeps payments enabled and shows no dialog when the tenant has credentials', async () => {
+      const fixture = await setUp();
+      await flushMicrotasks();
+
+      expect(fixture.componentInstance['paymentConfigured']()).toBe(true);
+      expect(matDialog.open).not.toHaveBeenCalled();
+    });
+
+    it('disables payments and opens the dialog when the tenant has no credentials', async () => {
+      const fixture = await setUp();
+      paymentApi.getPaymentAvailability.mockReturnValue(of({ hasPaymentCredentials: false }));
+      fixture.componentInstance['load']();
+      await flushMicrotasks();
+
+      expect(fixture.componentInstance['paymentConfigured']()).toBe(false);
+      expect(matDialog.open).toHaveBeenCalledWith(NoPaymentCredentialsDialog, { width: '420px' });
+    });
+
+    it('does not start a payment when credentials are missing', async () => {
+      const fixture = await setUp();
+      paymentApi.getPaymentAvailability.mockReturnValue(of({ hasPaymentCredentials: false }));
+      fixture.componentInstance['load']();
+      await flushMicrotasks();
+
+      await fixture.componentInstance.onPay(TEMPLATE);
+
+      expect(dialogs.openForm).not.toHaveBeenCalled();
+      expect(paymentApi.createQrDebt).not.toHaveBeenCalled();
+    });
+  });
+
   describe('load', () => {
     it('notifies on failure to load templates', async () => {
       TestBed.resetTestingModule();
       paymentApi = {
         listDebtTemplates: vi.fn(() => throwError(() => new Error('down'))),
+        getPaymentAvailability: vi.fn(() => of({ hasPaymentCredentials: true })),
         createQrDebt: vi.fn(),
         getQrDebtStatus: vi.fn(),
       };

@@ -17,6 +17,7 @@ import {
   TodotixAppKeyStatus,
   TodotixAppKeyReveal,
   UpdateTodotixAppKeyPayload,
+  PaymentAvailability,
 } from '@core/models';
 
 @Injectable({ providedIn: 'root' })
@@ -69,6 +70,10 @@ export class PaymentApi {
     return this.http.get<Page<FailedQrPayment>>(`${this.base}/qr/failed`, {
       params: new HttpParams().set('Index', pageIndex),
     });
+  }
+
+  getPaymentAvailability(): Observable<PaymentAvailability> {
+    return this.http.get<PaymentAvailability>(`${this.base}/todotix-credential/availability`);
   }
 
   getTodotixAppKeyStatus(): Observable<TodotixAppKeyStatus> {

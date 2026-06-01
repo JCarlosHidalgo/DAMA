@@ -77,6 +77,31 @@ public class TodotixCredentialServiceTests
     }
 
     [Test]
+    public async Task GetAvailabilityAsync_WhenCredentialExists_ReportsAvailable()
+    {
+        var credential = new TenantPaymentCredential
+        {
+            TenantId = tenantId,
+            TodotixAppKey = "cipher"
+        };
+        credentialReader.Setup(r => r.GetByTenantAsync(tenantId)).ReturnsAsync(credential);
+
+        PaymentAvailabilityDto availability = await sut.GetAvailabilityAsync();
+
+        Assert.That(availability.HasPaymentCredentials, Is.True);
+    }
+
+    [Test]
+    public async Task GetAvailabilityAsync_WhenNoCredential_ReportsUnavailable()
+    {
+        credentialReader.Setup(r => r.GetByTenantAsync(tenantId)).ReturnsAsync((TenantPaymentCredential?)null);
+
+        PaymentAvailabilityDto availability = await sut.GetAvailabilityAsync();
+
+        Assert.That(availability.HasPaymentCredentials, Is.False);
+    }
+
+    [Test]
     public async Task RevealAsync_ReturnsResolvedEffectiveKey()
     {
         appKeyResolver.Setup(r => r.ResolveAsync(tenantId)).ReturnsAsync("51599bd3-eed3-2826-45a4-a16c2fcc2724");

@@ -8,6 +8,8 @@ public interface ITodotixCredentialService
 {
     Task<TodotixAppKeyStatusDto> GetStatusAsync();
 
+    Task<PaymentAvailabilityDto> GetAvailabilityAsync();
+
     Task<TodotixAppKeyRevealDto> RevealAsync();
 
     Task<UpdateTodotixAppKeyOutcome> UpdateAsync(UpdateTodotixAppKeyDto dto);
