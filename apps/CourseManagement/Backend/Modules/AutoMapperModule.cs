@@ -14,6 +14,7 @@ public sealed class AutoMapperModule : IServiceModule
             cfg.AddProfile<ScheduledClassProfile>();
             cfg.AddProfile<UniqueClassProfile>();
             cfg.AddProfile<ClassTeacherProfile>();
+            cfg.AddProfile<ClassGroupProfile>();
         });
     }
 }
