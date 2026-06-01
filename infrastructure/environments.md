@@ -1,13 +1,19 @@
 # Environments
 
-DAMA runs in three shapes. **Dev** is the full local stack (`compose.dev.yaml`, MySQL containers
-included) — see `infrastructure/CLAUDE.md` for the wrappers. **Staging** mirrors prod with its own
-keys (`.env.staging.example`). **Production** runs on **Dokploy** with managed databases and is the
-subject of this document.
+DAMA runs in two shapes. **Dev** is the full local stack (`compose.dev.yaml`, MySQL containers
+included) — see `infrastructure/CLAUDE.md` for the wrappers — and is also published behind Cloudflare
+at `https://dev.dama-software.org` (frontend) / `https://api.dev.dama-software.org` (gateway).
+**Production** runs on **Dokploy** with managed databases and is the subject of this document.
+
+Per-environment public URLs are never hardcoded: each `.env.*` carries `FRONTEND_API_BASE_URL` (baked
+into the Angular bundle via the frontend Dockerfile build-arg `API_BASE_URL`) and
+`GATEWAY_FRONTEND_ORIGIN` (the CORS-allowed frontend origin substituted into the gateway `nginx.conf`
+at container start by the nginx image's envsubst entrypoint).
 
 The build artifacts already exist: `compose.prod.yaml` (app services only, `expose` not `ports`,
-external `dokploy-network`), `.env.prod.example`, the four `environments/<svc>/init.sql`,
-`bootstrap-tls.sh`, and the gateway `nginx.conf`. This runbook is the order in which to wire them.
+external `dokploy-network`), the four `environments/<svc>/init.sql`, the one-shot `tls-init` service,
+and the gateway `nginx.conf`; use `infrastructure/.env.example` as the full variable inventory. This
+runbook is the order in which to wire them.
 
 ---
 
@@ -101,11 +107,12 @@ trust store at container start. Both backends gate on `depends_on: tls-init`
 Generation is **idempotent** (skips anything already present) and the volume persists across deploys, so
 certs are stable. There is **no manual host step and no build-time `COPY`** — a fresh clone builds even
 without `infrastructure/tls/` present. To rotate, delete the volume (`docker volume rm <stack>_dama-tls`)
-and redeploy. The host `bootstrap-tls.sh` stays for local `dotnet run`.
+and redeploy. The same script (`infrastructure/environments/tls-init/bootstrap-tls.sh`) can be run on
+the host for local `dotnet run`.
 
 ### 5. Fill the Dokploy environment
 
-Base it on `infrastructure/.env.prod.example` and paste into the Dokploy Compose service's
+Base it on the variable set in `infrastructure/.env.example` and paste into the Dokploy Compose service's
 **Environment** editor (Dokploy writes a `.env` next to the compose; `compose.prod.yaml` reads it via
 `${VAR}`). A real `infrastructure/.env.prod` stays gitignored if you ever run the prod compose by
 hand. Set:
@@ -113,6 +120,8 @@ hand. Set:
 - `CONTEXT` → the Dokploy checkout path from step 0.
 - The four `*_DB_CONNECTION_STRING` → point `server=` at each managed DB's internal host, fill the
   prod credentials (no `*_DB_PASSWORD`/`*_DB_SCHEMA` here — those only feed the dev mysql containers).
+- `FRONTEND_API_BASE_URL` / `GATEWAY_FRONTEND_ORIGIN` → the prod published URLs
+  (`https://api.dama-software.org` / `https://dama-software.org`).
 - `JWT_*`, `PAYMENT_CALLBACK_SECRET`, `TODOTIX_APPKEY`, `TODOTIX_CALLBACK_URL`, `RABBITMQ_*`.
 - `DBGATE_LOGIN` / `DBGATE_PASSWORD`.
 

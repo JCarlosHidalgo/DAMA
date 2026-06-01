@@ -18,6 +18,8 @@ services:
     build:
       context: ${CONTEXT}
       dockerfile: ./infrastructure/environments/frontend/Dockerfile
+      args:
+        API_BASE_URL: ${FRONTEND_API_BASE_URL}
     expose:
       - "80"
     ports:
@@ -37,6 +39,8 @@ services:
     build:
       context: ${CONTEXT}
       dockerfile: ./infrastructure/environments/api-gateway/Dockerfile
+    environment:
+      GATEWAY_FRONTEND_ORIGIN: ${GATEWAY_FRONTEND_ORIGIN}
     expose:
       - "80"
     ports:
