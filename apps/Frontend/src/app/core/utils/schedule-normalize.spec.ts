@@ -22,6 +22,8 @@ function buildScheduledClass(overrides: Partial<GetScheduledClassDTO> = {}): Get
     startTime: '08:00',
     endTime: '09:00',
     teachers: [],
+    groupId: 'group-1',
+    groupName: 'Grupo 1',
     ...overrides,
   };
 }
@@ -35,6 +37,8 @@ function buildUniqueClass(overrides: Partial<GetUniqueClassDTO> = {}): GetUnique
     startTime: '10:00',
     endTime: '11:00',
     teachers: [],
+    groupId: 'group-2',
+    groupName: 'Grupo 2',
     ...overrides,
   };
 }

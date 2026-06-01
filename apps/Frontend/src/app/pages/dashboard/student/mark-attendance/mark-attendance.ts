@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/cor
 import { Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
+import { MatDialog } from '@angular/material/dialog';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { firstValueFrom } from 'rxjs';
 
@@ -9,7 +10,7 @@ import { AttendanceApi } from '@core/api';
 import { AuthService } from '@core/auth';
 import { NotificationService } from '@core/services';
 import { ClassKindStrategies } from '@core/strategies';
-import { decodeQr } from '@core/utils';
+import { AttendanceMarkedDialog, decodeQr, todayDateOnlyInTenant } from '@core/utils';
 import { CameraScanner, Icon, LoadingSkeleton, PageHead } from '@shared/components';
 
 type ScanState = 'idle' | 'submitting' | 'success' | 'error';
@@ -128,6 +129,7 @@ export class MarkAttendance {
   private readonly authService = inject(AuthService);
   private readonly notifications = inject(NotificationService);
   private readonly classKindStrategies = inject(ClassKindStrategies);
+  private readonly matDialog = inject(MatDialog);
   private readonly router = inject(Router);
 
   protected readonly state = signal<ScanState>('idle');
@@ -135,9 +137,12 @@ export class MarkAttendance {
   protected readonly remain = signal<number | null>(null);
 
   protected readonly scannerEnabled = signal(true);
+  private readonly markedScheduledKeys = signal<Set<string>>(new Set());
+  private readonly markedUniqueIds = signal<Set<string>>(new Set());
 
   constructor() {
     this.loadRemain();
+    this.loadMarkedAttendance();
   }
 
   private async loadRemain(): Promise<void> {
@@ -146,6 +151,26 @@ export class MarkAttendance {
       this.remain.set(remainResponse.numberOfClasses);
     } catch {
       this.remain.set(null);
+    }
+  }
+
+  private async loadMarkedAttendance(): Promise<void> {
+    const studentId = this.authService.claims()?.userId;
+    if (!studentId) {
+      return;
+    }
+    try {
+      const [scheduled, unique] = await Promise.all([
+        firstValueFrom(this.attendanceApi.myScheduledHistory(studentId)),
+        firstValueFrom(this.attendanceApi.myUniqueHistory(studentId)),
+      ]);
+      this.markedScheduledKeys.set(
+        new Set(scheduled.map((attendance) => `${attendance.classId}|${attendance.classDate}`)),
+      );
+      this.markedUniqueIds.set(new Set(unique.map((attendance) => attendance.classId)));
+    } catch {
+      this.markedScheduledKeys.set(new Set());
+      this.markedUniqueIds.set(new Set());
     }
   }
 
@@ -167,11 +192,15 @@ export class MarkAttendance {
       return;
     }
 
+    const kind = payload.kind === 'SCHEDULED' ? 'Scheduled' : 'Unique';
+    if (this.isAlreadyMarked(kind, payload.classId)) {
+      this.showAlreadyMarked();
+      return;
+    }
+
     this.state.set('submitting');
     try {
-      const strategy = this.classKindStrategies.for(
-        payload.kind === 'SCHEDULED' ? 'Scheduled' : 'Unique',
-      );
+      const strategy = this.classKindStrategies.for(kind);
       await firstValueFrom(
         strategy.markAttendance({
           classId: payload.classId,
@@ -182,12 +211,31 @@ export class MarkAttendance {
       this.notifications.success('Asistencia registrada.', { duration: 3000 });
       setTimeout(() => this.router.navigateByUrl('/yo/resumen'), 1200);
     } catch (error: unknown) {
+      if (error instanceof Error && error.message.includes('AlreadyMarked')) {
+        this.showAlreadyMarked();
+        return;
+      }
       const userMessage =
         error instanceof Error && error.message.includes('OutsideAllowedWindow')
           ? 'Fuera del horario permitido (01:00–23:00 local).'
           : 'No se pudo registrar la asistencia.';
       this.fail(userMessage);
     }
+  }
+
+  private isAlreadyMarked(kind: 'Scheduled' | 'Unique', classId: string): boolean {
+    if (kind === 'Scheduled') {
+      const today = todayDateOnlyInTenant(this.authService.tenantTimezone());
+      return this.markedScheduledKeys().has(`${classId}|${today}`);
+    }
+    return this.markedUniqueIds().has(classId);
+  }
+
+  private showAlreadyMarked(): void {
+    this.matDialog
+      .open(AttendanceMarkedDialog, { width: '380px', maxWidth: '95vw' })
+      .afterClosed()
+      .subscribe(() => this.reset());
   }
 
   private fail(message: string): void {

@@ -62,6 +62,7 @@ describe('CourseApi', () => {
     it('createScheduledClass POSTs to /scheduled', () => {
       const payload = {
         courseId: 'c',
+        groupId: 'g',
         dayOfWeekIndex: 1,
         maxStudentLimit: 30,
         startTime: '08:00',
@@ -100,6 +101,7 @@ describe('CourseApi', () => {
     it('createUniqueClass POSTs to /unique', () => {
       const payload = {
         courseId: 'c',
+        groupId: 'g',
         date: '2026-05-10',
         maxStudentLimit: 30,
         startTime: '08:00',

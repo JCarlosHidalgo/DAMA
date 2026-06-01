@@ -3,11 +3,11 @@ import { MatCardModule } from '@angular/material/card';
 import { MatDialog } from '@angular/material/dialog';
 import { firstValueFrom } from 'rxjs';
 
-import { CourseApi } from '@core/api';
+import { AttendanceApi, CourseApi } from '@core/api';
 import { AuthService } from '@core/auth';
 import { ClassGroup, Course, CourseScheduleEntry } from '@core/models';
 import { NotificationService } from '@core/services';
-import { normalizeSchedule, nowInTenant } from '@core/utils';
+import { AttendanceMarkedDialog, normalizeSchedule, nowInTenant } from '@core/utils';
 import { Calendar, GroupSelect, LoadingSkeleton, PageHead } from '@shared/components';
 
 import { ConfirmAttendanceDialog, ConfirmAttendanceDialogData } from './confirm-attendance-dialog';
@@ -64,6 +64,7 @@ import { ConfirmAttendanceDialog, ConfirmAttendanceDialogData } from './confirm-
 })
 export class StudentSchedule {
   private readonly courseApi = inject(CourseApi);
+  private readonly attendanceApi = inject(AttendanceApi);
   private readonly authService = inject(AuthService);
   private readonly matDialog = inject(MatDialog);
   private readonly notifications = inject(NotificationService);
@@ -73,6 +74,8 @@ export class StudentSchedule {
   protected readonly selectedGroupId = signal<string>('');
   private readonly courses = signal<Course[]>([]);
   private readonly weekIndex = signal(0);
+  private readonly markedScheduledKeys = signal<Set<string>>(new Set());
+  private readonly markedUniqueIds = signal<Set<string>>(new Set());
 
   protected readonly filteredEntries = computed<CourseScheduleEntry[]>(() => {
     const groupId = this.selectedGroupId();
@@ -84,6 +87,34 @@ export class StudentSchedule {
 
   constructor() {
     this.reload();
+    this.loadMarkedAttendance();
+  }
+
+  private async loadMarkedAttendance(): Promise<void> {
+    const studentId = this.authService.claims()?.userId;
+    if (!studentId) {
+      return;
+    }
+    try {
+      const [scheduled, unique] = await Promise.all([
+        firstValueFrom(this.attendanceApi.myScheduledHistory(studentId)),
+        firstValueFrom(this.attendanceApi.myUniqueHistory(studentId)),
+      ]);
+      this.markedScheduledKeys.set(
+        new Set(scheduled.map((attendance) => `${attendance.classId}|${attendance.classDate}`)),
+      );
+      this.markedUniqueIds.set(new Set(unique.map((attendance) => attendance.classId)));
+    } catch {
+      this.markedScheduledKeys.set(new Set());
+      this.markedUniqueIds.set(new Set());
+    }
+  }
+
+  private isAlreadyMarked(entry: CourseScheduleEntry): boolean {
+    if (entry.classKind === 'Scheduled') {
+      return this.markedScheduledKeys().has(`${entry.classId}|${entry.date}`);
+    }
+    return this.markedUniqueIds().has(entry.classId);
   }
 
   protected onGroupsLoaded(groups: ClassGroup[]): void {
@@ -160,13 +191,35 @@ export class StudentSchedule {
   }
 
   onEvent(entry: CourseScheduleEntry): void {
-    this.matDialog.open<ConfirmAttendanceDialog, ConfirmAttendanceDialogData>(
+    if (this.isAlreadyMarked(entry)) {
+      this.matDialog.open(AttendanceMarkedDialog, { width: '380px', maxWidth: '95vw' });
+      return;
+    }
+
+    const dialogRef = this.matDialog.open<
       ConfirmAttendanceDialog,
-      {
-        data: { entry },
-        width: '420px',
-        maxWidth: '95vw',
-      },
-    );
+      ConfirmAttendanceDialogData,
+      boolean
+    >(ConfirmAttendanceDialog, {
+      data: { entry },
+      width: '420px',
+      maxWidth: '95vw',
+    });
+
+    dialogRef.afterClosed().subscribe((marked) => {
+      if (marked) {
+        this.rememberMarked(entry);
+      }
+    });
+  }
+
+  private rememberMarked(entry: CourseScheduleEntry): void {
+    if (entry.classKind === 'Scheduled') {
+      this.markedScheduledKeys.update((keys) =>
+        new Set(keys).add(`${entry.classId}|${entry.date}`),
+      );
+      return;
+    }
+    this.markedUniqueIds.update((ids) => new Set(ids).add(entry.classId));
   }
 }

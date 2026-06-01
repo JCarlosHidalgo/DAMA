@@ -42,6 +42,7 @@ function buildRealtimeSpy() {
 
 const FORM_PAYLOAD: ClassFormPayload = {
   courseId: 'course-1',
+  groupId: 'group-1',
   teachers: [{ teacherId: 't-1', teacherName: 'Ana' }],
   startTime: '08:00',
   endTime: '09:00',
@@ -91,6 +92,7 @@ describe('class-kind strategies', () => {
 
       expect(courseApi.createScheduledClass).toHaveBeenCalledWith({
         courseId: 'course-1',
+        groupId: 'group-1',
         dayOfWeekIndex: 2,
         maxStudentLimit: 25,
         startTime: '08:00',
@@ -151,6 +153,7 @@ describe('class-kind strategies', () => {
 
       expect(courseApi.createUniqueClass).toHaveBeenCalledWith({
         courseId: 'course-1',
+        groupId: 'group-1',
         date: '2026-05-10',
         maxStudentLimit: 25,
         startTime: '08:00',

@@ -63,6 +63,8 @@ describe('Calendar', () => {
       teachers: [{ teacherId: 't-1', teacherName: 'Ana' }],
       dayOfWeekIndex: 1,
       maxStudentLimit: 30,
+      groupId: 'group-1',
+      groupName: 'Grupo 1',
     },
     {
       classId: 'unique-1',
@@ -74,6 +76,8 @@ describe('Calendar', () => {
       endTime: '11:00:00',
       teachers: [],
       maxStudentLimit: 0,
+      groupId: 'group-2',
+      groupName: 'Grupo 2',
     },
   ];
 

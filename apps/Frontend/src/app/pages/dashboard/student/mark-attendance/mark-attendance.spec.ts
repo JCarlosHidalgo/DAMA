@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection, signal } from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
 import { Router, provideRouter } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
@@ -9,13 +10,15 @@ import { AttendanceApi } from '@core/api';
 import { AuthService } from '@core/auth';
 import { NotificationService } from '@core/services';
 import { ClassKindStrategies } from '@core/strategies';
-import { encodeQr } from '@core/utils';
+import { encodeQr, todayDateOnlyInTenant } from '@core/utils';
 import { buildJwtClaims } from '@testing';
 
 interface ScenarioOverrides {
   remainResult?: ReturnType<typeof of> | ReturnType<typeof throwError>;
   markResult?: ReturnType<typeof of> | ReturnType<typeof throwError>;
   tenantId?: string;
+  scheduledHistory?: { classId: string; classDate: string }[];
+  uniqueHistory?: { classId: string }[];
 }
 
 describe('MarkAttendance', () => {
@@ -23,11 +26,14 @@ describe('MarkAttendance', () => {
     getMyRemain: ReturnType<typeof vi.fn>;
     markScheduled: ReturnType<typeof vi.fn>;
     markUnique: ReturnType<typeof vi.fn>;
+    myScheduledHistory: ReturnType<typeof vi.fn>;
+    myUniqueHistory: ReturnType<typeof vi.fn>;
   };
   let notificationsStub: { success: ReturnType<typeof vi.fn>; error: ReturnType<typeof vi.fn> };
   let scheduledStrategy: { markAttendance: ReturnType<typeof vi.fn> };
   let uniqueStrategy: { markAttendance: ReturnType<typeof vi.fn> };
   let strategiesStub: { for: ReturnType<typeof vi.fn> };
+  let dialogStub: { open: ReturnType<typeof vi.fn> };
   let router: Router;
   let navigateSpy: ReturnType<typeof vi.spyOn>;
 
@@ -42,8 +48,11 @@ describe('MarkAttendance', () => {
       getMyRemain: vi.fn(() => overrides.remainResult ?? of({ numberOfClasses: 5 })),
       markScheduled: vi.fn(() => of(undefined)),
       markUnique: vi.fn(() => of(undefined)),
+      myScheduledHistory: vi.fn(() => of(overrides.scheduledHistory ?? [])),
+      myUniqueHistory: vi.fn(() => of(overrides.uniqueHistory ?? [])),
     };
     notificationsStub = { success: vi.fn(), error: vi.fn() };
+    dialogStub = { open: vi.fn(() => ({ afterClosed: () => of(undefined) })) };
 
     await TestBed.configureTestingModule({
       imports: [MarkAttendance],
@@ -60,6 +69,7 @@ describe('MarkAttendance', () => {
         },
         { provide: NotificationService, useValue: notificationsStub },
         { provide: ClassKindStrategies, useValue: strategiesStub },
+        { provide: MatDialog, useValue: dialogStub },
       ],
     }).compileComponents();
 
@@ -194,6 +204,58 @@ describe('MarkAttendance', () => {
       await fixture.componentInstance.onScan(qr);
 
       expect(fixture.componentInstance['errorMessage']()).toContain('No se pudo registrar');
+    });
+
+    it('shows the already-marked dialog without marking when the Scheduled class was already marked', async () => {
+      const today = todayDateOnlyInTenant('America/La_Paz');
+      const fixture = await setUp({ scheduledHistory: [{ classId: 'class-1', classDate: today }] });
+      await flushMicrotasks();
+      const qr = encodeQr({
+        tenantId: 'tenant-1',
+        courseName: 'Yoga',
+        kind: 'SCHEDULED',
+        classId: 'class-1',
+      });
+
+      await fixture.componentInstance.onScan(qr);
+
+      expect(dialogStub.open).toHaveBeenCalledTimes(1);
+      expect(scheduledStrategy.markAttendance).not.toHaveBeenCalled();
+    });
+
+    it('shows the already-marked dialog without marking when the Unique class was already marked', async () => {
+      const fixture = await setUp({ uniqueHistory: [{ classId: 'class-7' }] });
+      await flushMicrotasks();
+      const qr = encodeQr({
+        tenantId: 'tenant-1',
+        courseName: 'Yoga',
+        kind: 'UNIQUE',
+        classId: 'class-7',
+      });
+
+      await fixture.componentInstance.onScan(qr);
+
+      expect(dialogStub.open).toHaveBeenCalledTimes(1);
+      expect(uniqueStrategy.markAttendance).not.toHaveBeenCalled();
+    });
+
+    it('shows the already-marked dialog when the strategy throws AlreadyMarked', async () => {
+      const fixture = await setUp();
+      await flushMicrotasks();
+      scheduledStrategy.markAttendance.mockReturnValueOnce(
+        throwError(() => new Error('AlreadyMarked')),
+      );
+      const qr = encodeQr({
+        tenantId: 'tenant-1',
+        courseName: 'X',
+        kind: 'SCHEDULED',
+        classId: 'c',
+      });
+
+      await fixture.componentInstance.onScan(qr);
+
+      expect(dialogStub.open).toHaveBeenCalledTimes(1);
+      expect(fixture.componentInstance['state']()).toBe('idle');
     });
 
     it('ignores scans while a previous scan is in flight', async () => {

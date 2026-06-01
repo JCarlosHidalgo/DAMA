@@ -1,3 +1,4 @@
+export * from './attendance-marked-dialog';
 export * from './confirmation-dialog';
 export * from './course-color';
 export * from './qr-debt-polling';
