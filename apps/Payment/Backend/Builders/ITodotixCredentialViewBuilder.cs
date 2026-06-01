@@ -4,5 +4,5 @@ namespace Backend.Builders;
 
 public interface ITodotixCredentialViewBuilder
 {
-    TodotixAppKeyStatusDto BuildStatus(bool hasCustomKey, string effectiveAppKey);
+    TodotixAppKeyStatusDto BuildStatus(bool hasCustomKey, string? appKey);
 }

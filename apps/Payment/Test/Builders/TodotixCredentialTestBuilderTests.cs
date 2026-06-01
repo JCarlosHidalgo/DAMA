@@ -22,7 +22,6 @@ public class TodotixCredentialTestBuilderTests
         callbackSignature = new Mock<ICallbackSignature>(MockBehavior.Strict);
         todotixOptions = new TodotixOptions
         {
-            ApplicationKey = "appkey-xyz",
             CallbackUrl = "https://payment.example.com/api/payment/qr/callback"
         };
         sut = new TodotixCredentialTestBuilder(callbackSignature.Object, Options.Create(todotixOptions));
@@ -39,7 +38,7 @@ public class TodotixCredentialTestBuilderTests
         {
             Assert.That(request.Appkey, Is.EqualTo("custom-app-key"));
             Assert.That(Guid.TryParse(request.IdentificadorDeuda, out _), Is.True);
-            Assert.That(request.EmailCliente, Is.Null);
+            Assert.That(request.EmailCliente, Is.EqualTo("example@email.com"));
             Assert.That(request.LineasDetalleDeuda, Has.Count.EqualTo(1));
             Assert.That(request.CallbackUrl, Does.Contain("sig=sig123"));
             Assert.That(request.FechaVencimiento, Is.Not.Null);

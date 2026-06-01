@@ -9,6 +9,8 @@ using Backend.Results.Todotix;
 using Backend.Security;
 using Backend.Services.Abstract.Todotix;
 
+using Microsoft.Extensions.Logging;
+
 namespace Backend.Services.Concrete.Todotix;
 
 public sealed class TodotixCredentialService : ITodotixCredentialService
@@ -16,37 +18,36 @@ public sealed class TodotixCredentialService : ITodotixCredentialService
     private readonly ITenantPaymentCredentialReader _credentialReader;
     private readonly ITenantPaymentCredentialWriter _credentialWriter;
     private readonly IAppKeyCipher _appKeyCipher;
-    private readonly ITodotixAppKeyResolver _appKeyResolver;
     private readonly IClaimContext _claimContext;
     private readonly ITodotixCredentialViewBuilder _viewBuilder;
     private readonly ITodotixClient _todotixClient;
     private readonly ITodotixCredentialTestBuilder _testBuilder;
+    private readonly ILogger<TodotixCredentialService> _logger;
 
     public TodotixCredentialService(ITenantPaymentCredentialReader credentialReader,
                                     ITenantPaymentCredentialWriter credentialWriter,
                                     IAppKeyCipher appKeyCipher,
-                                    ITodotixAppKeyResolver appKeyResolver,
                                     IClaimContext claimContext,
                                     ITodotixCredentialViewBuilder viewBuilder,
                                     ITodotixClient todotixClient,
-                                    ITodotixCredentialTestBuilder testBuilder)
+                                    ITodotixCredentialTestBuilder testBuilder,
+                                    ILogger<TodotixCredentialService> logger)
     {
         _credentialReader = credentialReader;
         _credentialWriter = credentialWriter;
         _appKeyCipher = appKeyCipher;
-        _appKeyResolver = appKeyResolver;
         _claimContext = claimContext;
         _viewBuilder = viewBuilder;
         _todotixClient = todotixClient;
         _testBuilder = testBuilder;
+        _logger = logger;
     }
 
     public async Task<TodotixAppKeyStatusDto> GetStatusAsync()
     {
-        Guid tenantId = _claimContext.TenantId;
-        TenantPaymentCredential? credential = await _credentialReader.GetByTenantAsync(tenantId);
-        string effectiveAppKey = await _appKeyResolver.ResolveAsync(tenantId);
-        return _viewBuilder.BuildStatus(credential is not null, effectiveAppKey);
+        TenantPaymentCredential? credential = await _credentialReader.GetByTenantAsync(_claimContext.TenantId);
+        string? customAppKey = credential is null ? null : _appKeyCipher.Decrypt(credential.TodotixAppKey);
+        return _viewBuilder.BuildStatus(credential is not null, customAppKey);
     }
 
     public async Task<PaymentAvailabilityDto> GetAvailabilityAsync()
@@ -57,8 +58,9 @@ public sealed class TodotixCredentialService : ITodotixCredentialService
 
     public async Task<TodotixAppKeyRevealDto> RevealAsync()
     {
-        string effectiveAppKey = await _appKeyResolver.ResolveAsync(_claimContext.TenantId);
-        return new TodotixAppKeyRevealDto { AppKey = effectiveAppKey };
+        TenantPaymentCredential? credential = await _credentialReader.GetByTenantAsync(_claimContext.TenantId);
+        string appKey = credential is null ? string.Empty : _appKeyCipher.Decrypt(credential.TodotixAppKey);
+        return new TodotixAppKeyRevealDto { AppKey = appKey };
     }
 
     public async Task<UpdateTodotixAppKeyOutcome> UpdateAsync(UpdateTodotixAppKeyDto dto)
@@ -83,12 +85,24 @@ public sealed class TodotixCredentialService : ITodotixCredentialService
         try
         {
             RegisterDebtResponse response = await _todotixClient.RegisterDebtAsync(request);
-            return response.Error == 0 && !string.IsNullOrEmpty(response.QrSimpleUrl)
-                ? new TestTodotixCredentialOutcome.Works()
-                : new TestTodotixCredentialOutcome.Failed();
+            if (response.Error == 0)
+            {
+                return new TestTodotixCredentialOutcome.Works();
+            }
+
+            _logger.LogWarning(
+                "Credential test failed for tenant {TenantId}: Todotix returned Error={Error} Mensaje={Mensaje}",
+                _claimContext.TenantId,
+                response.Error,
+                response.Mensaje);
+            return new TestTodotixCredentialOutcome.Failed();
         }
-        catch (HttpRequestException)
+        catch (HttpRequestException httpRequestException)
         {
+            _logger.LogWarning(
+                httpRequestException,
+                "Credential test failed for tenant {TenantId}: HTTP error calling Todotix.",
+                _claimContext.TenantId);
             return new TestTodotixCredentialOutcome.Failed();
         }
     }

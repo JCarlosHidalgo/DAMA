@@ -6,16 +6,16 @@ public sealed class TodotixCredentialViewBuilder : ITodotixCredentialViewBuilder
 {
     private const int VisibleSuffixLength = 4;
 
-    public TodotixAppKeyStatusDto BuildStatus(bool hasCustomKey, string effectiveAppKey)
+    public TodotixAppKeyStatusDto BuildStatus(bool hasCustomKey, string? appKey)
     {
         return new TodotixAppKeyStatusDto
         {
             HasCustomKey = hasCustomKey,
-            MaskedAppKey = Mask(effectiveAppKey)
+            MaskedAppKey = Mask(appKey)
         };
     }
 
-    private static string? Mask(string appKey)
+    private static string? Mask(string? appKey)
     {
         if (string.IsNullOrEmpty(appKey))
         {

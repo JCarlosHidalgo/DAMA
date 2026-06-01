@@ -11,6 +11,7 @@ namespace Backend.Builders;
 public class TodotixCredentialTestBuilder : ITodotixCredentialTestBuilder
 {
     private const string TestDescription = "Prueba de credencial";
+    private const string TestEmail = "example@email.com";
 
     private readonly ICallbackSignature _callbackSignature;
     private readonly IOptions<TodotixOptions> _todotixOptions;
@@ -33,7 +34,7 @@ public class TodotixCredentialTestBuilder : ITodotixCredentialTestBuilder
         return new RegisterDebtRequest
         {
             Appkey = appKey,
-            EmailCliente = null,
+            EmailCliente = TestEmail,
             IdentificadorDeuda = debtIdentifier.ToString(),
             Descripcion = TestDescription,
             CallbackUrl = BuildSignedCallbackUrl(debtIdentifier),
