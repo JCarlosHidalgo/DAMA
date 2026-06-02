@@ -221,17 +221,7 @@ export class ScheduleDialog {
     LoadingSkeleton,
   ],
   template: `
-    <app-page-head title="Horario">
-      <button
-        actions
-        mat-flat-button
-        color="primary"
-        (click)="onCreate()"
-        [disabled]="courses().length === 0 || groups().length === 0"
-      >
-        <app-icon name="plus" /><span class="btn-label">Nueva clase</span>
-      </button>
-    </app-page-head>
+    <app-page-head title="Horario" />
 
     <mat-card class="controls-card">
       <mat-card-content class="controls">
@@ -258,14 +248,27 @@ export class ScheduleDialog {
         <mat-card-content>
           <div class="col-head">
             <h3 class="col-title">{{ selectedGroup()?.name ?? 'Grupo' }}</h3>
-            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="day-select">
-              <mat-label>Día</mat-label>
-              <mat-select [value]="selectedDayIndex()" (valueChange)="selectedDayIndex.set($event)">
-                @for (day of dayOptions; track day.value) {
-                  <mat-option [value]="day.value">{{ day.label }}</mat-option>
-                }
-              </mat-select>
-            </mat-form-field>
+            <div class="col-head-actions">
+              <button
+                mat-flat-button
+                color="primary"
+                (click)="onCreate()"
+                [disabled]="courses().length === 0 || groups().length === 0"
+              >
+                <app-icon name="plus" /><span class="btn-label">Nueva clase</span>
+              </button>
+              <mat-form-field appearance="outline" subscriptSizing="dynamic" class="day-select">
+                <mat-label>Día</mat-label>
+                <mat-select
+                  [value]="selectedDayIndex()"
+                  (valueChange)="selectedDayIndex.set($event)"
+                >
+                  @for (day of dayOptions; track day.value) {
+                    <mat-option [value]="day.value">{{ day.label }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+            </div>
           </div>
           @if (loading()) {
             <app-loading-skeleton [height]="320" />
@@ -443,6 +446,12 @@ export class ScheduleDialog {
     .col-title {
       margin: 0;
       font-weight: 600;
+    }
+    .col-head-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
     }
     .day-select {
       width: 140px;
@@ -764,6 +773,7 @@ export class Schedule {
       initial: {
         courseId: this.courses()[0]?.id ?? '',
         groupId: this.selectedGroupId() || (this.groups()[0]?.id ?? ''),
+        dayOfWeekIndex: this.selectedDayIndex(),
       },
     });
     if (!result) {
