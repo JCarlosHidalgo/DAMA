@@ -391,7 +391,9 @@ export class ScheduleDialog {
             <app-calendar
               [entries]="selectedGroupEntries()"
               [anchorDate]="anchorDate()"
+              [selectedDayIndex]="selectedDayIndex()"
               (weekDelta)="onWeekDelta($event)"
+              (dayDelta)="onDayDelta($event)"
             />
           } @placeholder {
             <app-loading-skeleton [height]="480" />
@@ -716,6 +718,19 @@ export class Schedule {
   protected async onWeekDelta(delta: number): Promise<void> {
     const nextWeekIndex = delta === 0 ? 0 : this.weekIndex() + delta;
     await this.reloadSchedule(false, nextWeekIndex);
+  }
+
+  protected async onDayDelta(delta: number): Promise<void> {
+    const nextDay = this.selectedDayIndex() + delta;
+    if (nextDay < 1) {
+      this.selectedDayIndex.set(7);
+      await this.reloadSchedule(false, this.weekIndex() - 1);
+    } else if (nextDay > 7) {
+      this.selectedDayIndex.set(1);
+      await this.reloadSchedule(false, this.weekIndex() + 1);
+    } else {
+      this.selectedDayIndex.set(nextDay);
+    }
   }
 
   private async reloadSchedule(showSkeleton = true, weekIndexOverride?: number): Promise<void> {

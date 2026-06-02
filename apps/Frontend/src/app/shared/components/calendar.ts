@@ -24,7 +24,7 @@ import timeGridPlugin from '@fullcalendar/timegrid';
 
 import { AuthService } from '@core/auth';
 import { CourseScheduleEntry } from '@core/models';
-import { courseColor } from '@core/utils';
+import { courseColor, shiftIsoDate } from '@core/utils';
 
 const MOBILE_BREAKPOINT_PX = 768;
 
@@ -125,10 +125,12 @@ export class Calendar {
   readonly entries = input<CourseScheduleEntry[]>([]);
   readonly anchorDate = input<string | null>(null);
   readonly mobile = input<boolean | null>(null);
+  readonly selectedDayIndex = input<number | null>(null);
 
   readonly eventClick = output<CourseScheduleEntry>();
   readonly dateClick = output<string>();
   readonly weekDelta = output<number>();
+  readonly dayDelta = output<number>();
 
   protected readonly showDetails = signal(true);
   protected readonly currentTitle = signal('');
@@ -159,11 +161,14 @@ export class Calendar {
     effect(() => {
       const calendarApi = this.fullCalendar()?.getApi();
       const anchor = this.anchorDate();
+      const dayIndex = this.selectedDayIndex();
+      const dayView = this.activeView() === 'timeGridDay';
       this.entries();
       if (!calendarApi || !anchor) {
         return;
       }
-      calendarApi.gotoDate(anchor);
+      const target = dayView && dayIndex !== null ? shiftIsoDate(anchor, dayIndex - 1) : anchor;
+      calendarApi.gotoDate(target);
     });
   }
 
@@ -172,6 +177,10 @@ export class Calendar {
     const isMobile = forcedMobile ?? this.viewportIsMobile();
     return isMobile ? 'timeGridDay' : 'timeGridWeek';
   });
+
+  private dayNavigationActive = computed(
+    () => this.activeView() === 'timeGridDay' && this.selectedDayIndex() !== null,
+  );
 
   protected readonly calendarOptions = computed<CalendarOptions>(() => {
     const tenantTimezone = this.authService.tenantTimezone();
@@ -244,9 +253,17 @@ export class Calendar {
   });
 
   prev(): void {
+    if (this.dayNavigationActive()) {
+      this.dayDelta.emit(-1);
+      return;
+    }
     this.weekDelta.emit(-1);
   }
   next(): void {
+    if (this.dayNavigationActive()) {
+      this.dayDelta.emit(1);
+      return;
+    }
     this.weekDelta.emit(1);
   }
   today(): void {

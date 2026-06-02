@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
-import { isoWeekdayIndex, normalizeSchedule } from './schedule-normalize';
+import { isoWeekdayIndex, normalizeSchedule, shiftIsoDate } from './schedule-normalize';
 import {
   Course,
   GetCourseScheduleDTO,
@@ -59,7 +59,10 @@ describe('normalizeSchedule', () => {
   });
 
   it('handles missing arrays as if they were empty', () => {
-    const response = { weekStartDate: '2026-04-06', todayDate: '2026-04-08' } as GetCourseScheduleDTO;
+    const response = {
+      weekStartDate: '2026-04-06',
+      todayDate: '2026-04-08',
+    } as GetCourseScheduleDTO;
 
     expect(normalizeSchedule(response, COURSES)).toEqual([]);
   });
@@ -151,5 +154,23 @@ describe('isoWeekdayIndex', () => {
 
   it('maps Sunday to 7', () => {
     expect(isoWeekdayIndex('2026-04-12')).toBe(7);
+  });
+});
+
+describe('shiftIsoDate', () => {
+  it('advances within the week', () => {
+    expect(shiftIsoDate('2026-04-06', 4)).toBe('2026-04-10');
+  });
+
+  it('returns the same date for a zero offset', () => {
+    expect(shiftIsoDate('2026-04-06', 0)).toBe('2026-04-06');
+  });
+
+  it('crosses a month boundary backwards', () => {
+    expect(shiftIsoDate('2026-04-01', -1)).toBe('2026-03-31');
+  });
+
+  it('crosses a month boundary forwards', () => {
+    expect(shiftIsoDate('2026-04-30', 1)).toBe('2026-05-01');
   });
 });

@@ -17,6 +17,12 @@ export function isoWeekdayIndex(isoDate: string): number {
   return weekday === 0 ? 7 : weekday;
 }
 
+export function shiftIsoDate(isoDate: string, days: number): string {
+  const date = parseIsoDate(isoDate);
+  date.setDate(date.getDate() + days);
+  return formatIsoDate(date);
+}
+
 export function normalizeSchedule(
   scheduleResponse: GetCourseScheduleDTO,
   courses: Course[],
