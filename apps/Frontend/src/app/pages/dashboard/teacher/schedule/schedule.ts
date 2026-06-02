@@ -104,23 +104,20 @@ export class TeacherSchedule {
 
   protected async onWeekDelta(delta: number): Promise<void> {
     const nextWeekIndex = delta === 0 ? 0 : this.weekIndex() + delta;
-    this.weekIndex.set(nextWeekIndex);
-    await this.reload(false);
+    await this.reload(false, nextWeekIndex);
   }
 
-  private async reload(showSkeleton = true): Promise<void> {
+  private async reload(showSkeleton = true, weekIndexOverride?: number): Promise<void> {
+    const targetWeek = weekIndexOverride ?? this.weekIndex();
     if (showSkeleton) {
       this.loading.set(true);
     }
     try {
-      const scheduleResponse = await firstValueFrom(
-        this.courseApi.getTeacherSchedule(this.weekIndex()),
-      );
+      const scheduleResponse = await firstValueFrom(this.courseApi.getTeacherSchedule(targetWeek));
       await this.ensureCourseNames(scheduleResponse);
       const today = nowInTenant(this.authService.tenantTimezone());
-      this.entries.set(
-        normalizeSchedule(scheduleResponse, this.weekIndex(), this.courses(), today),
-      );
+      this.weekIndex.set(targetWeek);
+      this.entries.set(normalizeSchedule(scheduleResponse, targetWeek, this.courses(), today));
     } catch {
       this.notifications.error('Error al cargar horario.');
       this.entries.set([]);

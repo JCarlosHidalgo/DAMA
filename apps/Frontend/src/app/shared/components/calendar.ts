@@ -159,6 +159,7 @@ export class Calendar {
     effect(() => {
       const calendarApi = this.fullCalendar()?.getApi();
       const anchor = this.anchorDate();
+      this.entries();
       if (!calendarApi || !anchor) {
         return;
       }
@@ -188,6 +189,7 @@ export class Calendar {
     return {
       plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin],
       initialView: this.activeView(),
+      initialDate: this.anchorDate() ?? undefined,
       locale: esLocale,
       timeZone: tenantTimezone,
       firstDay: 1,

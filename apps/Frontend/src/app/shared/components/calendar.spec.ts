@@ -181,6 +181,18 @@ describe('Calendar', () => {
     expect(sharedFakeApi.gotoDate).toHaveBeenCalledWith('2026-04-13');
   });
 
+  it('re-asserts the anchorDate when entries reload so the moved view keeps its week', () => {
+    fixture.componentRef.setInput('anchorDate', '2026-04-13');
+    fixture.detectChanges();
+    const callsAfterNavigation = sharedFakeApi.gotoDate.mock.calls.length;
+
+    fixture.componentRef.setInput('entries', sampleEntries);
+    fixture.detectChanges();
+
+    expect(sharedFakeApi.gotoDate.mock.calls.length).toBeGreaterThan(callsAfterNavigation);
+    expect(sharedFakeApi.gotoDate).toHaveBeenLastCalledWith('2026-04-13');
+  });
+
   describe('calendarOptions callbacks', () => {
     function options() {
       return (
