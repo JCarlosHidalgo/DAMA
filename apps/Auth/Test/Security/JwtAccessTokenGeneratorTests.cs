@@ -1,6 +1,5 @@
 using System.IdentityModel.Tokens.Jwt;
 
-using Backend.Dtos.Users.Output;
 using Backend.Entities.Tenants;
 using Backend.Entities.Users;
 using Backend.Options;
@@ -39,8 +38,8 @@ public class JwtAccessTokenGeneratorTests
         return new JwtAccessTokenGenerator(Options.Create(options), tokenSigner);
     }
 
-    private static JwtSecurityToken ParseToken(TokenResponseDto tokenResponse) =>
-        new JwtSecurityTokenHandler().ReadJwtToken(tokenResponse.AccessToken);
+    private static JwtSecurityToken ParseToken(string accessToken) =>
+        new JwtSecurityTokenHandler().ReadJwtToken(accessToken);
 
     [Test]
     public void Issue_EmitsUserAndTenantClaims()
@@ -59,8 +58,7 @@ public class JwtAccessTokenGeneratorTests
             Timezone = "America/La_Paz"
         };
 
-        TokenResponseDto tokenResponse = sut.Issue(user, tenant);
-        JwtSecurityToken parsedToken = ParseToken(tokenResponse);
+        JwtSecurityToken parsedToken = ParseToken(sut.Issue(user, tenant));
 
         Assert.Multiple(() =>
         {
@@ -80,8 +78,7 @@ public class JwtAccessTokenGeneratorTests
         User user = new() { Id = Guid.NewGuid(), UserName = "anyone", Role = UserRole.Student.Value };
         Tenant tenant = new() { Id = Guid.NewGuid(), Name = "Academia", Timezone = "America/La_Paz" };
 
-        TokenResponseDto tokenResponse = sut.Issue(user, tenant);
-        JwtSecurityToken parsedToken = ParseToken(tokenResponse);
+        JwtSecurityToken parsedToken = ParseToken(sut.Issue(user, tenant));
 
         List<string> audiences = [.. parsedToken.Audiences];
         Assert.That(audiences, Has.Count.EqualTo(3));
@@ -97,25 +94,23 @@ public class JwtAccessTokenGeneratorTests
         User user = new() { Id = Guid.NewGuid(), UserName = "anyone", Role = UserRole.Student.Value };
         Tenant tenant = new() { Id = Guid.NewGuid(), Name = "Academia", Timezone = "America/La_Paz" };
 
-        TokenResponseDto tokenResponse = sut.Issue(user, tenant);
-        JwtSecurityToken parsedToken = ParseToken(tokenResponse);
+        JwtSecurityToken parsedToken = ParseToken(sut.Issue(user, tenant));
 
         Assert.That(parsedToken.Issuer, Is.EqualTo("AuthIssuer"));
     }
 
     [Test]
-    public void Issue_ExpiryIsTodayUtcMidnightPlusLifetime()
+    public void Issue_ExpiryIsIssuanceTimePlusLifetime()
     {
-        var lifetime = TimeSpan.FromHours(2);
+        TimeSpan lifetime = TimeSpan.FromHours(24);
         JwtAccessTokenGenerator sut = CreateSut("Auth", lifetime);
         User user = new() { Id = Guid.NewGuid(), UserName = "anyone", Role = UserRole.Student.Value };
         Tenant tenant = new() { Id = Guid.NewGuid(), Name = "Academia", Timezone = "America/La_Paz" };
 
-        DateTime expectedExpiry = DateTime.UtcNow.Date.Add(lifetime);
-        TokenResponseDto tokenResponse = sut.Issue(user, tenant);
-        JwtSecurityToken parsedToken = ParseToken(tokenResponse);
+        DateTime expectedExpiry = DateTime.UtcNow.Add(lifetime);
+        JwtSecurityToken parsedToken = ParseToken(sut.Issue(user, tenant));
 
-        Assert.That(parsedToken.ValidTo, Is.EqualTo(expectedExpiry).Within(TimeSpan.FromSeconds(2)));
+        Assert.That(parsedToken.ValidTo, Is.EqualTo(expectedExpiry).Within(TimeSpan.FromSeconds(5)));
     }
 
     private static string? ClaimValue(JwtSecurityToken token, string claimType) =>

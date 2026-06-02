@@ -81,7 +81,7 @@ describe('AuthService', () => {
   });
 
   describe('login', () => {
-    it('posts credentials and stores the returned access token', () => {
+    it('posts credentials and stores the returned token pair', () => {
       const authService = instantiate();
       const futureClaims = buildJwtClaims({ role: 'Client' });
       const issuedToken = buildJwtToken(futureClaims);
@@ -99,17 +99,57 @@ describe('AuthService', () => {
         username: 'admin@example.com',
         password: 'secret',
       });
-      pendingRequest.flush({ accessToken: issuedToken });
+      pendingRequest.flush({ accessToken: issuedToken, refreshToken: 'refresh-abc' });
 
       expect(receivedToken).toBe(issuedToken);
       expect(authService.accessToken).toBe(issuedToken);
       expect(inMemoryStorage.read()).toBe(issuedToken);
+      expect(inMemoryStorage.readRefresh()).toBe('refresh-abc');
       expect(authService.currentRole()).toBe('Client');
     });
   });
 
+  describe('refreshAccessToken', () => {
+    it('posts the stored refresh token and stores the rotated pair', () => {
+      const initial = buildJwtToken(buildJwtClaims({ role: 'Client' }));
+      inMemoryStorage = new InMemoryTokenStorage(initial, 'refresh-old');
+      TestBed.configureTestingModule({
+        providers: [
+          provideHttpClient(),
+          provideHttpClientTesting(),
+          { provide: SessionStorageTokenStorage, useValue: inMemoryStorage },
+        ],
+      });
+      httpController = TestBed.inject(HttpTestingController);
+      const authService = TestBed.inject(AuthService);
+      const rotated = buildJwtToken(buildJwtClaims({ role: 'Client' }));
+
+      let emitted: string | undefined;
+      authService.refreshAccessToken().subscribe((accessToken) => {
+        emitted = accessToken;
+      });
+
+      const pending = httpController.expectOne(`${environment.apiBaseUrl}/api/auth/refresh`);
+      expect(pending.request.body).toEqual({ refreshToken: 'refresh-old' });
+      pending.flush({ accessToken: rotated, refreshToken: 'refresh-new' });
+
+      expect(emitted).toBe(rotated);
+      expect(authService.accessToken).toBe(rotated);
+      expect(inMemoryStorage.readRefresh()).toBe('refresh-new');
+    });
+
+    it('errors without an HTTP call when no refresh token is stored', () => {
+      const authService = instantiate(buildJwtToken(buildJwtClaims()));
+
+      let errored = false;
+      authService.refreshAccessToken().subscribe({ error: () => (errored = true) });
+
+      expect(errored).toBe(true);
+    });
+  });
+
   describe('logout', () => {
-    it('clears storage and the token signal', () => {
+    it('clears the session and revokes the refresh tokens server-side', () => {
       const token = buildJwtToken();
       const authService = instantiate(token);
 
@@ -119,6 +159,11 @@ describe('AuthService', () => {
       expect(inMemoryStorage.read()).toBeNull();
       expect(authService.isAuthenticated()).toBe(false);
       expect(authService.currentRole()).toBeNull();
+
+      const pending = httpController.expectOne(`${environment.apiBaseUrl}/api/auth/logout`);
+      expect(pending.request.method).toBe('POST');
+      expect(pending.request.headers.get('Authorization')).toBe(`Bearer ${token}`);
+      pending.flush({});
     });
   });
 });

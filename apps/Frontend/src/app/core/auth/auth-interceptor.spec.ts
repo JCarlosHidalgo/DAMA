@@ -85,6 +85,46 @@ describe('authInterceptor', () => {
     });
   });
 
+  describe('on 401 with a stored refresh token', () => {
+    function configureWithRefresh(accessToken: string, refreshToken: string): void {
+      storage = new InMemoryTokenStorage(accessToken, refreshToken);
+      TestBed.configureTestingModule({
+        providers: [
+          provideRouter([]),
+          provideHttpClient(withInterceptors([authInterceptor])),
+          provideHttpClientTesting(),
+          { provide: SessionStorageTokenStorage, useValue: storage },
+        ],
+      });
+      httpClient = TestBed.inject(HttpClient);
+      httpController = TestBed.inject(HttpTestingController);
+    }
+
+    it('refreshes the token and retries the original request', () => {
+      const accessToken = buildJwtToken(buildJwtClaims());
+      const rotatedToken = buildJwtToken(buildJwtClaims());
+      configureWithRefresh(accessToken, 'refresh-old');
+
+      let body: unknown;
+      httpClient.get('/api/secured').subscribe({ next: (value) => (body = value) });
+
+      const first = httpController.expectOne('/api/secured');
+      expect(first.request.headers.get('Authorization')).toBe(`Bearer ${accessToken}`);
+      first.flush({ message: 'expired' }, { status: 401, statusText: 'Unauthorized' });
+
+      const refresh = httpController.expectOne((request) =>
+        request.url.includes('/api/auth/refresh'),
+      );
+      refresh.flush({ accessToken: rotatedToken, refreshToken: 'refresh-new' });
+
+      const retried = httpController.expectOne('/api/secured');
+      expect(retried.request.headers.get('Authorization')).toBe(`Bearer ${rotatedToken}`);
+      retried.flush({ ok: true });
+
+      expect(body).toEqual({ ok: true });
+    });
+  });
+
   describe('on non-401 errors', () => {
     let router: Router;
     let navigateSpy: ReturnType<typeof vi.spyOn>;

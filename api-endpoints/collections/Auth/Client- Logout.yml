@@ -1,0 +1,21 @@
+info:
+  name: "Client: Logout"
+  type: http
+  seq: 14
+
+http:
+  method: POST
+  url: "{{API_PATH}}/api/auth/logout"
+  body:
+    type: json
+    data: |-
+      {}
+  auth:
+    type: bearer
+    token: "{{Client_JWT}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

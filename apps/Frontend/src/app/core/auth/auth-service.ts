@@ -1,6 +1,6 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, tap } from 'rxjs';
+import { Observable, finalize, map, shareReplay, tap, throwError } from 'rxjs';
 
 import { environment } from '@env/environment';
 import { JwtClaims, UserRole } from './jwt.model';
@@ -12,8 +12,9 @@ interface LoginRequest {
   password: string;
 }
 
-interface LoginResponse {
+interface TokenPair {
   accessToken: string;
+  refreshToken: string;
 }
 
 const DEFAULT_TENANT_TIMEZONE = 'America/La_Paz';
@@ -25,6 +26,7 @@ export class AuthService {
   private readonly tokenDecoder = inject(TokenDecoder);
 
   private readonly tokenSignal = signal<string | null>(this.tokenStorage.read());
+  private refreshInFlight: Observable<string> | null = null;
 
   readonly claims = computed<JwtClaims | null>(() => {
     const token = this.tokenSignal();
@@ -45,19 +47,56 @@ export class AuthService {
     return this.tokenSignal();
   }
 
-  login(payload: LoginRequest): Observable<LoginResponse> {
+  login(payload: LoginRequest): Observable<TokenPair> {
     return this.httpClient
-      .post<LoginResponse>(`${environment.apiBaseUrl}/api/auth/login`, payload)
-      .pipe(tap((response) => this.storeToken(response.accessToken)));
+      .post<TokenPair>(`${environment.apiBaseUrl}/api/auth/login`, payload)
+      .pipe(tap((pair) => this.storeTokens(pair)));
+  }
+
+  refreshAccessToken(): Observable<string> {
+    if (this.refreshInFlight) {
+      return this.refreshInFlight;
+    }
+    const refreshToken = this.tokenStorage.readRefresh();
+    if (!refreshToken) {
+      return throwError(() => new Error('No refresh token available.'));
+    }
+    this.refreshInFlight = this.httpClient
+      .post<TokenPair>(`${environment.apiBaseUrl}/api/auth/refresh`, { refreshToken })
+      .pipe(
+        tap((pair) => this.storeTokens(pair)),
+        map((pair) => pair.accessToken),
+        finalize(() => {
+          this.refreshInFlight = null;
+        }),
+        shareReplay(1),
+      );
+    return this.refreshInFlight;
   }
 
   logout(): void {
-    this.tokenStorage.clear();
-    this.tokenSignal.set(null);
+    const token = this.accessToken;
+    this.clearSession();
+    if (token) {
+      this.httpClient
+        .post(
+          `${environment.apiBaseUrl}/api/auth/logout`,
+          {},
+          { headers: { Authorization: `Bearer ${token}` } },
+        )
+        .subscribe({ error: () => undefined });
+    }
   }
 
-  private storeToken(token: string): void {
-    this.tokenStorage.write(token);
-    this.tokenSignal.set(token);
+  clearSession(): void {
+    this.tokenStorage.clear();
+    this.tokenSignal.set(null);
+    this.refreshInFlight = null;
+  }
+
+  private storeTokens(pair: TokenPair): void {
+    this.tokenStorage.write(pair.accessToken);
+    this.tokenStorage.writeRefresh(pair.refreshToken);
+    this.tokenSignal.set(pair.accessToken);
   }
 }

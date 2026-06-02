@@ -28,6 +28,19 @@ CREATE TABLE IF NOT EXISTS TenantDomain(
     FOREIGN KEY (TenantId) REFERENCES Tenant(Id)
 );
 
+-- REFRESH TOKEN
+CREATE TABLE IF NOT EXISTS RefreshToken(
+    Id        VARCHAR(36) PRIMARY KEY NOT NULL,
+    UserId    VARCHAR(36) NOT NULL,
+    TokenHash CHAR(64) NOT NULL,
+    ExpiresAt DATETIME(6) NOT NULL,
+    RevokedAt DATETIME(6) NULL,
+    CreatedAt DATETIME(6) NOT NULL,
+    UNIQUE KEY uk_refresh_token_hash (TokenHash),
+    INDEX ix_refresh_user (UserId),
+    FOREIGN KEY (UserId) REFERENCES User(Id)
+);
+
 DELIMITER //
 CREATE PROCEDURE GetUserWithTenantByUserName(IN userName CHAR(80))
 BEGIN
@@ -214,6 +227,75 @@ END //
 DELIMITER ;
 
 
+DELIMITER //
+CREATE PROCEDURE CreateRefreshToken(
+    IN tokenId   VARCHAR(36),
+    IN userId    VARCHAR(36),
+    IN tokenHash CHAR(64),
+    IN expiresAt DATETIME(6),
+    IN createdAt DATETIME(6)
+)
+BEGIN
+    INSERT INTO RefreshToken (Id, UserId, TokenHash, ExpiresAt, RevokedAt, CreatedAt)
+    VALUES (tokenId, userId, tokenHash, expiresAt, NULL, createdAt);
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE GetRefreshTokenByHash(
+    IN searchTokenHash CHAR(64)
+)
+BEGIN
+    SELECT
+        rt.Id          AS RefreshTokenId,
+        rt.UserId      AS RefreshUserId,
+        rt.ExpiresAt   AS ExpiresAt,
+        rt.RevokedAt   AS RevokedAt,
+        rt.CreatedAt   AS CreatedAt,
+        u.Id           AS UserId,
+        u.UserName     AS UserName,
+        u.PasswordHash AS PasswordHash,
+        u.Role         AS Role,
+        t.Id           AS TenantId,
+        t.Name         AS TenantName,
+        t.Timezone     AS Timezone
+    FROM
+        RefreshToken rt
+        INNER JOIN User u ON u.Id = rt.UserId
+        INNER JOIN TenantDomain td ON td.UserId = u.Id
+        INNER JOIN Tenant t ON t.Id = td.TenantId
+    WHERE
+        rt.TokenHash = searchTokenHash
+        AND u.IsDeleted = 0
+    LIMIT 1;
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE RevokeRefreshToken(
+    IN tokenId VARCHAR(36)
+)
+BEGIN
+    UPDATE RefreshToken rt
+    SET rt.RevokedAt = NOW(6)
+    WHERE rt.Id = tokenId
+        AND rt.RevokedAt IS NULL;
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE RevokeRefreshTokensForUser(
+    IN ownerUserId VARCHAR(36)
+)
+BEGIN
+    UPDATE RefreshToken rt
+    SET rt.RevokedAt = NOW(6)
+    WHERE rt.UserId = ownerUserId
+        AND rt.RevokedAt IS NULL;
+END //
+DELIMITER ;
+
+
 -- OUTBOX EVENTS
 CREATE TABLE IF NOT EXISTS outbox_events (
     Id            CHAR(36)     NOT NULL PRIMARY KEY,
@@ -235,6 +317,7 @@ DELIMITER //
 CREATE PROCEDURE TruncateAllTables()
 BEGIN
     SET FOREIGN_KEY_CHECKS = 0;
+    TRUNCATE TABLE RefreshToken;
     TRUNCATE TABLE User;
     TRUNCATE TABLE Tenant;
     TRUNCATE TABLE TenantDomain;

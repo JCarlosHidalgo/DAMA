@@ -1,0 +1,23 @@
+info:
+  name: "Public: Refresh Token"
+  type: http
+  seq: 13
+  tags:
+    - smoke-skip
+
+http:
+  method: POST
+  url: "{{API_PATH}}/api/auth/refresh"
+  body:
+    type: json
+    data: |-
+      {
+        "refreshToken" : "{{Client_Refresh}}"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

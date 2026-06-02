@@ -1,7 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 
-using Backend.Dtos.Users.Output;
 using Backend.Entities.Tenants;
 using Backend.Entities.Users;
 using Backend.Options;
@@ -26,7 +25,7 @@ public sealed class JwtAccessTokenGenerator : IAccessTokenGenerator
             StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
     }
 
-    public TokenResponseDto Issue(User user, Tenant tenant)
+    public string Issue(User user, Tenant tenant)
     {
         List<Claim> claims = new List<Claim>
         {
@@ -45,13 +44,10 @@ public sealed class JwtAccessTokenGenerator : IAccessTokenGenerator
         JwtSecurityToken securityToken = new JwtSecurityToken(
             issuer: _options.Issuer,
             claims: claims,
-            expires: DateTime.UtcNow.Date.Add(_options.Lifetime),
+            expires: DateTime.UtcNow.Add(_options.Lifetime),
             signingCredentials: _tokenSigner.Credentials
         );
 
-        return new TokenResponseDto
-        {
-            AccessToken = new JwtSecurityTokenHandler().WriteToken(securityToken)
-        };
+        return new JwtSecurityTokenHandler().WriteToken(securityToken);
     }
 }

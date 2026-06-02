@@ -1,5 +1,6 @@
 using System.Diagnostics;
 
+using Backend.Claims;
 using Backend.Dtos.Users.Input;
 using Backend.Dtos.Users.Output;
 using Backend.Entities.Users;
@@ -18,16 +19,22 @@ namespace Backend.Controllers;
 public class AuthController : ControllerBase
 {
     private readonly IAuthenticationService _authenticationService;
+    private readonly IRefreshService _refreshService;
     private readonly IUserRegistrationService _userRegistrationService;
     private readonly IUserDirectoryService _userDirectoryService;
+    private readonly IClaimContext _claimContext;
 
     public AuthController(IAuthenticationService authenticationService,
+                          IRefreshService refreshService,
                           IUserRegistrationService userRegistrationService,
-                          IUserDirectoryService userDirectoryService)
+                          IUserDirectoryService userDirectoryService,
+                          IClaimContext claimContext)
     {
         _authenticationService = authenticationService;
+        _refreshService = refreshService;
         _userRegistrationService = userRegistrationService;
         _userDirectoryService = userDirectoryService;
+        _claimContext = claimContext;
     }
 
     [Authorize(Roles = UserRoles.Client)]
@@ -120,5 +127,24 @@ public class AuthController : ControllerBase
             return Unauthorized(LoginCredentialsDtoValidator.InvalidPayloadMessage);
         }
         return Ok(result);
+    }
+
+    [HttpPost("refresh")]
+    public async Task<ActionResult<TokenResponseDto>> Refresh(RefreshTokenRequestDto request)
+    {
+        TokenResponseDto? result = await _refreshService.RefreshAsync(request);
+        if (result is null)
+        {
+            return Unauthorized(RefreshTokenRequestDtoValidator.InvalidPayloadMessage);
+        }
+        return Ok(result);
+    }
+
+    [Authorize]
+    [HttpPost("logout")]
+    public async Task<ActionResult> Logout()
+    {
+        await _refreshService.LogoutAsync(_claimContext.UserId);
+        return NoContent();
     }
 }

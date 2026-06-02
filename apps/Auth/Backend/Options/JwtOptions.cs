@@ -22,4 +22,6 @@ public sealed class JwtOptions
     public string PrivateKey { get; init; } = default!;
 
     public TimeSpan Lifetime { get; init; } = TimeSpan.FromDays(1);
+
+    public TimeSpan RefreshTokenLifetime { get; init; } = TimeSpan.FromDays(30);
 }

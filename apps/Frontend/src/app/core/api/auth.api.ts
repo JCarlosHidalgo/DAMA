@@ -7,6 +7,7 @@ import {
   PagedUsersResponse,
   UserListItem,
   TokenResponse,
+  RefreshTokenPayload,
   UserCredentials,
   UpdateUsernamePayload,
   UpdateTenantTimezonePayload,
@@ -22,6 +23,14 @@ export class AuthApi {
 
   login(payload: UserCredentials): Observable<TokenResponse> {
     return this.http.post<TokenResponse>(`${this.base}/login`, payload);
+  }
+
+  refresh(payload: RefreshTokenPayload): Observable<TokenResponse> {
+    return this.http.post<TokenResponse>(`${this.base}/refresh`, payload);
+  }
+
+  logout(): Observable<void> {
+    return this.http.post<void>(`${this.base}/logout`, {});
   }
 
   registerStudent(payload: UserCredentials): Observable<void> {

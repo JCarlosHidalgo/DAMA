@@ -5,6 +5,11 @@ export interface UserCredentials {
 
 export interface TokenResponse {
   accessToken: string;
+  refreshToken: string;
+}
+
+export interface RefreshTokenPayload {
+  refreshToken: string;
 }
 
 export interface UpdateUsernamePayload {

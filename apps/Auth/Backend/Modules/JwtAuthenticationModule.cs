@@ -19,6 +19,7 @@ public sealed class JwtAuthenticationModule : IServiceModule
     {
         services.AddSingleton<IJwtTokenSigner, JwtTokenSigner>();
         services.AddSingleton<IAccessTokenGenerator, JwtAccessTokenGenerator>();
+        services.AddSingleton<IRefreshTokenGenerator, RefreshTokenGenerator>();
 
         services
             .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
