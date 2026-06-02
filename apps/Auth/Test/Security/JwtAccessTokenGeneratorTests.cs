@@ -58,7 +58,7 @@ public class JwtAccessTokenGeneratorTests
             Timezone = "America/La_Paz"
         };
 
-        JwtSecurityToken parsedToken = ParseToken(sut.Issue(user, tenant));
+        JwtSecurityToken parsedToken = ParseToken(sut.Issue(user, tenant, null));
 
         Assert.Multiple(() =>
         {
@@ -72,13 +72,54 @@ public class JwtAccessTokenGeneratorTests
     }
 
     [Test]
+    public void Issue_WhenAllowedServicesPresent_EmitsIndexAndExpiryClaims()
+    {
+        JwtAccessTokenGenerator sut = CreateSut("Auth", TimeSpan.FromHours(1));
+        User user = new() { Id = Guid.NewGuid(), UserName = "anyone", Role = UserRole.Client.Value };
+        Tenant tenant = new() { Id = Guid.NewGuid(), Name = "Academia", Timezone = "America/La_Paz" };
+        DateTime expiresAt = new DateTime(2026, 7, 2, 10, 0, 0, DateTimeKind.Utc);
+        TenantAllowedServices allowedServices = new()
+        {
+            Id = tenant.Id,
+            IndexCoreServicesPyramid = 2,
+            ExpiresAt = expiresAt
+        };
+
+        JwtSecurityToken parsedToken = ParseToken(sut.Issue(user, tenant, allowedServices));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(ClaimValue(parsedToken, AuthClaims.IndexCoreServicesPyramid), Is.EqualTo("2"));
+            Assert.That(
+                ClaimValue(parsedToken, AuthClaims.SubscriptionExpiresAt),
+                Is.EqualTo(new DateTimeOffset(expiresAt).ToUnixTimeSeconds().ToString()));
+        });
+    }
+
+    [Test]
+    public void Issue_WhenAllowedServicesNull_EmitsZeroIndexAndEpochExpiry()
+    {
+        JwtAccessTokenGenerator sut = CreateSut("Auth", TimeSpan.FromHours(1));
+        User user = new() { Id = Guid.NewGuid(), UserName = "anyone", Role = UserRole.Client.Value };
+        Tenant tenant = new() { Id = Guid.NewGuid(), Name = "Academia", Timezone = "America/La_Paz" };
+
+        JwtSecurityToken parsedToken = ParseToken(sut.Issue(user, tenant, null));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(ClaimValue(parsedToken, AuthClaims.IndexCoreServicesPyramid), Is.EqualTo("0"));
+            Assert.That(ClaimValue(parsedToken, AuthClaims.SubscriptionExpiresAt), Is.EqualTo("0"));
+        });
+    }
+
+    [Test]
     public void Issue_EmitsOneAudienceClaimPerCommaSeparatedAudience()
     {
         JwtAccessTokenGenerator sut = CreateSut("Auth, Attendance ,Payment", TimeSpan.FromHours(1));
         User user = new() { Id = Guid.NewGuid(), UserName = "anyone", Role = UserRole.Student.Value };
         Tenant tenant = new() { Id = Guid.NewGuid(), Name = "Academia", Timezone = "America/La_Paz" };
 
-        JwtSecurityToken parsedToken = ParseToken(sut.Issue(user, tenant));
+        JwtSecurityToken parsedToken = ParseToken(sut.Issue(user, tenant, null));
 
         List<string> audiences = [.. parsedToken.Audiences];
         Assert.That(audiences, Has.Count.EqualTo(3));
@@ -94,7 +135,7 @@ public class JwtAccessTokenGeneratorTests
         User user = new() { Id = Guid.NewGuid(), UserName = "anyone", Role = UserRole.Student.Value };
         Tenant tenant = new() { Id = Guid.NewGuid(), Name = "Academia", Timezone = "America/La_Paz" };
 
-        JwtSecurityToken parsedToken = ParseToken(sut.Issue(user, tenant));
+        JwtSecurityToken parsedToken = ParseToken(sut.Issue(user, tenant, null));
 
         Assert.That(parsedToken.Issuer, Is.EqualTo("AuthIssuer"));
     }
@@ -108,7 +149,7 @@ public class JwtAccessTokenGeneratorTests
         Tenant tenant = new() { Id = Guid.NewGuid(), Name = "Academia", Timezone = "America/La_Paz" };
 
         DateTime expectedExpiry = DateTime.UtcNow.Add(lifetime);
-        JwtSecurityToken parsedToken = ParseToken(sut.Issue(user, tenant));
+        JwtSecurityToken parsedToken = ParseToken(sut.Issue(user, tenant, null));
 
         Assert.That(parsedToken.ValidTo, Is.EqualTo(expectedExpiry).Within(TimeSpan.FromSeconds(5)));
     }

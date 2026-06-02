@@ -1,3 +1,4 @@
+using Backend.DB.Daos.Abstract.Single.Tenants;
 using Backend.DB.Daos.Abstract.Single.Tokens;
 using Backend.DB.Daos.Abstract.Single.Users;
 using Backend.Dtos.Users.Input;
@@ -22,6 +23,7 @@ namespace Test.Services.Concrete.Users;
 public class AuthenticationServiceTests
 {
     private Mock<IUserAuthenticationDao> userAuthenticationDao = null!;
+    private Mock<ITenantAllowedServicesDao> tenantAllowedServicesDao = null!;
     private Mock<IPasswordHasher<User>> passwordHasher = null!;
     private Mock<IAccessTokenGenerator> accessTokenGenerator = null!;
     private Mock<IRefreshTokenGenerator> refreshTokenGenerator = null!;
@@ -35,6 +37,7 @@ public class AuthenticationServiceTests
     public void SetUp()
     {
         userAuthenticationDao = new Mock<IUserAuthenticationDao>(MockBehavior.Strict);
+        tenantAllowedServicesDao = new Mock<ITenantAllowedServicesDao>(MockBehavior.Strict);
         passwordHasher = new Mock<IPasswordHasher<User>>(MockBehavior.Strict);
         accessTokenGenerator = new Mock<IAccessTokenGenerator>(MockBehavior.Strict);
         refreshTokenGenerator = new Mock<IRefreshTokenGenerator>(MockBehavior.Strict);
@@ -47,6 +50,7 @@ public class AuthenticationServiceTests
 
         sut = new AuthenticationService(
             userAuthenticationDao.Object,
+            tenantAllowedServicesDao.Object,
             passwordHasher.Object,
             accessTokenGenerator.Object,
             refreshTokenGenerator.Object,
@@ -70,7 +74,8 @@ public class AuthenticationServiceTests
             hasher => hasher.VerifyHashedPassword(It.IsAny<User>(), It.IsAny<string>(), It.IsAny<string>()),
             Times.Never);
         accessTokenGenerator.Verify(
-            generator => generator.Issue(It.IsAny<User>(), It.IsAny<Tenant>()),
+            generator => generator.Issue(
+                It.IsAny<User>(), It.IsAny<Tenant>(), It.IsAny<TenantAllowedServices?>()),
             Times.Never);
     }
 
@@ -99,7 +104,8 @@ public class AuthenticationServiceTests
 
         Assert.That(token, Is.Null);
         accessTokenGenerator.Verify(
-            generator => generator.Issue(It.IsAny<User>(), It.IsAny<Tenant>()),
+            generator => generator.Issue(
+                It.IsAny<User>(), It.IsAny<Tenant>(), It.IsAny<TenantAllowedServices?>()),
             Times.Never);
     }
 
@@ -125,8 +131,11 @@ public class AuthenticationServiceTests
         passwordHasher
             .Setup(hasher => hasher.VerifyHashedPassword(user, user.PasswordHash, request.Password))
             .Returns(PasswordVerificationResult.Success);
+        tenantAllowedServicesDao
+            .Setup(dao => dao.ReadByTenantIdAsync(tenant.Id))
+            .ReturnsAsync((TenantAllowedServices?)null);
         accessTokenGenerator
-            .Setup(generator => generator.Issue(user, tenant))
+            .Setup(generator => generator.Issue(user, tenant, It.IsAny<TenantAllowedServices?>()))
             .Returns("issued.jwt.token");
         refreshTokenGenerator
             .Setup(generator => generator.Issue(user.Id))
@@ -164,8 +173,11 @@ public class AuthenticationServiceTests
         passwordHasher
             .Setup(hasher => hasher.VerifyHashedPassword(user, user.PasswordHash, request.Password))
             .Returns(PasswordVerificationResult.SuccessRehashNeeded);
+        tenantAllowedServicesDao
+            .Setup(dao => dao.ReadByTenantIdAsync(tenant.Id))
+            .ReturnsAsync((TenantAllowedServices?)null);
         accessTokenGenerator
-            .Setup(generator => generator.Issue(user, tenant))
+            .Setup(generator => generator.Issue(user, tenant, It.IsAny<TenantAllowedServices?>()))
             .Returns("issued.jwt.token");
         refreshTokenGenerator
             .Setup(generator => generator.Issue(user.Id))

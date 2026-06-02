@@ -4,7 +4,7 @@ using Backend.Application.Uniques;
 using Backend.Results.Scheduleds;
 using Backend.Results.Uniques;
 
-using DAMA.Software.ValidateCourse.Grpc;
+using DAMA.Software.GrpcContracts;
 
 using Grpc.Core;
 

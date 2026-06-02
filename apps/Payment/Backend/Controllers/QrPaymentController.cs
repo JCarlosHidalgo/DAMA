@@ -1,10 +1,13 @@
 using System.Diagnostics;
 
+using Backend.Application.Commands;
+using Backend.Application.Mediator;
 using Backend.Common;
 using Backend.DB.Daos.Abstract.Single.QrPayments;
 using Backend.Dtos.QrPayments.Input;
 using Backend.Logging;
 using Backend.Results.QrPayments;
+using Backend.Security;
 using Backend.Services.Abstract;
 using Backend.Services.Abstract.QrPayments;
 
@@ -17,19 +20,19 @@ namespace Backend.Controllers;
 [Route("api/payment/qr")]
 public class QrPaymentController : ControllerBase
 {
-    private readonly IQrDebtCreationService _creationService;
+    private readonly ICommandHandler<CreateClassQrDebtCommand, CreateQrDebtOutcome> _createDebtHandler;
     private readonly IQrPaymentQueryService _queryService;
     private readonly IPaymentCallbackInboxDao _callbackInbox;
     private readonly ICallbackSignature _callbackSignature;
     private readonly ILogger<QrPaymentController> _logger;
 
-    public QrPaymentController(IQrDebtCreationService creationService,
+    public QrPaymentController(ICommandHandler<CreateClassQrDebtCommand, CreateQrDebtOutcome> createDebtHandler,
                                IQrPaymentQueryService queryService,
                                IPaymentCallbackInboxDao callbackInbox,
                                ICallbackSignature callbackSignature,
                                ILogger<QrPaymentController> logger)
     {
-        _creationService = creationService;
+        _createDebtHandler = createDebtHandler;
         _queryService = queryService;
         _callbackInbox = callbackInbox;
         _callbackSignature = callbackSignature;
@@ -37,11 +40,13 @@ public class QrPaymentController : ControllerBase
     }
 
     [Authorize(Roles = "Student")]
+    [RequiresServiceTier(3)]
     [HttpPost("{templateId:guid}")]
     public async Task<ActionResult> CreateDebt(Guid templateId, CreateQrDebtDto dto)
     {
         string effectiveEmail = string.IsNullOrWhiteSpace(dto.Email) ? "example@gmail.com" : dto.Email;
-        CreateQrDebtOutcome creationOutcome = await _creationService.CreateDebtAsync(templateId, effectiveEmail, dto);
+        CreateQrDebtOutcome creationOutcome =
+            await _createDebtHandler.Handle(new CreateClassQrDebtCommand(templateId, effectiveEmail, dto));
         return creationOutcome switch
         {
             CreateQrDebtOutcome.Success successOutcome => Accepted(successOutcome.Created),
@@ -53,6 +58,7 @@ public class QrPaymentController : ControllerBase
     }
 
     [Authorize(Roles = "Student")]
+    [RequiresServiceTier(3)]
     [HttpGet("{id:guid}/status")]
     public async Task<ActionResult> GetDebtStatus(Guid id)
     {
@@ -66,6 +72,7 @@ public class QrPaymentController : ControllerBase
     }
 
     [Authorize(Roles = "Student")]
+    [RequiresServiceTier(3)]
     [HttpGet("pending")]
     public async Task<ActionResult> ListPending([FromQuery] PaginationParamsDto pagination)
     {
@@ -74,6 +81,7 @@ public class QrPaymentController : ControllerBase
     }
 
     [Authorize(Roles = "Student")]
+    [RequiresServiceTier(3)]
     [HttpGet("success")]
     public async Task<ActionResult> ListSuccess([FromQuery] PaginationParamsDto pagination)
     {
@@ -82,6 +90,7 @@ public class QrPaymentController : ControllerBase
     }
 
     [Authorize(Roles = "Student")]
+    [RequiresServiceTier(3)]
     [HttpGet("failed")]
     public async Task<ActionResult> ListFailed([FromQuery] PaginationParamsDto pagination)
     {

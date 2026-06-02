@@ -47,7 +47,13 @@ describe('TeacherSchedule', () => {
         { provide: CourseApi, useValue: courseApi },
         { provide: MatDialog, useValue: matDialog },
         { provide: NotificationService, useValue: notifications },
-        { provide: AuthService, useValue: { tenantTimezone: signal('America/La_Paz') } },
+        {
+          provide: AuthService,
+          useValue: {
+            tenantTimezone: signal('America/La_Paz'),
+            effectiveSubscriptionIndex: signal(2),
+          },
+        },
       ],
     }).compileComponents();
 

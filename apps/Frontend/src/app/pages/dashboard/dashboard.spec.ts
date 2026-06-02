@@ -13,6 +13,7 @@ import { buildJwtClaims } from '@testing';
 interface AuthStub {
   currentRole: ReturnType<typeof signal<UserRole | null>>;
   claims: ReturnType<typeof signal<JwtClaims | null>>;
+  effectiveSubscriptionIndex: ReturnType<typeof signal<number>>;
   logout: ReturnType<typeof vi.fn>;
 }
 
@@ -36,6 +37,7 @@ describe('Dashboard', () => {
       claims: signal<JwtClaims | null>(
         role ? buildJwtClaims({ role, userName: 'someone@example.com' }) : null,
       ),
+      effectiveSubscriptionIndex: signal(3),
       logout: vi.fn(),
     };
     breakpointSubject = new Subject();
@@ -60,9 +62,9 @@ describe('Dashboard', () => {
   }
 
   describe('tab list by role', () => {
-    it('shows 8 tabs for Client', async () => {
+    it('shows 9 tabs for Client', async () => {
       await setUp('Client');
-      expect(fixture.componentInstance.tabs()).toHaveLength(8);
+      expect(fixture.componentInstance.tabs()).toHaveLength(9);
       expect(fixture.componentInstance.tabs()[0].path).toBe('resumen');
       expect(fixture.componentInstance.tabs().at(-1)?.path).toBe('configuracion');
     });
@@ -78,9 +80,9 @@ describe('Dashboard', () => {
       expect(fixture.componentInstance.tabs()).toHaveLength(6);
     });
 
-    it('shows 1 tab for Admin', async () => {
+    it('shows 2 tabs for Admin', async () => {
       await setUp('Admin');
-      expect(fixture.componentInstance.tabs()).toHaveLength(1);
+      expect(fixture.componentInstance.tabs()).toHaveLength(2);
       expect(fixture.componentInstance.tabs()[0].path).toBe('tenants');
     });
 

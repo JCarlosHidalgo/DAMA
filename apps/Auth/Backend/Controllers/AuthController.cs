@@ -7,6 +7,7 @@ using Backend.Entities.Users;
 using Backend.Logging;
 using Backend.Pagination;
 using Backend.Results.Users;
+using Backend.Security;
 using Backend.Services.Abstract.Users;
 using Backend.Validators.Users;
 
@@ -42,6 +43,7 @@ public class AuthController : ControllerBase
     }
 
     [Authorize(Roles = UserRoles.Client)]
+    [RequiresServiceTier(2)]
     [HttpGet("students")]
     public async Task<ActionResult<PagedUsersResponseDto>> GetStudents([FromQuery] PaginationQueryDto query)
     {
@@ -49,6 +51,7 @@ public class AuthController : ControllerBase
     }
 
     [Authorize(Roles = UserRoles.Client)]
+    [RequiresServiceTier(2)]
     [HttpGet("teachers")]
     public async Task<ActionResult<PagedUsersResponseDto>> GetTeachers([FromQuery] PaginationQueryDto query)
     {
@@ -56,6 +59,7 @@ public class AuthController : ControllerBase
     }
 
     [Authorize(Roles = UserRoles.Client)]
+    [RequiresServiceTier(2)]
     [HttpPost("register/teacher")]
     public async Task<ActionResult> RegisterTeacher(RegisterCredentialsDto request)
     {
@@ -74,6 +78,7 @@ public class AuthController : ControllerBase
     }
 
     [Authorize(Roles = UserRoles.Client)]
+    [RequiresServiceTier(2)]
     [HttpPost("register/student")]
     public async Task<ActionResult> RegisterStudent(RegisterCredentialsDto request)
     {
@@ -92,6 +97,7 @@ public class AuthController : ControllerBase
     }
 
     [Authorize(Roles = UserRoles.Client)]
+    [RequiresServiceTier(2)]
     [HttpPut("users/{id}/username")]
     public async Task<ActionResult> RenameUser(Guid id, UpdateUsernameDto request)
     {
@@ -106,6 +112,7 @@ public class AuthController : ControllerBase
     }
 
     [Authorize(Roles = UserRoles.Client)]
+    [RequiresServiceTier(2)]
     [HttpDelete("users/{id}")]
     public async Task<ActionResult> DeleteUser(Guid id)
     {
@@ -121,6 +128,7 @@ public class AuthController : ControllerBase
     }
 
     [Authorize(Roles = UserRoles.Client)]
+    [RequiresServiceTier(2)]
     [HttpGet("students/search")]
     public async Task<ActionResult<UserListItemDto>> SearchStudent([FromQuery] UserSearchQueryDto query)
     {

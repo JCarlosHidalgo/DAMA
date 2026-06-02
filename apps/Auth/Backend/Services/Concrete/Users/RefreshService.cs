@@ -1,6 +1,8 @@
+using Backend.DB.Daos.Abstract.Single.Tenants;
 using Backend.DB.Daos.Abstract.Single.Tokens;
 using Backend.Dtos.Users.Input;
 using Backend.Dtos.Users.Output;
+using Backend.Entities.Tenants;
 using Backend.Security;
 using Backend.Services.Abstract.Users;
 using Backend.Transporters.Entities;
@@ -13,18 +15,21 @@ public class RefreshService : IRefreshService
 {
     private readonly IRefreshTokenReadDao _refreshTokenReadDao;
     private readonly IRefreshTokenWriteDao _refreshTokenWriteDao;
+    private readonly ITenantAllowedServicesDao _tenantAllowedServicesDao;
     private readonly IAccessTokenGenerator _accessTokenGenerator;
     private readonly IRefreshTokenGenerator _refreshTokenGenerator;
     private readonly IUnitOfWork _unitOfWork;
 
     public RefreshService(IRefreshTokenReadDao refreshTokenReadDao,
                           IRefreshTokenWriteDao refreshTokenWriteDao,
+                          ITenantAllowedServicesDao tenantAllowedServicesDao,
                           IAccessTokenGenerator accessTokenGenerator,
                           IRefreshTokenGenerator refreshTokenGenerator,
                           IUnitOfWork unitOfWork)
     {
         _refreshTokenReadDao = refreshTokenReadDao;
         _refreshTokenWriteDao = refreshTokenWriteDao;
+        _tenantAllowedServicesDao = tenantAllowedServicesDao;
         _accessTokenGenerator = accessTokenGenerator;
         _refreshTokenGenerator = refreshTokenGenerator;
         _unitOfWork = unitOfWork;
@@ -59,9 +64,12 @@ public class RefreshService : IRefreshService
         await _refreshTokenWriteDao.CreateAsync(issued.Entity, scope);
         await scope.CommitAsync();
 
+        TenantAllowedServices? allowedServices =
+            await _tenantAllowedServicesDao.ReadByTenantIdAsync(stored.Owner.Tenant.Id);
+
         return new TokenResponseDto
         {
-            AccessToken = _accessTokenGenerator.Issue(stored.Owner.User, stored.Owner.Tenant),
+            AccessToken = _accessTokenGenerator.Issue(stored.Owner.User, stored.Owner.Tenant, allowedServices),
             RefreshToken = issued.RawToken
         };
     }

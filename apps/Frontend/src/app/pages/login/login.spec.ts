@@ -11,6 +11,8 @@ import { AuthService, UserRole } from '@core/auth';
 interface AuthStub {
   login: ReturnType<typeof vi.fn>;
   currentRole: ReturnType<typeof signal<UserRole | null>>;
+  effectiveSubscriptionIndex: ReturnType<typeof signal<number>>;
+  clearSession: ReturnType<typeof vi.fn>;
 }
 
 describe('Login', () => {
@@ -25,6 +27,8 @@ describe('Login', () => {
     authStub = {
       login: vi.fn(() => of({ accessToken: 'token' })),
       currentRole: signal<UserRole | null>(null),
+      effectiveSubscriptionIndex: signal(3),
+      clearSession: vi.fn(),
     };
     await TestBed.configureTestingModule({
       imports: [Login],

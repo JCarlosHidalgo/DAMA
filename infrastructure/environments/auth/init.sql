@@ -20,6 +20,15 @@ CREATE TABLE IF NOT EXISTS Tenant(
     Timezone VARCHAR(64) NOT NULL DEFAULT 'America/La_Paz'
 );
 
+-- TENANT ALLOWED SERVICES (core-services pyramid subscription state)
+CREATE TABLE IF NOT EXISTS TenantAllowedServices(
+    Id                       VARCHAR(36) PRIMARY KEY NOT NULL,
+    IndexCoreServicesPyramid INT NOT NULL DEFAULT 0,
+    ExpiresAt                DATETIME(6) NOT NULL,
+    FOREIGN KEY (Id) REFERENCES Tenant(Id),
+    INDEX ix_tenant_allowed_services_expires (ExpiresAt)
+);
+
 -- TENANT DOMAIN
 CREATE TABLE IF NOT EXISTS TenantDomain(
     UserId VARCHAR(36),
@@ -194,6 +203,49 @@ CREATE PROCEDURE CreateTenant(
 BEGIN
     INSERT INTO Tenant (Id, Name, Timezone)
     VALUES (tenantId, tenantName, tenantTimezone);
+    INSERT INTO TenantAllowedServices (Id, IndexCoreServicesPyramid, ExpiresAt)
+    VALUES (tenantId, 0, '1970-01-01 00:00:00.000000');
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE GetTenantAllowedServices(
+    IN tenantId VARCHAR(36)
+)
+BEGIN
+    SELECT
+        Id,
+        IndexCoreServicesPyramid,
+        ExpiresAt
+    FROM TenantAllowedServices
+    WHERE Id = tenantId;
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE UpsertTenantAllowedServices(
+    IN tenantId                 VARCHAR(36),
+    IN indexCoreServicesPyramid INT,
+    IN expiresAt                DATETIME(6)
+)
+BEGIN
+    INSERT INTO TenantAllowedServices (Id, IndexCoreServicesPyramid, ExpiresAt)
+    VALUES (tenantId, indexCoreServicesPyramid, expiresAt)
+    ON DUPLICATE KEY UPDATE
+        IndexCoreServicesPyramid = VALUES(IndexCoreServicesPyramid),
+        ExpiresAt = VALUES(ExpiresAt);
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE ResetExpiredTenantAllowedServices(
+    IN asOf DATETIME(6)
+)
+BEGIN
+    UPDATE TenantAllowedServices
+    SET IndexCoreServicesPyramid = 0
+    WHERE ExpiresAt <= asOf
+        AND IndexCoreServicesPyramid <> 0;
 END //
 DELIMITER ;
 
@@ -319,6 +371,7 @@ BEGIN
     SET FOREIGN_KEY_CHECKS = 0;
     TRUNCATE TABLE RefreshToken;
     TRUNCATE TABLE User;
+    TRUNCATE TABLE TenantAllowedServices;
     TRUNCATE TABLE Tenant;
     TRUNCATE TABLE TenantDomain;
     TRUNCATE TABLE outbox_events;

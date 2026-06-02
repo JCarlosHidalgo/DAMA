@@ -2,6 +2,7 @@ using System.Diagnostics;
 
 using Backend.Dtos.Todotix.Input;
 using Backend.Results.Todotix;
+using Backend.Security;
 using Backend.Services.Abstract.Todotix;
 
 using Microsoft.AspNetCore.Authorization;
@@ -11,6 +12,7 @@ namespace Backend.Controllers;
 
 [ApiController]
 [Route("api/payment/todotix-credential")]
+[RequiresServiceTier(3)]
 public class TodotixCredentialController : ControllerBase
 {
     private readonly ITodotixCredentialService _service;

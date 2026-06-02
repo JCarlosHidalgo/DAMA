@@ -1,3 +1,4 @@
+using Backend.DB.Daos.Abstract.Single.Tenants;
 using Backend.DB.Daos.Abstract.Single.Tokens;
 using Backend.Dtos.Users.Input;
 using Backend.Dtos.Users.Output;
@@ -19,6 +20,7 @@ public class RefreshServiceTests
 {
     private Mock<IRefreshTokenReadDao> refreshTokenReadDao = null!;
     private Mock<IRefreshTokenWriteDao> refreshTokenWriteDao = null!;
+    private Mock<ITenantAllowedServicesDao> tenantAllowedServicesDao = null!;
     private Mock<IAccessTokenGenerator> accessTokenGenerator = null!;
     private Mock<IRefreshTokenGenerator> refreshTokenGenerator = null!;
     private Mock<IUnitOfWork> unitOfWork = null!;
@@ -31,6 +33,7 @@ public class RefreshServiceTests
     {
         refreshTokenReadDao = new Mock<IRefreshTokenReadDao>(MockBehavior.Strict);
         refreshTokenWriteDao = new Mock<IRefreshTokenWriteDao>(MockBehavior.Strict);
+        tenantAllowedServicesDao = new Mock<ITenantAllowedServicesDao>(MockBehavior.Strict);
         accessTokenGenerator = new Mock<IAccessTokenGenerator>(MockBehavior.Strict);
         refreshTokenGenerator = new Mock<IRefreshTokenGenerator>(MockBehavior.Strict);
         unitOfWork = new Mock<IUnitOfWork>(MockBehavior.Strict);
@@ -42,6 +45,7 @@ public class RefreshServiceTests
         sut = new RefreshService(
             refreshTokenReadDao.Object,
             refreshTokenWriteDao.Object,
+            tenantAllowedServicesDao.Object,
             accessTokenGenerator.Object,
             refreshTokenGenerator.Object,
             unitOfWork.Object);
@@ -139,7 +143,13 @@ public class RefreshServiceTests
         refreshTokenWriteDao.Setup(dao => dao.RevokeAsync(current.Id, transactionScope.Object)).Returns(Task.CompletedTask);
         refreshTokenWriteDao.Setup(dao => dao.CreateAsync(rotated, transactionScope.Object)).Returns(Task.CompletedTask);
         transactionScope.Setup(scope => scope.CommitAsync()).Returns(Task.CompletedTask);
-        accessTokenGenerator.Setup(generator => generator.Issue(stored.Owner.User, stored.Owner.Tenant)).Returns("new.jwt");
+        tenantAllowedServicesDao
+            .Setup(dao => dao.ReadByTenantIdAsync(stored.Owner.Tenant.Id))
+            .ReturnsAsync((TenantAllowedServices?)null);
+        accessTokenGenerator
+            .Setup(generator => generator.Issue(
+                stored.Owner.User, stored.Owner.Tenant, It.IsAny<TenantAllowedServices?>()))
+            .Returns("new.jwt");
 
         TokenResponseDto? result = await sut.RefreshAsync(request);
 

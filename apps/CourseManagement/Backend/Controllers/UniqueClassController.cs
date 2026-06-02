@@ -6,6 +6,7 @@ using Backend.Dtos.Groups.Input;
 using Backend.Dtos.Uniques.Input;
 using Backend.Dtos.Uniques.Output;
 using Backend.Results.Uniques;
+using Backend.Security;
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -14,6 +15,7 @@ namespace Backend.Controllers;
 
 [Route("api/course-management/course/unique")]
 [ApiController]
+[RequiresServiceTier(1)]
 public class UniqueClassController : ControllerBase
 {
     private const string CourseNotFoundMessage = "Course not found for tenant.";

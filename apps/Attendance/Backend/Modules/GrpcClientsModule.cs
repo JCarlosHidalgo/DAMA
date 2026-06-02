@@ -1,6 +1,6 @@
 using Backend.Grpc.Interceptors;
 
-using DAMA.Software.ValidateCourse.Grpc;
+using DAMA.Software.GrpcContracts;
 
 using Microsoft.Extensions.Http.Resilience;
 

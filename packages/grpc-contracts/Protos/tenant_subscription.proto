@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+option csharp_namespace = "DAMA.Software.GrpcContracts";
+package dama.tenant_subscription;
+
+// Synchronous subscription-state update. Payment (client) calls this the moment
+// a tenant subscription QR payment is captured, so the new pyramid level and
+// expiry are applied in Auth in-band with the capture (no async event hop).
+service TenantSubscription {
+  rpc UpdateTenantSubscription(UpdateTenantSubscriptionRequest) returns (UpdateTenantSubscriptionResponse);
+}
+
+message UpdateTenantSubscriptionRequest {
+  string tenant_id            = 1; // "D" guid
+  int32  level                = 2; // 0..3 core-services-pyramid index
+  int64  new_expires_at_unix  = 3; // Unix seconds, UTC
+}
+
+message UpdateTenantSubscriptionResponse {
+  bool updated = 1;
+}

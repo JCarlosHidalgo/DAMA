@@ -9,8 +9,9 @@ DAMA injects secrets as plain environment variables through `infrastructure/.env
 | `JWT_PRIVATE_KEY_B64` | RSA private key (PEM, base64 standard) | `openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 -out priv.pem` then `base64 -w0 priv.pem` | Auth only |
 | `JWT_PUBLIC_KEY_B64` | RSA public key (PEM, base64 standard) | `openssl rsa -in priv.pem -pubout -out pub.pem` then `base64 -w0 pub.pem` | Auth, CourseManagement, Attendance, Payment, Credentials |
 | `PAYMENT_CALLBACK_SECRET` | HMAC-SHA256 key (base64url string, used UTF-8 as-is) | `openssl rand -base64 64 \| tr -d '\n=' \| tr '+/' '-_'` | Payment, Attendance |
+| `SUBSCRIPTION_GRPC_SECRET` | shared secret (string, used UTF-8 as-is) authenticating the synchronous Payment→Auth subscription gRPC call (sent in `x-subscription-secret` metadata over TLS) | `openssl rand -base64 64 \| tr -d '\n=' \| tr '+/' '-_'` | Payment (sends), Auth (validates) |
 | `AUTH_DB_PASSWORD`, `COURSE_MANAGEMENT_DB_PASSWORD`, `ATTENDANCE_DB_PASSWORD`, `PAYMENT_DB_PASSWORD` | DB user password | any random string | the corresponding DB container + backend |
-| `TODOTIX_APPKEY` | external API key | issued by Todotix merchant panel | Payment |
+| `TODOTIX_APPKEY` | external API key — global fallback for tenant payments (when a tenant has no own credential) and the account that collects tenant subscription payments | issued by Todotix merchant panel | Payment |
 | `TODOTIX_APPKEY_ENCRYPTION_KEY` | AES-256-GCM key (base64 standard, 32 bytes) | `openssl rand -base64 32` | Payment |
 | `RABBITMQ_USER`, `RABBITMQ_PASSWORD` | broker credentials | any random string | every producer/consumer backend + broker |
 

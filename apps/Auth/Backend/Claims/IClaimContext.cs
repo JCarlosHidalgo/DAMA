@@ -13,4 +13,8 @@ public interface IClaimContext
     string UserName { get; }
 
     string Role { get; }
+
+    int IndexCoreServicesPyramid { get; }
+
+    DateTime SubscriptionExpiresAt { get; }
 }

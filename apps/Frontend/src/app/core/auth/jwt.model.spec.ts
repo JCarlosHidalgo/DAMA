@@ -11,6 +11,8 @@ describe('mapClaims', () => {
       user_name: 'student@example.com',
       role: 'Teacher',
       tenant_timezone: 'America/Mexico_City',
+      index_core_services_pyramid: 2,
+      subscription_expires_at: 1_700_000_500,
       exp: 1_700_000_000,
     };
 
@@ -23,6 +25,8 @@ describe('mapClaims', () => {
       userName: 'student@example.com',
       role: 'Teacher',
       tenantTimezone: 'America/Mexico_City',
+      indexCoreServicesPyramid: 2,
+      subscriptionExpiresAt: 1_700_000_500,
       exp: 1_700_000_000,
     });
   });

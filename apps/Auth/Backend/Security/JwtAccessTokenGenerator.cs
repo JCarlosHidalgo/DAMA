@@ -25,8 +25,13 @@ public sealed class JwtAccessTokenGenerator : IAccessTokenGenerator
             StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
     }
 
-    public string Issue(User user, Tenant tenant)
+    public string Issue(User user, Tenant tenant, TenantAllowedServices? allowedServices)
     {
+        int indexCoreServicesPyramid = allowedServices?.IndexCoreServicesPyramid ?? 0;
+        long subscriptionExpiresAt = allowedServices is null
+            ? 0
+            : new DateTimeOffset(DateTime.SpecifyKind(allowedServices.ExpiresAt, DateTimeKind.Utc)).ToUnixTimeSeconds();
+
         List<Claim> claims = new List<Claim>
         {
             new Claim(AuthClaims.TenantId, tenant.Id.ToString()),
@@ -34,7 +39,9 @@ public sealed class JwtAccessTokenGenerator : IAccessTokenGenerator
             new Claim(AuthClaims.UserId, user.Id.ToString()),
             new Claim(AuthClaims.UserName, user.UserName),
             new Claim(AuthClaims.Role, user.Role),
-            new Claim(AuthClaims.TenantTimezone, tenant.Timezone)
+            new Claim(AuthClaims.TenantTimezone, tenant.Timezone),
+            new Claim(AuthClaims.IndexCoreServicesPyramid, indexCoreServicesPyramid.ToString()),
+            new Claim(AuthClaims.SubscriptionExpiresAt, subscriptionExpiresAt.ToString())
         };
         foreach (string audience in _issuanceAudiences)
         {

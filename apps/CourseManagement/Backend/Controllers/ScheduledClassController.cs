@@ -6,6 +6,7 @@ using Backend.Dtos.Groups.Input;
 using Backend.Dtos.Scheduleds.Input;
 using Backend.Dtos.Scheduleds.Output;
 using Backend.Results.Scheduleds;
+using Backend.Security;
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -14,6 +15,7 @@ namespace Backend.Controllers;
 
 [Route("api/course-management/course/scheduled")]
 [ApiController]
+[RequiresServiceTier(1)]
 public class ScheduledClassController : ControllerBase
 {
     private const string CourseNotFoundMessage = "Course not found for tenant.";

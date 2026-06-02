@@ -18,6 +18,8 @@ import {
   TodotixAppKeyReveal,
   UpdateTodotixAppKeyPayload,
   PaymentAvailability,
+  SubscriptionPlan,
+  UpdateSubscriptionPlanPayload,
 } from '@core/models';
 
 @Injectable({ providedIn: 'root' })
@@ -90,5 +92,25 @@ export class PaymentApi {
 
   testTodotixCredential(): Observable<void> {
     return this.http.post<void>(`${this.base}/todotix-credential/test`, {});
+  }
+
+  listSubscriptionPlans(): Observable<SubscriptionPlan[]> {
+    return this.http.get<SubscriptionPlan[]>(`${this.base}/subscription/plans`);
+  }
+
+  updateSubscriptionPlan(level: number, payload: UpdateSubscriptionPlanPayload): Observable<void> {
+    return this.http.put<void>(`${this.base}/subscription/plans/${level}`, payload);
+  }
+
+  createSubscriptionQr(level: number, email?: string | null): Observable<QrDebtPending> {
+    return this.http.post<QrDebtPending>(`${this.base}/subscription/qr`, {
+      level,
+      method: 'QR',
+      email: email ?? null,
+    });
+  }
+
+  getSubscriptionQrStatus(id: string): Observable<QrDebtStatus> {
+    return this.http.get<QrDebtStatus>(`${this.base}/subscription/qr/${id}/status`);
   }
 }

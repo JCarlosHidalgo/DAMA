@@ -1,7 +1,9 @@
+using Backend.DB.Daos.Abstract.Single.Tenants;
 using Backend.DB.Daos.Abstract.Single.Tokens;
 using Backend.DB.Daos.Abstract.Single.Users;
 using Backend.Dtos.Users.Input;
 using Backend.Dtos.Users.Output;
+using Backend.Entities.Tenants;
 using Backend.Entities.Users;
 using Backend.Logging;
 using Backend.Security;
@@ -17,6 +19,7 @@ namespace Backend.Services.Concrete.Users;
 public class AuthenticationService : IAuthenticationService
 {
     private readonly IUserAuthenticationDao _userDao;
+    private readonly ITenantAllowedServicesDao _tenantAllowedServicesDao;
     private readonly IPasswordHasher<User> _passwordHasher;
     private readonly IAccessTokenGenerator _tokenGenerator;
     private readonly IRefreshTokenGenerator _refreshTokenGenerator;
@@ -25,6 +28,7 @@ public class AuthenticationService : IAuthenticationService
     private readonly ILogger<AuthenticationService> _logger;
 
     public AuthenticationService(IUserAuthenticationDao userDao,
+                                 ITenantAllowedServicesDao tenantAllowedServicesDao,
                                  IPasswordHasher<User> passwordHasher,
                                  IAccessTokenGenerator tokenGenerator,
                                  IRefreshTokenGenerator refreshTokenGenerator,
@@ -33,6 +37,7 @@ public class AuthenticationService : IAuthenticationService
                                  ILogger<AuthenticationService> logger)
     {
         _userDao = userDao;
+        _tenantAllowedServicesDao = tenantAllowedServicesDao;
         _passwordHasher = passwordHasher;
         _tokenGenerator = tokenGenerator;
         _refreshTokenGenerator = refreshTokenGenerator;
@@ -64,7 +69,10 @@ public class AuthenticationService : IAuthenticationService
             return null;
         }
 
-        string accessToken = _tokenGenerator.Issue(user, userWithTenant.Tenant);
+        TenantAllowedServices? allowedServices =
+            await _tenantAllowedServicesDao.ReadByTenantIdAsync(userWithTenant.Tenant.Id);
+
+        string accessToken = _tokenGenerator.Issue(user, userWithTenant.Tenant, allowedServices);
         IssuedRefreshToken issued = _refreshTokenGenerator.Issue(user.Id);
 
         await using ITransactionScope scope = await _unitOfWork.BeginAsync();

@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <PackageId>DAMA.Software.GrpcContracts</PackageId>
+    <Version>1.0.0</Version>
+    <Author>Juan Carlos Hidalgo Sosa</Author>
+    <Authors>Juan Carlos Hidalgo Sosa</Authors>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <Product>GrpcContracts</Product>
+    <Description>Shared gRPC contracts for the DAMA platform. Hosts every cross-service .proto: ClassExistence and CourseExistence (Attendance -> CourseManagement) and TenantSubscription (Payment -> Auth).</Description>
+    <Copyright>CC BY-SA 4.0, 2026</Copyright>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageTags>gRPC,Protobuf,DAMA</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Google.Protobuf" Version="3.28.2" />
+    <PackageReference Include="Grpc.Net.ClientFactory" Version="2.66.0" />
+    <PackageReference Include="Grpc.AspNetCore.Server" Version="2.66.0" />
+    <PackageReference Include="Grpc.Tools" Version="2.66.0">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Protobuf Include="Protos\class_existence.proto" GrpcServices="Both" />
+    <Protobuf Include="Protos\course_existence.proto" GrpcServices="Both" />
+    <Protobuf Include="Protos\tenant_subscription.proto" GrpcServices="Both" />
+    <None Include="README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+</Project>

@@ -1,7 +1,7 @@
 using Backend.Services.Abstract;
 using Backend.Transporters.Entities;
 
-using DAMA.Software.ValidateCourse.Grpc;
+using DAMA.Software.GrpcContracts;
 
 using Grpc.Core;
 

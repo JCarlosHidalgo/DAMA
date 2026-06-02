@@ -86,3 +86,18 @@ export interface UpdateTodotixAppKeyPayload {
 export interface PaymentAvailability {
   hasPaymentCredentials: boolean;
 }
+
+export type SubscriptionDurationUnit = 'Day' | 'Week' | 'Month';
+
+export interface SubscriptionPlan {
+  level: number;
+  price: number;
+  durationAmount: number;
+  durationUnit: SubscriptionDurationUnit;
+}
+
+export interface UpdateSubscriptionPlanPayload {
+  price: number;
+  durationAmount: number;
+  durationUnit: SubscriptionDurationUnit;
+}

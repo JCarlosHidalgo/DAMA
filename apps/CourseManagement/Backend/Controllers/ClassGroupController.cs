@@ -5,6 +5,7 @@ using Backend.Application.Mediator;
 using Backend.Dtos.Groups.Input;
 using Backend.Dtos.Groups.Output;
 using Backend.Results.Groups;
+using Backend.Security;
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -13,6 +14,7 @@ namespace Backend.Controllers;
 
 [Route("api/course-management/course/group")]
 [ApiController]
+[RequiresServiceTier(1)]
 public class ClassGroupController : ControllerBase
 {
     private const string GroupNotFoundMessage = "Class group not found for tenant.";

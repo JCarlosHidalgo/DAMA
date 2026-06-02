@@ -64,6 +64,14 @@ export class Login {
     try {
       await firstValueFrom(this.authService.login(this.form.getRawValue()));
       const role = this.authService.currentRole();
+      if (
+        (role === 'Teacher' || role === 'Student') &&
+        this.authService.effectiveSubscriptionIndex() === 0
+      ) {
+        this.authService.clearSession();
+        this.errorMessage.set('Tu escuela no tiene una suscripción vigente.');
+        return;
+      }
       const destinationUrl = role ? defaultRouteForRole(role) : '/yo';
       this.router.navigateByUrl(destinationUrl);
     } catch (error) {

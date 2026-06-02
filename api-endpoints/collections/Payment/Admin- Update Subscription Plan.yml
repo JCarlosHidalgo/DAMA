@@ -1,0 +1,25 @@
+info:
+  name: "Admin: Update Subscription Plan"
+  type: http
+  seq: 17
+
+http:
+  method: PUT
+  url: "{{API_PATH}}/api/payment/subscription/plans/2"
+  body:
+    type: json
+    data: |-
+      {
+        "price" : 180,
+        "durationAmount" : 1,
+        "durationUnit" : "Month"
+      }
+  auth:
+    type: bearer
+    token: "{{Admin_JWT}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

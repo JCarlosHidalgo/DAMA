@@ -33,5 +33,14 @@ public sealed class OptionsModule : IServiceModule
             })
             .ValidateDataAnnotations()
             .ValidateOnStart();
+
+        services.AddOptions<SubscriptionGrpcOptions>()
+            .Configure(subscriptionGrpcOptions =>
+            {
+                subscriptionGrpcOptions.Secret = configuration["SUBSCRIPTION_GRPC_SECRET"]
+                    ?? throw new InvalidOperationException("SUBSCRIPTION_GRPC_SECRET not set.");
+            })
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
     }
 }

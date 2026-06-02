@@ -1,6 +1,5 @@
 using System.Text.Json;
 
-using Backend.DB.Daos.Abstract.Single.QrPayments;
 using Backend.Dtos.External.Todotix;
 using Backend.Entities.Todotix;
 using Backend.Results.Todotix;
@@ -10,7 +9,7 @@ namespace Backend.Services.Concrete.Todotix;
 
 public sealed class TodotixDebtPublisher(
     ITodotixClient todotixClient,
-    IPendingQrPaymentDao pendingQrPaymentDao) : IPaymentDebtPublisher
+    IEnumerable<IQrImageUrlUpdater> qrImageUrlUpdaters) : IPaymentDebtPublisher
 {
     public async Task<PublishOutcome> PublishAsync(TodotixOutboxEvent outboxEvent, CancellationToken cancellationToken = default)
     {
@@ -50,7 +49,8 @@ public sealed class TodotixDebtPublisher(
 
         if (registerDebtResponse.Error == 0 && !string.IsNullOrEmpty(registerDebtResponse.QrSimpleUrl))
         {
-            await pendingQrPaymentDao.UpdateQrImageUrlAsync(outboxEvent.PendingId, registerDebtResponse.QrSimpleUrl);
+            IQrImageUrlUpdater updater = qrImageUrlUpdaters.Single(candidate => candidate.Kind == outboxEvent.DebtKind);
+            await updater.UpdateAsync(outboxEvent.PendingId, registerDebtResponse.QrSimpleUrl);
             return new PublishOutcome.Success();
         }
 

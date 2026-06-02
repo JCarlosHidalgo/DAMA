@@ -1,3 +1,5 @@
+using Backend.Entities;
+
 using DAMA.Software.MySqlOutbox;
 
 using SQLDaosPackage.Entities;
@@ -9,6 +11,8 @@ public class TodotixOutboxEvent : IOutboxEvent, IEntity
 {
     [Identificator]
     public Guid Id { get; set; }
+
+    public DebtKind DebtKind { get; set; } = DebtKind.ClassPurchase;
 
     [Identifier]
     public Guid PendingId { get; set; }

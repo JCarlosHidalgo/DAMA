@@ -3,12 +3,14 @@
 # Bootstraps the self-signed PKI used for inter-service gRPC TLS.
 # Generates one CA + one server cert per gRPC *server* backend, each with
 # the container hostname as the SAN so HttpClient validates the upstream by
-# name without any custom callback. CourseManagement is the only gRPC server
-# (Attendance is a client — it only needs ca.crt in its trust store, no cert
-# of its own). The SAN hostname comes from COURSE_MANAGEMENT_HOST_NAME (passed
-# by the tls-init compose service), so it tracks the same var as the gRPC URL
-# and container_name; changing it requires deleting the dama-tls volume to
-# regenerate (the existing cert is otherwise kept by the idempotency check).
+# name without any custom callback. There are two gRPC servers: CourseManagement
+# (consumed by Attendance) and Auth (consumed by Payment for the synchronous
+# tenant-subscription update). Their clients (Attendance, Payment) only need
+# ca.crt in their trust store, no cert of their own. Each SAN hostname comes
+# from the matching *_HOST_NAME var (passed by the tls-init compose service),
+# so it tracks the same var as the gRPC URL and container_name; changing it
+# requires deleting the dama-tls volume to regenerate (the existing cert is
+# otherwise kept by the idempotency check).
 #
 # Output goes to TLS_DIR (default infrastructure/tls/, gitignored — the .key
 # files never leave the host). The tls-init compose service reuses this exact
@@ -67,7 +69,8 @@ EOF
 generate_ca
 
 for entry in \
-    "course-management:${COURSE_MANAGEMENT_HOST_NAME:-CourseManagementService}"
+    "course-management:${COURSE_MANAGEMENT_HOST_NAME:-CourseManagementService}" \
+    "auth:${AUTH_HOST_NAME:-AuthService}"
 do
     name="${entry%%:*}"
     hostname="${entry##*:}"

@@ -13,6 +13,15 @@ public sealed class OptionsModule : IServiceModule
         {
             options.CallbackUrl = configuration["TODOTIX_CALLBACK_URL"]
                 ?? throw new InvalidOperationException("TODOTIX_CALLBACK_URL not set.");
+            options.PlatformAppKey = configuration["TODOTIX_APPKEY"] ?? string.Empty;
+        });
+
+        services.Configure<SubscriptionGrpcOptions>(options =>
+        {
+            options.AuthUrl = configuration["SUBSCRIPTION_GRPC_AUTH_URL"]
+                ?? throw new InvalidOperationException("SUBSCRIPTION_GRPC_AUTH_URL not set.");
+            options.Secret = configuration["SUBSCRIPTION_GRPC_SECRET"]
+                ?? throw new InvalidOperationException("SUBSCRIPTION_GRPC_SECRET not set.");
         });
 
         services.Configure<PaymentCallbackOptions>(options =>

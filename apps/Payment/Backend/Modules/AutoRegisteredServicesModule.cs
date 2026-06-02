@@ -10,6 +10,7 @@ public sealed class AutoRegisteredServicesModule : IServiceModule
             .FromAssemblyOf<Program>()
             .AddClasses(classes => classes.InNamespaces(
                 "Backend.Services.Concrete",
+                "Backend.Application",
                 "Backend.DB.Daos.Concrete",
                 "Backend.Claims",
                 "Backend.Builders"))

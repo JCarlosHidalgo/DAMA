@@ -10,6 +10,7 @@ using Backend.Dtos.Schedules.Input;
 using Backend.Dtos.Schedules.Output;
 using Backend.Results.Courses;
 using Backend.Results.Schedules;
+using Backend.Security;
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -18,6 +19,7 @@ namespace Backend.Controllers;
 
 [Route("api/course-management/course")]
 [ApiController]
+[RequiresServiceTier(1)]
 public class CourseController : ControllerBase
 {
     private const string CourseNotFoundMessage = "Course not found for tenant.";

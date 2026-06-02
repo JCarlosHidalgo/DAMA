@@ -1,0 +1,25 @@
+info:
+  name: "Client: Create Subscription QR Debt"
+  type: http
+  seq: 13
+
+http:
+  method: POST
+  url: "{{API_PATH}}/api/payment/subscription/qr"
+  body:
+    type: json
+    data: |-
+      {
+        "level" : 2,
+        "method" : "QR",
+        "email" : "example@gmail.com"
+      }
+  auth:
+    type: bearer
+    token: "{{Client_JWT}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

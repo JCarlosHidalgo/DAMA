@@ -8,4 +8,6 @@ public static class AuthClaims
     public const string TenantName = "tenant_name";
     public const string TenantTimezone = "tenant_timezone";
     public const string UserName = "user_name";
+    public const string IndexCoreServicesPyramid = "index_core_services_pyramid";
+    public const string SubscriptionExpiresAt = "subscription_expires_at";
 }

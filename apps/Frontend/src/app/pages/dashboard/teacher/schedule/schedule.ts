@@ -4,6 +4,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { firstValueFrom } from 'rxjs';
 
 import { CourseApi } from '@core/api';
+import { AuthService } from '@core/auth';
 import { ClassGroup, Course, CourseScheduleEntry } from '@core/models';
 import { NotificationService } from '@core/services';
 import { normalizeSchedule } from '@core/utils';
@@ -16,7 +17,7 @@ import { AttendanceQrDialog, AttendanceQrDialogData } from './attendance-qr-dial
   selector: 'app-teacher-schedule',
   imports: [MatCardModule, Calendar, GroupSelect, PageHead, LoadingSkeleton],
   template: `
-    <app-page-head title="Mi horario" subtitle="Toca una clase para abrir el QR de asistencia" />
+    <app-page-head title="Mi horario" [subtitle]="scheduleSubtitle()" />
 
     <mat-card class="controls-card">
       <mat-card-content>
@@ -68,6 +69,14 @@ export class TeacherSchedule {
   private readonly courseApi = inject(CourseApi);
   private readonly matDialog = inject(MatDialog);
   private readonly notifications = inject(NotificationService);
+  private readonly authService = inject(AuthService);
+
+  protected readonly interactable = computed(
+    () => this.authService.effectiveSubscriptionIndex() >= 2,
+  );
+  protected readonly scheduleSubtitle = computed(() =>
+    this.interactable() ? 'Toca una clase para abrir el QR de asistencia' : 'Vista de solo lectura',
+  );
 
   protected readonly entries = signal<CourseScheduleEntry[]>([]);
   protected readonly loading = signal(true);
@@ -163,6 +172,9 @@ export class TeacherSchedule {
   }
 
   onEvent(entry: CourseScheduleEntry): void {
+    if (!this.interactable()) {
+      return;
+    }
     this.matDialog.open<AttendanceQrDialog, AttendanceQrDialogData>(AttendanceQrDialog, {
       data: { entry },
       width: '720px',

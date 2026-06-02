@@ -9,6 +9,7 @@ using Backend.Entities.Users;
 using Backend.Options;
 using Backend.Results.Attendance;
 using Backend.Results.Remain;
+using Backend.Security;
 using Backend.Services.Abstract.Attendance;
 using Backend.Services.Abstract.Remain;
 
@@ -20,6 +21,7 @@ namespace Backend.Controllers;
 
 [Route("api/attendance")]
 [ApiController]
+[RequiresServiceTier(2)]
 public class AttendanceController : ControllerBase
 {
     private readonly IScheduledClassService _scheduledService;
@@ -140,6 +142,7 @@ public class AttendanceController : ControllerBase
     }
 
     [Authorize(Roles = UserRoles.Client)]
+    [RequiresServiceTier(3)]
     [HttpPost("remain/client/{studentId}")]
     public async Task<ActionResult> ClientIncrementStudentRemain(
         Guid studentId,
@@ -159,6 +162,7 @@ public class AttendanceController : ControllerBase
     }
 
     [Authorize(Roles = UserRoles.Client)]
+    [RequiresServiceTier(3)]
     [HttpPost("remain/client/tenant")]
     public async Task<ActionResult> ClientIncrementAllInTenant(IncrementTenantRemainDto incrementRequest)
     {

@@ -4,7 +4,7 @@ using Backend.Application.Courses;
 using Backend.Application.Mediator;
 using Backend.Results.Courses;
 
-using DAMA.Software.ValidateCourse.Grpc;
+using DAMA.Software.GrpcContracts;
 
 using Grpc.Core;
 

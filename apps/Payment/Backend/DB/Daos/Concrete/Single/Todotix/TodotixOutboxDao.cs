@@ -16,7 +16,7 @@ public sealed class TodotixOutboxDao : ITodotixOutboxDao
 
     private static readonly OutboxLeaseDescriptor<TodotixOutboxEvent> LeaseDescriptor = new OutboxLeaseDescriptor<TodotixOutboxEvent>(
         TableName,
-        "Id, PendingId, TenantId, PayloadJson, OccurredAt, Attempts, LastError, Status",
+        "Id, PendingId, TenantId, DebtKind, PayloadJson, OccurredAt, Attempts, LastError, Status",
         "ProcessedAt IS NULL AND Status = 'Pending'",
         MapTodotixOutboxEvent);
 
@@ -31,12 +31,13 @@ public sealed class TodotixOutboxDao : ITodotixOutboxDao
     {
         MySqlTransaction sqlTransaction = MySqlTransactionContextAccessor.Unwrap(transaction);
         const string sql = "INSERT INTO todotix_outbox " +
-                           "(Id, PendingId, TenantId, PayloadJson, OccurredAt, Status) " +
-                           "VALUES (@Id, @PendingId, @TenantId, @PayloadJson, @OccurredAt, 'Pending');";
+                           "(Id, PendingId, TenantId, DebtKind, PayloadJson, OccurredAt, Status) " +
+                           "VALUES (@Id, @PendingId, @TenantId, @DebtKind, @PayloadJson, @OccurredAt, 'Pending');";
         MySqlCommand insertCommand = new MySqlCommand(sql, _connection, sqlTransaction);
         insertCommand.Parameters.AddWithValue("@Id", outboxEvent.Id.ToString());
         insertCommand.Parameters.AddWithValue("@PendingId", outboxEvent.PendingId.ToString());
         insertCommand.Parameters.AddWithValue("@TenantId", outboxEvent.TenantId.ToString());
+        insertCommand.Parameters.AddWithValue("@DebtKind", outboxEvent.DebtKind.ToString());
         insertCommand.Parameters.AddWithValue("@PayloadJson", outboxEvent.PayloadJson);
         insertCommand.Parameters.AddWithValue("@OccurredAt", outboxEvent.OccurredAt);
 
@@ -79,7 +80,7 @@ public sealed class TodotixOutboxDao : ITodotixOutboxDao
     public async Task<TodotixOutboxEvent?> GetByPendingIdAsync(Guid pendingId)
     {
         await MySQLRetryPolicy.EnsureOpenAsync(_connection);
-        const string sql = "SELECT Id, PendingId, TenantId, PayloadJson, OccurredAt, Attempts, LastError, Status " +
+        const string sql = "SELECT Id, PendingId, TenantId, DebtKind, PayloadJson, OccurredAt, Attempts, LastError, Status " +
                            "FROM todotix_outbox WHERE PendingId = @pendingId LIMIT 1;";
         MySqlCommand selectCommand = new MySqlCommand(sql, _connection);
         selectCommand.Parameters.AddWithValue("@pendingId", pendingId.ToString());
@@ -101,6 +102,7 @@ public sealed class TodotixOutboxDao : ITodotixOutboxDao
             Id = reader.GetGuid("Id"),
             PendingId = reader.GetGuid("PendingId"),
             TenantId = reader.GetGuid("TenantId"),
+            DebtKind = Enum.Parse<Backend.Entities.DebtKind>(reader.GetString("DebtKind")),
             PayloadJson = reader.GetString("PayloadJson"),
             OccurredAt = reader.GetDateTime("OccurredAt"),
             Attempts = reader.GetInt32("Attempts"),

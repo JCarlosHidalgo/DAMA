@@ -33,4 +33,12 @@ public static partial class LogEvents
     [LoggerMessage(EventId = 3005, Level = LogLevel.Warning,
         Message = "Registration rejected: duplicate username {UserName} for role {Role} on tenant {TenantId}")]
     public static partial void UserRegistrationDuplicateName(ILogger logger, string userName, string role, Guid tenantId);
+
+    [LoggerMessage(EventId = 5001, Level = LogLevel.Information,
+        Message = "Tenant {TenantId} subscription updated to level {Level} via gRPC")]
+    public static partial void TenantSubscriptionUpdated(ILogger logger, Guid tenantId, int level);
+
+    [LoggerMessage(EventId = 5002, Level = LogLevel.Warning,
+        Message = "Tenant subscription gRPC call rejected: invalid service secret")]
+    public static partial void TenantSubscriptionUnauthorized(ILogger logger);
 }

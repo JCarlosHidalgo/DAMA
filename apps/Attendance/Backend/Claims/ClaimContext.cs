@@ -13,6 +13,8 @@ public sealed class ClaimContext : IClaimContext
     private Guid? _userId;
     private string? _userName;
     private string? _role;
+    private int? _indexCoreServicesPyramid;
+    private DateTime? _subscriptionExpiresAt;
 
     public ClaimContext(IHttpContextAccessor httpContextAccessor)
     {
@@ -30,6 +32,32 @@ public sealed class ClaimContext : IClaimContext
     public string UserName => _userName ??= ReadStringClaim(AuthClaims.UserName);
 
     public string Role => _role ??= ReadStringClaim(AuthClaims.Role);
+
+    public int IndexCoreServicesPyramid =>
+        _indexCoreServicesPyramid ??= ReadIntClaim(AuthClaims.IndexCoreServicesPyramid);
+
+    public DateTime SubscriptionExpiresAt =>
+        _subscriptionExpiresAt ??= ReadUnixSecondsClaim(AuthClaims.SubscriptionExpiresAt);
+
+    private int ReadIntClaim(string claimName)
+    {
+        string raw = ReadStringClaim(claimName);
+        if (!int.TryParse(raw, out int value))
+        {
+            throw new MissingClaimException(claimName);
+        }
+        return value;
+    }
+
+    private DateTime ReadUnixSecondsClaim(string claimName)
+    {
+        string raw = ReadStringClaim(claimName);
+        if (!long.TryParse(raw, out long value))
+        {
+            throw new MissingClaimException(claimName);
+        }
+        return DateTimeOffset.FromUnixTimeSeconds(value).UtcDateTime;
+    }
 
     private Guid ReadGuidClaim(string claimName)
     {

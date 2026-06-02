@@ -308,6 +308,7 @@ CREATE TABLE IF NOT EXISTS todotix_outbox (
     Id           CHAR(36)     NOT NULL PRIMARY KEY,
     PendingId    CHAR(36)     NOT NULL,
     TenantId     CHAR(36)     NOT NULL,
+    DebtKind     VARCHAR(24)  NOT NULL DEFAULT 'ClassPurchase',
     PayloadJson  JSON         NOT NULL,
     OccurredAt   DATETIME(6)  NOT NULL,
     ProcessedAt  DATETIME(6)  NULL,
@@ -372,6 +373,52 @@ CREATE TABLE IF NOT EXISTS payment_callback_inbox (
     INDEX idx_payment_callback_inbox_unprocessed (ProcessedAt, LeasedUntil, OccurredAt)
 );
 
+-- SUBSCRIPTION PLAN (DAMA-defined price + duration per pyramid level; Admin-editable)
+CREATE TABLE IF NOT EXISTS SubscriptionPlan (
+    Level          INT          NOT NULL PRIMARY KEY,
+    Price          INT          NOT NULL,
+    DurationAmount INT          NOT NULL,
+    DurationUnit   VARCHAR(8)   NOT NULL DEFAULT 'Month',
+    UpdatedAt      DATETIME(6)  NOT NULL
+);
+
+INSERT INTO SubscriptionPlan (Level, Price, DurationAmount, DurationUnit, UpdatedAt)
+VALUES
+    (1, 100, 1, 'Month', NOW(6)),
+    (2, 180, 1, 'Month', NOW(6)),
+    (3, 250, 1, 'Month', NOW(6))
+ON DUPLICATE KEY UPDATE Level = Level;
+
+-- TENANT SUBSCRIPTION QR PAYMENTS (tenant pays DAMA; analogous to the student *QrPayment ledgers)
+CREATE TABLE IF NOT EXISTS PendingSubscriptionPayment (
+    Id          CHAR(36)     NOT NULL PRIMARY KEY,
+    TenantId    CHAR(36)     NOT NULL,
+    Level       INT          NOT NULL,
+    Cost        INT          NOT NULL,
+    QrImageUrl  VARCHAR(512) NULL,
+    CreatedAt   DATETIME(6)  NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+    ExpiresAt   DATETIME(6)  NOT NULL,
+    INDEX idx_pending_subscription_tenant (TenantId)
+);
+
+CREATE TABLE IF NOT EXISTS SuccessSubscriptionPayment (
+    Id        CHAR(36)    NOT NULL PRIMARY KEY,
+    TenantId  CHAR(36)    NOT NULL,
+    Level     INT         NOT NULL,
+    Cost      INT         NOT NULL,
+    PaidAt    DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+    INDEX idx_success_subscription_tenant (TenantId)
+);
+
+CREATE TABLE IF NOT EXISTS FailedSubscriptionPayment (
+    Id        CHAR(36)    NOT NULL PRIMARY KEY,
+    TenantId  CHAR(36)    NOT NULL,
+    Level     INT         NOT NULL,
+    Cost      INT         NOT NULL,
+    FailedAt  DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+    INDEX idx_failed_subscription_tenant (TenantId)
+);
+
 -- TRUNCATE ALL TABLES
 DELIMITER //
 CREATE PROCEDURE TruncateAllTables()
@@ -382,6 +429,9 @@ BEGIN
     TRUNCATE TABLE PendingQrPayment;
     TRUNCATE TABLE SuccessQrPayment;
     TRUNCATE TABLE FailedQrPayment;
+    TRUNCATE TABLE PendingSubscriptionPayment;
+    TRUNCATE TABLE SuccessSubscriptionPayment;
+    TRUNCATE TABLE FailedSubscriptionPayment;
     TRUNCATE TABLE QrPaymentIdempotency;
     TRUNCATE TABLE todotix_outbox;
     TRUNCATE TABLE expiration_outbox;

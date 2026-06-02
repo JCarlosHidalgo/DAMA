@@ -18,7 +18,7 @@ import { ConfirmAttendanceDialog, ConfirmAttendanceDialogData } from './confirm-
   selector: 'app-student-schedule',
   imports: [MatCardModule, Calendar, GroupSelect, PageHead, LoadingSkeleton],
   template: `
-    <app-page-head title="Horario" subtitle="Toca una clase para confirmar tu asistencia" />
+    <app-page-head title="Horario" [subtitle]="scheduleSubtitle()" />
 
     <mat-card class="controls-card">
       <mat-card-content>
@@ -80,6 +80,13 @@ export class StudentSchedule {
   protected readonly anchorDate = signal<string | null>(null);
   private readonly markedScheduledKeys = signal<Set<string>>(new Set());
   private readonly markedUniqueIds = signal<Set<string>>(new Set());
+
+  protected readonly interactable = computed(
+    () => this.authService.effectiveSubscriptionIndex() >= 2,
+  );
+  protected readonly scheduleSubtitle = computed(() =>
+    this.interactable() ? 'Toca una clase para confirmar tu asistencia' : 'Vista de solo lectura',
+  );
 
   protected readonly filteredEntries = computed<CourseScheduleEntry[]>(() => {
     const groupId = this.selectedGroupId();
@@ -196,6 +203,9 @@ export class StudentSchedule {
   }
 
   onEvent(entry: CourseScheduleEntry): void {
+    if (!this.interactable()) {
+      return;
+    }
     if (this.isAlreadyMarked(entry)) {
       this.matDialog.open(AttendanceMarkedDialog, { width: '380px', maxWidth: '95vw' });
       return;

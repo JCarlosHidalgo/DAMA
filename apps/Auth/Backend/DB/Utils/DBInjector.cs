@@ -22,6 +22,9 @@ public static class DBInjector
         IDataInjector injector = new TenantDataInjector();
         injector.InjectData(connection);
 
+        injector = new TenantAllowedServicesDataInjector();
+        injector.InjectData(connection);
+
         injector = new UserDataInjector();
         injector.InjectData(connection);
 

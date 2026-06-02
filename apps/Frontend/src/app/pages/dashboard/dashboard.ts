@@ -32,6 +32,8 @@ import {
   faRightFromBracket,
   faBuilding,
   faGear,
+  faStar,
+  faLayerGroup,
 } from '@fortawesome/free-solid-svg-icons';
 
 import { AuthService, UserRole } from '@core/auth';
@@ -42,29 +44,34 @@ interface TabEntry {
   label: string;
   icon: IconDefinition;
   path: string;
+  minIndex: number;
 }
 
 const TABS_BY_ROLE: Record<UserRole, TabEntry[]> = {
   Client: [
-    { label: 'Resumen', icon: faGauge, path: 'resumen' },
-    { label: 'Recarga', icon: faCreditCard, path: 'recarga' },
-    { label: 'Cursos', icon: faChalkboardUser, path: 'clases' },
-    { label: 'Horario', icon: faCalendarDays, path: 'horario' },
-    { label: 'Plantillas de Cobro', icon: faReceipt, path: 'plantillas-cobro' },
-    { label: 'Estudiantes', icon: faGraduationCap, path: 'estudiantes' },
-    { label: 'Profesores', icon: faUsers, path: 'profesores' },
-    { label: 'Configuración', icon: faGear, path: 'configuracion' },
+    { label: 'Resumen', icon: faGauge, path: 'resumen', minIndex: 0 },
+    { label: 'Cursos', icon: faChalkboardUser, path: 'clases', minIndex: 1 },
+    { label: 'Horario', icon: faCalendarDays, path: 'horario', minIndex: 1 },
+    { label: 'Estudiantes', icon: faGraduationCap, path: 'estudiantes', minIndex: 2 },
+    { label: 'Profesores', icon: faUsers, path: 'profesores', minIndex: 2 },
+    { label: 'Recarga', icon: faCreditCard, path: 'recarga', minIndex: 3 },
+    { label: 'Plantillas de Cobro', icon: faReceipt, path: 'plantillas-cobro', minIndex: 3 },
+    { label: 'Suscripción', icon: faStar, path: 'suscripcion', minIndex: 0 },
+    { label: 'Configuración', icon: faGear, path: 'configuracion', minIndex: 0 },
   ],
-  Teacher: [{ label: 'Horario', icon: faCalendarDays, path: 'horario' }],
+  Teacher: [{ label: 'Horario', icon: faCalendarDays, path: 'horario', minIndex: 1 }],
   Student: [
-    { label: 'Resumen', icon: faGauge, path: 'resumen' },
-    { label: 'Horario', icon: faCalendarDays, path: 'horario' },
-    { label: 'Pagar Clases', icon: faMoneyBill, path: 'pagar-clases' },
-    { label: 'Estado de Deudas', icon: faReceipt, path: 'estado-deudas' },
-    { label: 'Marcar Asistencia', icon: faQrcode, path: 'marcar-asistencia' },
-    { label: 'Mis Asistencias', icon: faCalendarCheck, path: 'mis-asistencias' },
+    { label: 'Horario', icon: faCalendarDays, path: 'horario', minIndex: 1 },
+    { label: 'Resumen', icon: faGauge, path: 'resumen', minIndex: 2 },
+    { label: 'Marcar Asistencia', icon: faQrcode, path: 'marcar-asistencia', minIndex: 2 },
+    { label: 'Mis Asistencias', icon: faCalendarCheck, path: 'mis-asistencias', minIndex: 2 },
+    { label: 'Pagar Clases', icon: faMoneyBill, path: 'pagar-clases', minIndex: 3 },
+    { label: 'Estado de Deudas', icon: faReceipt, path: 'estado-deudas', minIndex: 3 },
   ],
-  Admin: [{ label: 'Tenants', icon: faBuilding, path: 'tenants' }],
+  Admin: [
+    { label: 'Tenants', icon: faBuilding, path: 'tenants', minIndex: 0 },
+    { label: 'Planes de Suscripción', icon: faLayerGroup, path: 'planes-suscripcion', minIndex: 0 },
+  ],
 };
 
 @Component({
@@ -94,7 +101,11 @@ export class Dashboard {
   protected readonly styles = computed(() => dashboardStyles({ collapsed: this.collapsed() }));
   readonly tabs = computed<TabEntry[]>(() => {
     const role = this.authService.currentRole();
-    return role ? TABS_BY_ROLE[role] : [];
+    if (!role) {
+      return [];
+    }
+    const effectiveIndex = this.authService.effectiveSubscriptionIndex();
+    return TABS_BY_ROLE[role].filter((tab) => effectiveIndex >= tab.minIndex);
   });
   readonly displayName = computed(() => this.authService.claims()?.userName ?? '');
   readonly activeSegment = toSignal(

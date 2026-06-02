@@ -7,6 +7,8 @@ export interface JwtClaims {
   userName: string;
   role: UserRole;
   tenantTimezone: string;
+  indexCoreServicesPyramid: number;
+  subscriptionExpiresAt: number;
   exp: number;
 }
 
@@ -21,6 +23,8 @@ const USER_ID_CLAIM = 'user_id';
 const USER_NAME_CLAIM = 'user_name';
 const ROLE_CLAIM = 'role';
 const TENANT_TIMEZONE_CLAIM = 'tenant_timezone';
+const INDEX_CORE_SERVICES_PYRAMID_CLAIM = 'index_core_services_pyramid';
+const SUBSCRIPTION_EXPIRES_AT_CLAIM = 'subscription_expires_at';
 
 export function mapClaims(raw: RawJwtPayload): JwtClaims {
   return {
@@ -30,6 +34,8 @@ export function mapClaims(raw: RawJwtPayload): JwtClaims {
     userName: String(raw[USER_NAME_CLAIM] ?? ''),
     role: String(raw[ROLE_CLAIM] ?? 'Student') as UserRole,
     tenantTimezone: String(raw[TENANT_TIMEZONE_CLAIM] ?? 'America/La_Paz'),
+    indexCoreServicesPyramid: Number(raw[INDEX_CORE_SERVICES_PYRAMID_CLAIM] ?? 0),
+    subscriptionExpiresAt: Number(raw[SUBSCRIPTION_EXPIRES_AT_CLAIM] ?? 0),
     exp: Number(raw.exp ?? 0),
   };
 }

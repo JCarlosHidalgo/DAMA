@@ -28,6 +28,14 @@ export class AuthService {
   private readonly tokenSignal = signal<string | null>(this.tokenStorage.read());
   private refreshInFlight: Observable<string> | null = null;
 
+  private clockAnchorWallMs = Date.now();
+  private clockAnchorPerfMs = performance.now();
+  private readonly clockTick = signal(0);
+
+  constructor() {
+    setInterval(() => this.clockTick.update((value) => value + 1), 1000);
+  }
+
   readonly claims = computed<JwtClaims | null>(() => {
     const token = this.tokenSignal();
     return token ? this.tokenDecoder.decode(token) : null;
@@ -42,6 +50,17 @@ export class AuthService {
   readonly tenantTimezone = computed<string>(
     () => this.claims()?.tenantTimezone ?? DEFAULT_TENANT_TIMEZONE,
   );
+
+  readonly effectiveSubscriptionIndex = computed<number>(() => {
+    this.clockTick();
+    const currentClaims = this.claims();
+    if (!currentClaims) {
+      return 0;
+    }
+    return this.serverNowMs() < currentClaims.subscriptionExpiresAt * 1000
+      ? currentClaims.indexCoreServicesPyramid
+      : 0;
+  });
 
   get accessToken(): string | null {
     return this.tokenSignal();
@@ -98,5 +117,18 @@ export class AuthService {
     this.tokenStorage.write(pair.accessToken);
     this.tokenStorage.writeRefresh(pair.refreshToken);
     this.tokenSignal.set(pair.accessToken);
+    this.anchorServerClock();
+  }
+
+  private anchorServerClock(): void {
+    const perfNow = performance.now();
+    const wallNow = Date.now();
+    const monotonicFloor = this.clockAnchorWallMs + (perfNow - this.clockAnchorPerfMs);
+    this.clockAnchorWallMs = Math.max(wallNow, monotonicFloor);
+    this.clockAnchorPerfMs = perfNow;
+  }
+
+  private serverNowMs(): number {
+    return this.clockAnchorWallMs + (performance.now() - this.clockAnchorPerfMs);
   }
 }

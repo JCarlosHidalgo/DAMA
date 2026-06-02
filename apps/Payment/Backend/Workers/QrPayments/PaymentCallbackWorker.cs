@@ -1,7 +1,9 @@
+using Backend.Application.Commands;
+using Backend.Application.Mediator;
+using Backend.Application.Results;
 using Backend.DB.Daos.Abstract.Single.QrPayments;
 using Backend.Entities.QrPayments;
 using Backend.Logging;
-using Backend.Services.Abstract.QrPayments;
 
 namespace Backend.Workers.QrPayments;
 
@@ -49,7 +51,8 @@ public sealed class PaymentCallbackWorker : BackgroundService
     {
         using var scope = _serviceProvider.CreateScope();
         var callbackInboxDao = scope.ServiceProvider.GetRequiredService<IPaymentCallbackInboxDao>();
-        var callbackService = scope.ServiceProvider.GetRequiredService<IQrCallbackService>();
+        var callbackHandler = scope.ServiceProvider
+            .GetRequiredService<ICommandHandler<ProcessQrCallbackCommand, ProcessQrCallbackResult>>();
 
         var leasedCallbacks = await callbackInboxDao.LeasePendingAsync(BatchSize, LeaseDuration);
 
@@ -60,7 +63,7 @@ public sealed class PaymentCallbackWorker : BackgroundService
                 return;
             }
 
-            await DispatchAsync(callbackInboxDao, callbackService, callback, cancellationToken);
+            await DispatchAsync(callbackInboxDao, callbackHandler, callback, cancellationToken);
         }
 
         if (leasedCallbacks.Count == 0)
@@ -71,13 +74,14 @@ public sealed class PaymentCallbackWorker : BackgroundService
 
     private async Task DispatchAsync(
         IPaymentCallbackInboxDao callbackInboxDao,
-        IQrCallbackService callbackService,
+        ICommandHandler<ProcessQrCallbackCommand, ProcessQrCallbackResult> callbackHandler,
         PaymentCallback callback,
         CancellationToken cancellationToken)
     {
         try
         {
-            await callbackService.HandleCallbackAsync(callback.Id, callback.Error, callback.CancelOrder);
+            await callbackHandler.Handle(
+                new ProcessQrCallbackCommand(callback.Id, callback.Error, callback.CancelOrder));
             await callbackInboxDao.MarkProcessedAsync(callback.Id);
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)

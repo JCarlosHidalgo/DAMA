@@ -8,6 +8,7 @@ services:
       dockerfile: ./infrastructure/environments/tls-init/Dockerfile
     environment:
       COURSE_MANAGEMENT_HOST_NAME: ${COURSE_MANAGEMENT_HOST_NAME}
+      AUTH_HOST_NAME: ${AUTH_HOST_NAME}
     volumes:
       - dama-tls:/tls
     restart: "no"
@@ -81,9 +82,15 @@ services:
       context: ${CONTEXT}
       dockerfile: ./infrastructure/environments/auth/Dockerfile
     environment:
-      ASPNETCORE_HTTP_PORTS: 80
+      Kestrel__Endpoints__Http__Url: http://*:80
+      Kestrel__Endpoints__Http__Protocols: Http1
+      Kestrel__Endpoints__Grpc__Url: https://*:81
+      Kestrel__Endpoints__Grpc__Protocols: Http2
+      Kestrel__Endpoints__Grpc__Certificate__Path: /etc/dama/tls/auth.crt
+      Kestrel__Endpoints__Grpc__Certificate__KeyPath: /etc/dama/tls/auth.key
       SEED_DB: "true"
       DB_CONNECTION_STRING: ${AUTH_DB_CONNECTION_STRING}
+      SUBSCRIPTION_GRPC_SECRET: ${SUBSCRIPTION_GRPC_SECRET}
       RABBITMQ_HOST: ${RABBITMQ_HOST}
       RABBITMQ_PORT: ${RABBITMQ_PORT}
       RABBITMQ_USER: ${RABBITMQ_USER}
@@ -96,7 +103,11 @@ services:
     mem_limit: 768m
     cpus: 1.0
     restart: unless-stopped
+    volumes:
+      - dama-tls:/etc/dama/tls:ro
     depends_on:
+      tls-init:
+        condition: service_completed_successfully
       auth-database:
         condition: service_healthy
       rabbitmq:
@@ -250,6 +261,8 @@ services:
       TODOTIX_CALLBACK_URL: ${TODOTIX_CALLBACK_URL}
       TODOTIX_APPKEY_ENCRYPTION_KEY: ${TODOTIX_APPKEY_ENCRYPTION_KEY}
       PAYMENT_CALLBACK_SECRET: ${PAYMENT_CALLBACK_SECRET}
+      SUBSCRIPTION_GRPC_AUTH_URL: https://${AUTH_HOST_NAME}:81
+      SUBSCRIPTION_GRPC_SECRET: ${SUBSCRIPTION_GRPC_SECRET}
       AppSettings__PublicKey: ${JWT_PUBLIC_KEY_B64}
       AppSettings__Issuer: ${JWT_ISSUER}
       AppSettings__Audience: Payment
@@ -260,7 +273,11 @@ services:
     mem_limit: 768m
     cpus: 1.0
     restart: unless-stopped
+    volumes:
+      - dama-tls:/etc/dama/tls:ro
     depends_on:
+      tls-init:
+        condition: service_completed_successfully
       payment-database:
         condition: service_healthy
       rabbitmq:

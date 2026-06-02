@@ -2,6 +2,7 @@ using System.Diagnostics;
 
 using Backend.Dtos.DebtTemplates.Input;
 using Backend.Results.DebtTemplates;
+using Backend.Security;
 using Backend.Services.Abstract.DebtTemplates;
 
 using Microsoft.AspNetCore.Authorization;
@@ -11,6 +12,7 @@ namespace Backend.Controllers;
 
 [ApiController]
 [Route("api/payment/debt-template")]
+[RequiresServiceTier(3)]
 public class DebtTemplateController : ControllerBase
 {
     private readonly IDebtTemplateService _service;

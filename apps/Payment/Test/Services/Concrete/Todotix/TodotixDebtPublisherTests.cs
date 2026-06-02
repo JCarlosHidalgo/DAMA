@@ -1,5 +1,5 @@
-using Backend.DB.Daos.Abstract.Single.QrPayments;
 using Backend.Dtos.External.Todotix;
+using Backend.Entities;
 using Backend.Entities.Todotix;
 using Backend.Results.Todotix;
 using Backend.Services.Abstract.Todotix;
@@ -13,15 +13,16 @@ namespace Test.Services.Concrete.Todotix;
 public class TodotixDebtPublisherTests
 {
     private Mock<ITodotixClient> todotixClient = null!;
-    private Mock<IPendingQrPaymentDao> pendingDao = null!;
+    private Mock<IQrImageUrlUpdater> qrImageUrlUpdater = null!;
     private TodotixDebtPublisher sut = null!;
 
     [SetUp]
     public void Setup()
     {
         todotixClient = new Mock<ITodotixClient>(MockBehavior.Strict);
-        pendingDao = new Mock<IPendingQrPaymentDao>(MockBehavior.Strict);
-        sut = new TodotixDebtPublisher(todotixClient.Object, pendingDao.Object);
+        qrImageUrlUpdater = new Mock<IQrImageUrlUpdater>(MockBehavior.Strict);
+        qrImageUrlUpdater.Setup(updater => updater.Kind).Returns(DebtKind.ClassPurchase);
+        sut = new TodotixDebtPublisher(todotixClient.Object, new[] { qrImageUrlUpdater.Object });
     }
 
     private const string ValidPayload = "{\"appkey\":\"k\",\"identificador_deuda\":\"x\",\"descripcion\":\"d\",\"callback_url\":\"u\",\"lineas_detalle_deuda\":[]}";
@@ -36,12 +37,12 @@ public class TodotixDebtPublisherTests
         TodotixOutboxEvent outboxEvent = NewEvent("{\"appkey\":\"k\",\"identificador_deuda\":\"x\",\"descripcion\":\"d\",\"callback_url\":\"u\",\"lineas_detalle_deuda\":[]}");
         var response = new RegisterDebtResponse { Error = 0, QrSimpleUrl = "http://qr" };
         todotixClient.Setup(c => c.RegisterDebtAsync(It.IsAny<RegisterDebtRequest>())).ReturnsAsync(response);
-        pendingDao.Setup(d => d.UpdateQrImageUrlAsync(outboxEvent.PendingId, "http://qr")).Returns(Task.CompletedTask);
+        qrImageUrlUpdater.Setup(u => u.UpdateAsync(outboxEvent.PendingId, "http://qr")).Returns(Task.CompletedTask);
 
         PublishOutcome outcome = await sut.PublishAsync(outboxEvent);
 
         Assert.That(outcome, Is.TypeOf<PublishOutcome.Success>());
-        pendingDao.Verify(d => d.UpdateQrImageUrlAsync(outboxEvent.PendingId, "http://qr"), Times.Once);
+        qrImageUrlUpdater.Verify(u => u.UpdateAsync(outboxEvent.PendingId, "http://qr"), Times.Once);
     }
 
     [Test]
@@ -107,7 +108,7 @@ public class TodotixDebtPublisherTests
 
         Assert.That(outcome, Is.TypeOf<PublishOutcome.PermanentFailure>());
         todotixClient.Verify(c => c.RegisterDebtAsync(It.IsAny<RegisterDebtRequest>()), Times.Never);
-        pendingDao.Verify(d => d.UpdateQrImageUrlAsync(It.IsAny<Guid>(), It.IsAny<string>()), Times.Never);
+        qrImageUrlUpdater.Verify(u => u.UpdateAsync(It.IsAny<Guid>(), It.IsAny<string>()), Times.Never);
     }
 
     [Test]
@@ -117,7 +118,7 @@ public class TodotixDebtPublisherTests
         todotixClient.Setup(c => c.DebtExistsAsync(outboxEvent.PendingId, It.IsAny<string>())).ReturnsAsync(false);
         todotixClient.Setup(c => c.RegisterDebtAsync(It.IsAny<RegisterDebtRequest>()))
                      .ReturnsAsync(new RegisterDebtResponse { Error = 0, QrSimpleUrl = "http://qr" });
-        pendingDao.Setup(d => d.UpdateQrImageUrlAsync(outboxEvent.PendingId, "http://qr")).Returns(Task.CompletedTask);
+        qrImageUrlUpdater.Setup(u => u.UpdateAsync(outboxEvent.PendingId, "http://qr")).Returns(Task.CompletedTask);
 
         PublishOutcome outcome = await sut.PublishAsync(outboxEvent);
 
@@ -148,7 +149,7 @@ public class TodotixDebtPublisherTests
         PublishOutcome outcome = await sut.PublishAsync(outboxEvent);
 
         Assert.That(outcome, Is.TypeOf<PublishOutcome.PermanentFailure>());
-        pendingDao.Verify(d => d.UpdateQrImageUrlAsync(It.IsAny<Guid>(), It.IsAny<string>()), Times.Never);
+        qrImageUrlUpdater.Verify(u => u.UpdateAsync(It.IsAny<Guid>(), It.IsAny<string>()), Times.Never);
     }
 
     [Test]
@@ -157,11 +158,11 @@ public class TodotixDebtPublisherTests
         TodotixOutboxEvent outboxEvent = NewEvent(ValidPayload);
         todotixClient.Setup(c => c.RegisterDebtAsync(It.IsAny<RegisterDebtRequest>()))
                      .ReturnsAsync(new RegisterDebtResponse { Error = 0, QrSimpleUrl = "http://qr", Existente = 1 });
-        pendingDao.Setup(d => d.UpdateQrImageUrlAsync(outboxEvent.PendingId, "http://qr")).Returns(Task.CompletedTask);
+        qrImageUrlUpdater.Setup(u => u.UpdateAsync(outboxEvent.PendingId, "http://qr")).Returns(Task.CompletedTask);
 
         PublishOutcome outcome = await sut.PublishAsync(outboxEvent);
 
         Assert.That(outcome, Is.TypeOf<PublishOutcome.Success>());
-        pendingDao.Verify(d => d.UpdateQrImageUrlAsync(outboxEvent.PendingId, "http://qr"), Times.Once);
+        qrImageUrlUpdater.Verify(u => u.UpdateAsync(outboxEvent.PendingId, "http://qr"), Times.Once);
     }
 }

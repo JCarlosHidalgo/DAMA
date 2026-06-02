@@ -5,5 +5,5 @@ namespace Backend.Security;
 
 public interface IAccessTokenGenerator
 {
-    string Issue(User user, Tenant tenant);
+    string Issue(User user, Tenant tenant, TenantAllowedServices? allowedServices);
 }
