@@ -24,6 +24,16 @@ import { GroupSelect } from '@shared/components/group-select/group-select';
 
 type FormKind = 'scheduled' | 'unique';
 
+const DAY_OF_WEEK_OPTIONS = [
+  { value: 1, label: 'Lunes' },
+  { value: 2, label: 'Martes' },
+  { value: 3, label: 'Miércoles' },
+  { value: 4, label: 'Jueves' },
+  { value: 5, label: 'Viernes' },
+  { value: 6, label: 'Sábado' },
+  { value: 7, label: 'Domingo' },
+] as const;
+
 interface ClassDialogData {
   mode: 'create' | 'edit';
   kind: FormKind;
@@ -154,15 +164,7 @@ export class ScheduleDialog {
   readonly dialogRef = inject(MatDialogRef<ScheduleDialog, ClassDialogResult>);
   readonly data = inject<ClassDialogData>(MAT_DIALOG_DATA);
 
-  protected readonly dayOptions = [
-    { value: 1, label: 'Lunes' },
-    { value: 2, label: 'Martes' },
-    { value: 3, label: 'Miércoles' },
-    { value: 4, label: 'Jueves' },
-    { value: 5, label: 'Viernes' },
-    { value: 6, label: 'Sábado' },
-    { value: 7, label: 'Domingo' },
-  ];
+  protected readonly dayOptions = DAY_OF_WEEK_OPTIONS;
 
   protected readonly form = this.formBuilder.nonNullable.group({
     kind: [this.data.kind as FormKind],
@@ -234,6 +236,7 @@ export class ScheduleDialog {
       <mat-card-content class="controls">
         <app-group-select
           [editable]="true"
+          [locked]="transferMode()"
           [selectedGroupId]="selectedGroupId()"
           (groupChange)="onGroupChange($event)"
           (groupsLoaded)="onGroupsLoaded($event)"
@@ -252,7 +255,17 @@ export class ScheduleDialog {
     <div class="columns" [class.split]="transferMode()">
       <mat-card class="col-card">
         <mat-card-content>
-          <h3 class="col-title">{{ selectedGroup()?.name ?? 'Grupo' }}</h3>
+          <div class="col-head">
+            <h3 class="col-title">{{ selectedGroup()?.name ?? 'Grupo' }}</h3>
+            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="day-select">
+              <mat-label>Día</mat-label>
+              <mat-select [value]="selectedDayIndex()" (valueChange)="selectedDayIndex.set($event)">
+                @for (day of dayOptions; track day.value) {
+                  <mat-option [value]="day.value">{{ day.label }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          </div>
           @if (loading()) {
             <app-loading-skeleton [height]="320" />
           } @else {
@@ -264,10 +277,23 @@ export class ScheduleDialog {
               (cdkDropListDropped)="onDrop($event)"
               class="class-list"
             >
-              @for (entry of selectedGroupEntries(); track entry.classId) {
-                <div class="class-item" cdkDrag [cdkDragData]="entry">
+              @for (entry of selectedGroupListEntries(); track entry.classId) {
+                <div
+                  class="class-item"
+                  cdkDrag
+                  [cdkDragData]="entry"
+                  [cdkDragDisabled]="!transferMode()"
+                >
                   <div class="class-main">
-                    <span class="class-course">{{ entry.courseName }}</span>
+                    <span class="class-course">
+                      {{ entry.courseName }}
+                      <span
+                        class="class-tag"
+                        [class.weekly]="entry.classKind === 'Scheduled'"
+                        [class.unique]="entry.classKind === 'Unique'"
+                        >{{ kindLabel(entry) }}</span
+                      >
+                    </span>
                     <span class="class-time">
                       <app-icon name="clock" />
                       {{ entry.startTime.slice(0, 5) }} – {{ entry.endTime.slice(0, 5) }}
@@ -298,22 +324,47 @@ export class ScheduleDialog {
         </mat-card-content>
       </mat-card>
 
-      @if (transferMode() && nextGroup()) {
+      @if (transferMode()) {
         <mat-card class="col-card">
           <mat-card-content>
-            <h3 class="col-title">{{ nextGroup()?.name }}</h3>
+            <div class="col-head">
+              <mat-form-field appearance="outline" subscriptSizing="dynamic" class="group-select">
+                <mat-label>Grupo candidato</mat-label>
+                <mat-select [value]="targetGroupId()" (valueChange)="targetGroupId.set($event)">
+                  @for (group of candidateGroups(); track group.id) {
+                    <mat-option [value]="group.id">{{ group.name }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+              <mat-form-field appearance="outline" subscriptSizing="dynamic" class="day-select">
+                <mat-label>Día</mat-label>
+                <mat-select [value]="targetDayIndex()" (valueChange)="targetDayIndex.set($event)">
+                  @for (day of dayOptions; track day.value) {
+                    <mat-option [value]="day.value">{{ day.label }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+            </div>
             <div
               cdkDropList
               id="group-target-list"
-              [cdkDropListData]="nextGroup()!.id"
+              [cdkDropListData]="targetGroupId()"
               [cdkDropListConnectedTo]="['group-source-list']"
               (cdkDropListDropped)="onDrop($event)"
               class="class-list"
             >
-              @for (entry of nextGroupEntries(); track entry.classId) {
+              @for (entry of targetGroupListEntries(); track entry.classId) {
                 <div class="class-item" cdkDrag [cdkDragData]="entry">
                   <div class="class-main">
-                    <span class="class-course">{{ entry.courseName }}</span>
+                    <span class="class-course">
+                      {{ entry.courseName }}
+                      <span
+                        class="class-tag"
+                        [class.weekly]="entry.classKind === 'Scheduled'"
+                        [class.unique]="entry.classKind === 'Unique'"
+                        >{{ kindLabel(entry) }}</span
+                      >
+                    </span>
                     <span class="class-time">
                       <app-icon name="clock" />
                       {{ entry.startTime.slice(0, 5) }} – {{ entry.endTime.slice(0, 5) }}
@@ -336,13 +387,7 @@ export class ScheduleDialog {
           <app-loading-skeleton [height]="480" />
         } @else {
           @defer {
-            <app-calendar
-              [entries]="selectedGroupEntries()"
-              [editable]="true"
-              (editClick)="onEdit($event)"
-              (deleteClick)="onDelete($event)"
-              (weekDelta)="onWeekDelta($event)"
-            />
+            <app-calendar [entries]="selectedGroupEntries()" (weekDelta)="onWeekDelta($event)" />
           } @placeholder {
             <app-loading-skeleton [height]="480" />
           }
@@ -380,9 +425,41 @@ export class ScheduleDialog {
     .col-card {
       padding: 0;
     }
-    .col-title {
+    .col-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
       margin: 4px 4px 12px;
+    }
+    .col-title {
+      margin: 0;
       font-weight: 600;
+    }
+    .day-select {
+      width: 140px;
+    }
+    .group-select {
+      flex: 1;
+      min-width: 160px;
+    }
+    .class-tag {
+      display: inline-block;
+      margin-left: 6px;
+      padding: 1px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 600;
+      vertical-align: middle;
+    }
+    .class-tag.weekly {
+      background: var(--mat-sys-secondary-container);
+      color: var(--mat-sys-on-secondary-container);
+    }
+    .class-tag.unique {
+      background: var(--mat-sys-tertiary-container);
+      color: var(--mat-sys-on-tertiary-container);
     }
     .class-list {
       display: flex;
@@ -460,28 +537,47 @@ export class Schedule {
   protected readonly groups = signal<ClassGroup[]>([]);
   protected readonly selectedGroupId = signal<string>('');
   protected readonly transferMode = signal(false);
+  protected readonly selectedDayIndex = signal<number>(this.todayWeekdayIndex());
+  protected readonly targetGroupId = signal<string>('');
+  protected readonly targetDayIndex = signal<number>(this.todayWeekdayIndex());
+  protected readonly dayOptions = DAY_OF_WEEK_OPTIONS;
   private readonly weekIndex = signal(0);
 
   protected readonly selectedGroup = computed<ClassGroup | undefined>(() =>
     this.groups().find((group) => group.id === this.selectedGroupId()),
   );
 
-  protected readonly nextGroup = computed<ClassGroup | undefined>(() => {
-    const all = this.groups();
-    if (all.length < 2) {
-      return undefined;
-    }
-    const currentIndex = all.findIndex((group) => group.id === this.selectedGroupId());
-    return all[(currentIndex + 1) % all.length];
-  });
+  protected readonly candidateGroups = computed<ClassGroup[]>(() =>
+    this.groups().filter((group) => group.id !== this.selectedGroupId()),
+  );
+
+  protected readonly targetGroup = computed<ClassGroup | undefined>(() =>
+    this.groups().find((group) => group.id === this.targetGroupId()),
+  );
 
   protected readonly selectedGroupEntries = computed<CourseScheduleEntry[]>(() =>
     this.entries().filter((entry) => entry.groupId === this.selectedGroupId()),
   );
 
-  protected readonly nextGroupEntries = computed<CourseScheduleEntry[]>(() => {
-    const target = this.nextGroup();
-    return target ? this.entries().filter((entry) => entry.groupId === target.id) : [];
+  protected readonly selectedGroupListEntries = computed<CourseScheduleEntry[]>(() =>
+    this.sortByStartTime(
+      this.selectedGroupEntries().filter(
+        (entry) => this.weekdayIndexOf(entry) === this.selectedDayIndex(),
+      ),
+    ),
+  );
+
+  protected readonly targetGroupListEntries = computed<CourseScheduleEntry[]>(() => {
+    const target = this.targetGroup();
+    if (!target) {
+      return [];
+    }
+    return this.sortByStartTime(
+      this.entries().filter(
+        (entry) =>
+          entry.groupId === target.id && this.weekdayIndexOf(entry) === this.targetDayIndex(),
+      ),
+    );
   });
 
   constructor() {
@@ -493,18 +589,52 @@ export class Schedule {
     if (!this.selectedGroupId() || !groups.some((group) => group.id === this.selectedGroupId())) {
       this.selectedGroupId.set(groups[0]?.id ?? '');
     }
+    this.ensureValidTargetGroup();
   }
 
   protected onGroupChange(groupId: string): void {
     this.selectedGroupId.set(groupId);
+    this.ensureValidTargetGroup();
   }
 
   protected toggleTransfer(): void {
     this.transferMode.update((active) => !active);
+    if (this.transferMode()) {
+      this.ensureValidTargetGroup();
+    }
+  }
+
+  protected kindLabel(entry: CourseScheduleEntry): string {
+    return entry.classKind === 'Scheduled' ? 'Semanal' : 'Única';
   }
 
   protected teacherNames(entry: CourseScheduleEntry): string {
     return entry.teachers.map((teacher) => teacher.teacherName).join(', ') || 'Sin profesor';
+  }
+
+  private ensureValidTargetGroup(): void {
+    const candidates = this.candidateGroups();
+    if (!candidates.some((group) => group.id === this.targetGroupId())) {
+      this.targetGroupId.set(candidates[0]?.id ?? '');
+    }
+  }
+
+  private todayWeekdayIndex(): number {
+    const weekday = nowInTenant(this.authService.tenantTimezone()).getDay();
+    return weekday === 0 ? 7 : weekday;
+  }
+
+  private weekdayIndexOf(entry: CourseScheduleEntry): number {
+    if (entry.dayOfWeekIndex) {
+      return entry.dayOfWeekIndex;
+    }
+    const [year, month, day] = entry.date.split('-').map(Number);
+    const weekday = new Date(year, month - 1, day).getDay();
+    return weekday === 0 ? 7 : weekday;
+  }
+
+  private sortByStartTime(entries: CourseScheduleEntry[]): CourseScheduleEntry[] {
+    return [...entries].sort((first, second) => first.startTime.localeCompare(second.startTime));
   }
 
   protected async onDrop(dropEvent: CdkDragDrop<string>): Promise<void> {

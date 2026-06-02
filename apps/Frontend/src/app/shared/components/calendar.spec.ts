@@ -1,4 +1,10 @@
-import { Component, input, signal, provideZonelessChangeDetection } from '@angular/core';
+import {
+  Component,
+  input,
+  signal,
+  provideZonelessChangeDetection,
+  WritableSignal,
+} from '@angular/core';
 import type { CalendarOptions } from '@fullcalendar/core';
 import { TestBed } from '@angular/core/testing';
 import { FullCalendarModule } from '@fullcalendar/angular';
@@ -228,27 +234,31 @@ describe('Calendar', () => {
       expect(root.querySelector('.ev-teachers')?.textContent).toContain('Ana');
     });
 
-    it('eventContent renders edit and delete buttons when editable is true', () => {
+    it('eventContent keeps the time but hides teachers and limit when showDetails is off', () => {
       fixture.componentRef.setInput('entries', sampleEntries);
-      fixture.componentRef.setInput('editable', true);
+      (
+        fixture.componentInstance as unknown as { showDetails: WritableSignal<boolean> }
+      ).showDetails.set(false);
       fixture.detectChanges();
-
-      let editEmitted: CourseScheduleEntry | undefined;
-      let deleteEmitted: CourseScheduleEntry | undefined;
-      fixture.componentInstance.editClick.subscribe((entry) => (editEmitted = entry));
-      fixture.componentInstance.deleteClick.subscribe((entry) => (deleteEmitted = entry));
 
       const { domNodes } = options().eventContent({
         event: { extendedProps: { entry: sampleEntries[0] } },
       });
-      const buttons = domNodes[0].querySelectorAll('button');
-      expect(buttons.length).toBe(2);
 
-      buttons[0].dispatchEvent(new MouseEvent('click', { bubbles: true }));
-      buttons[1].dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      const root = domNodes[0];
+      expect(root.querySelector('.ev-time')?.textContent).toContain('08:00');
+      expect(root.querySelector('.ev-teachers')).toBeNull();
+      expect(root.querySelector('.ev-limit')).toBeNull();
+    });
 
-      expect(editEmitted?.classId).toBe('sched-1');
-      expect(deleteEmitted?.classId).toBe('sched-1');
+    it('eventContent never renders edit or delete buttons', () => {
+      fixture.componentRef.setInput('entries', sampleEntries);
+      fixture.detectChanges();
+
+      const { domNodes } = options().eventContent({
+        event: { extendedProps: { entry: sampleEntries[0] } },
+      });
+      expect(domNodes[0].querySelectorAll('button').length).toBe(0);
     });
 
     it('eventContent omits teachers element when teachers array is empty', () => {

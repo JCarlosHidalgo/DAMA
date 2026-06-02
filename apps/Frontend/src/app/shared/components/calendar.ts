@@ -14,14 +14,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
-import type { IconDefinition } from '@fortawesome/fontawesome-svg-core';
-import {
-  faChevronLeft,
-  faChevronRight,
-  faImage,
-  faPenToSquare,
-  faTrash,
-} from '@fortawesome/free-solid-svg-icons';
+import { faChevronLeft, faChevronRight, faImage } from '@fortawesome/free-solid-svg-icons';
 import { FullCalendarModule, FullCalendarComponent } from '@fullcalendar/angular';
 import { CalendarOptions, EventClickArg, EventInput } from '@fullcalendar/core';
 import esLocale from '@fullcalendar/core/locales/es';
@@ -121,29 +114,6 @@ const MOBILE_BREAKPOINT_PX = 768;
     .fc-event-body .ev-teachers {
       opacity: 0.85;
     }
-    .fc-event-actions {
-      display: flex;
-      gap: 4px;
-      margin-top: 4px;
-    }
-    .fc-event-actions button {
-      background: rgba(0, 0, 0, 0.25);
-      color: white;
-      border: none;
-      border-radius: 4px;
-      padding: 2px 6px;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .fc-event-actions button svg {
-      width: 12px;
-      height: 12px;
-    }
-    .fc-event-actions button:hover {
-      background: rgba(0, 0, 0, 0.5);
-    }
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -153,12 +123,9 @@ export class Calendar {
   private readonly calendarHost = viewChild<ElementRef<HTMLElement>>('calendarHost');
 
   readonly entries = input<CourseScheduleEntry[]>([]);
-  readonly editable = input<boolean>(false);
   readonly mobile = input<boolean | null>(null);
 
   readonly eventClick = output<CourseScheduleEntry>();
-  readonly editClick = output<CourseScheduleEntry>();
-  readonly deleteClick = output<CourseScheduleEntry>();
   readonly dateClick = output<string>();
   readonly weekDelta = output<number>();
 
@@ -199,7 +166,6 @@ export class Calendar {
   protected readonly calendarOptions = computed<CalendarOptions>(() => {
     const tenantTimezone = this.authService.tenantTimezone();
     const showDetails = this.showDetails();
-    const editable = this.editable();
     const events: EventInput[] = this.entries().map((scheduleEntry) => ({
       id: `${scheduleEntry.classKind}:${scheduleEntry.classId}`,
       title: scheduleEntry.courseName,
@@ -207,7 +173,7 @@ export class Calendar {
       end: `${scheduleEntry.date}T${scheduleEntry.endTime}`,
       backgroundColor: courseColor(scheduleEntry.courseId),
       borderColor: courseColor(scheduleEntry.courseId),
-      extendedProps: { entry: scheduleEntry, showDetails, editable },
+      extendedProps: { entry: scheduleEntry, showDetails },
     }));
 
     return {
@@ -238,12 +204,12 @@ export class Calendar {
         courseElement.textContent = entry.courseName;
         eventBodyElement.appendChild(courseElement);
 
-        if (showDetails) {
-          const timeElement = document.createElement('div');
-          timeElement.className = 'ev-time';
-          timeElement.textContent = `${entry.startTime.slice(0, 5)} – ${entry.endTime.slice(0, 5)}`;
-          eventBodyElement.appendChild(timeElement);
+        const timeElement = document.createElement('div');
+        timeElement.className = 'ev-time';
+        timeElement.textContent = `${entry.startTime.slice(0, 5)} – ${entry.endTime.slice(0, 5)}`;
+        eventBodyElement.appendChild(timeElement);
 
+        if (showDetails) {
           if (entry.teachers.length > 0) {
             const teachersElement = document.createElement('div');
             teachersElement.className = 'ev-teachers';
@@ -260,31 +226,6 @@ export class Calendar {
           eventBodyElement.appendChild(limitElement);
         }
 
-        if (editable) {
-          const actionsElement = document.createElement('div');
-          actionsElement.className = 'fc-event-actions';
-          const editButton = document.createElement('button');
-          editButton.type = 'button';
-          editButton.title = 'Editar';
-          editButton.setAttribute('aria-label', 'Editar');
-          editButton.appendChild(Calendar.createIconSvg(faPenToSquare));
-          editButton.addEventListener('click', (mouseEvent) => {
-            mouseEvent.stopPropagation();
-            this.editClick.emit(entry);
-          });
-          const deleteButton = document.createElement('button');
-          deleteButton.type = 'button';
-          deleteButton.title = 'Eliminar';
-          deleteButton.setAttribute('aria-label', 'Eliminar');
-          deleteButton.appendChild(Calendar.createIconSvg(faTrash));
-          deleteButton.addEventListener('click', (mouseEvent) => {
-            mouseEvent.stopPropagation();
-            this.deleteClick.emit(entry);
-          });
-          actionsElement.appendChild(editButton);
-          actionsElement.appendChild(deleteButton);
-          eventBodyElement.appendChild(actionsElement);
-        }
         return { domNodes: [eventBodyElement] };
       },
       datesSet: (datesArg) => this.currentTitle.set(datesArg.view.title),
@@ -334,20 +275,5 @@ export class Calendar {
 
   private detectMobile(): boolean {
     return typeof window !== 'undefined' && window.innerWidth < MOBILE_BREAKPOINT_PX;
-  }
-
-  private static createIconSvg(iconDefinition: IconDefinition): SVGElement {
-    const svgNamespace = 'http://www.w3.org/2000/svg';
-    const [width, height, , , pathData] = iconDefinition.icon;
-    const svgElement = document.createElementNS(svgNamespace, 'svg');
-    svgElement.setAttribute('viewBox', `0 0 ${width} ${height}`);
-    svgElement.setAttribute('role', 'img');
-    svgElement.setAttribute('aria-hidden', 'true');
-    svgElement.setAttribute('focusable', 'false');
-    const pathElement = document.createElementNS(svgNamespace, 'path');
-    pathElement.setAttribute('d', Array.isArray(pathData) ? pathData[0] : pathData);
-    pathElement.setAttribute('fill', 'currentColor');
-    svgElement.appendChild(pathElement);
-    return svgElement;
   }
 }

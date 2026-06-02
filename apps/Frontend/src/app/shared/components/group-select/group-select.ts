@@ -103,7 +103,7 @@ export class GroupNameDialog {
         <mat-select
           [value]="selectedGroupId()"
           (valueChange)="groupChange.emit($event)"
-          [disabled]="groups().length === 0"
+          [disabled]="locked() || groups().length === 0"
         >
           @for (group of groups(); track group.id) {
             <mat-option [value]="group.id">{{ group.name }}</mat-option>
@@ -113,13 +113,18 @@ export class GroupNameDialog {
 
       @if (editable()) {
         <div [class]="styles.actions()">
-          <button mat-icon-button matTooltip="Nuevo grupo" (click)="onCreate()">
+          <button
+            mat-icon-button
+            matTooltip="Nuevo grupo"
+            [disabled]="locked()"
+            (click)="onCreate()"
+          >
             <app-icon name="plus" />
           </button>
           <button
             mat-icon-button
             matTooltip="Renombrar grupo"
-            [disabled]="!selectedGroup()"
+            [disabled]="locked() || !selectedGroup()"
             (click)="onRename()"
           >
             <app-icon name="edit" />
@@ -128,7 +133,7 @@ export class GroupNameDialog {
             mat-icon-button
             matTooltip="Eliminar grupo"
             class="danger-btn"
-            [disabled]="!selectedGroup()"
+            [disabled]="locked() || !selectedGroup()"
             (click)="onDelete()"
           >
             <app-icon name="trash" />
@@ -154,6 +159,7 @@ export class GroupSelect {
   private readonly queryClient = inject(QueryClient);
 
   readonly editable = input<boolean>(false);
+  readonly locked = input<boolean>(false);
   readonly selectedGroupId = input<string>('');
   readonly source = input<GroupSource>('tenant');
 
