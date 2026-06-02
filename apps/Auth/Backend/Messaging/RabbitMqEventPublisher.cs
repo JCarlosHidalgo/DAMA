@@ -1,6 +1,7 @@
 using System.Text;
 
 using Backend.Entities;
+using Backend.Logging;
 using Backend.Options;
 using Backend.Services.Abstract;
 
@@ -106,7 +107,7 @@ public sealed class RabbitMqEventPublisher : IEventPublisher, IAsyncDisposable
             Password = _options.Password
         };
         _connection = await connectionFactory.CreateConnectionAsync(cancellationToken);
-        _logger.LogInformation("RabbitMQ connection established to {Host}:{Port}", connectionFactory.HostName, connectionFactory.Port);
+        LogEvents.RabbitMqConnectionEstablished(_logger, connectionFactory.HostName, connectionFactory.Port);
     }
 
     private async Task<IChannel> CreateDeclaredChannelAsync(CancellationToken cancellationToken)

@@ -1,4 +1,5 @@
 using Backend.DB.Daos.Abstract.Single;
+using Backend.Logging;
 
 namespace Backend.Workers;
 
@@ -28,7 +29,7 @@ public sealed class ProcessedEventsJanitor : BackgroundService
                 int deleted = await processedEventDao.DeleteOlderThanAsync(RetentionAge);
                 if (deleted > 0)
                 {
-                    _logger.LogInformation("ProcessedEventsJanitor deleted {Count} processed events older than {Age}", deleted, RetentionAge);
+                    LogEvents.ProcessedEventsJanitorDeleted(_logger, deleted, RetentionAge);
                 }
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
@@ -37,7 +38,7 @@ public sealed class ProcessedEventsJanitor : BackgroundService
             }
             catch (Exception exception)
             {
-                _logger.LogError(exception, "ProcessedEventsJanitor sweep error");
+                LogEvents.ProcessedEventsJanitorSweepError(_logger, exception);
             }
 
             try

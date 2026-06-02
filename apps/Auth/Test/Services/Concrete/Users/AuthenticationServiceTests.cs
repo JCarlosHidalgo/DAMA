@@ -12,6 +12,7 @@ using Backend.Transporters.Entities;
 using DAMA.Software.MySqlUnitOfWork;
 
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging.Abstractions;
 
 using Moq;
 
@@ -50,7 +51,8 @@ public class AuthenticationServiceTests
             accessTokenGenerator.Object,
             refreshTokenGenerator.Object,
             refreshTokenWriteDao.Object,
-            unitOfWork.Object);
+            unitOfWork.Object,
+            NullLogger<AuthenticationService>.Instance);
     }
 
     [Test]

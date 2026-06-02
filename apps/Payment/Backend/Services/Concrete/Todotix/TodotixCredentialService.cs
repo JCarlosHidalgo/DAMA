@@ -5,6 +5,7 @@ using Backend.Dtos.External.Todotix;
 using Backend.Dtos.Todotix.Input;
 using Backend.Dtos.Todotix.Output;
 using Backend.Entities.PaymentCredentials;
+using Backend.Logging;
 using Backend.Results.Todotix;
 using Backend.Security;
 using Backend.Services.Abstract.Todotix;
@@ -90,19 +91,12 @@ public sealed class TodotixCredentialService : ITodotixCredentialService
                 return new TestTodotixCredentialOutcome.Works();
             }
 
-            _logger.LogWarning(
-                "Credential test failed for tenant {TenantId}: Todotix returned Error={Error} Mensaje={Mensaje}",
-                _claimContext.TenantId,
-                response.Error,
-                response.Mensaje);
+            LogEvents.TodotixCredentialTestFailed(_logger, _claimContext.TenantId, response.Error, response.Mensaje);
             return new TestTodotixCredentialOutcome.Failed();
         }
         catch (HttpRequestException httpRequestException)
         {
-            _logger.LogWarning(
-                httpRequestException,
-                "Credential test failed for tenant {TenantId}: HTTP error calling Todotix.",
-                _claimContext.TenantId);
+            LogEvents.TodotixCredentialTestHttpError(_logger, httpRequestException, _claimContext.TenantId);
             return new TestTodotixCredentialOutcome.Failed();
         }
     }

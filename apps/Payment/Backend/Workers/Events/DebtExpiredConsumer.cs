@@ -1,6 +1,7 @@
 using System.Diagnostics;
 
 using Backend.Events;
+using Backend.Logging;
 using Backend.Options;
 using Backend.Results.QrPayments;
 using Backend.Services.Abstract.Events;
@@ -56,7 +57,7 @@ public sealed class DebtExpiredConsumer : BackgroundService
             }
             catch (Exception consumerException)
             {
-                _logger.LogError(consumerException, "DebtExpiredConsumer connection error");
+                LogEvents.ConsumerConnectionError(_logger, consumerException, "DebtExpiredConsumer");
 
                 try
                 {
@@ -81,9 +82,7 @@ public sealed class DebtExpiredConsumer : BackgroundService
             (connection, channel) = await _connectionFactory.OpenAsync(cancellationToken);
             await _topologyDeclarer.DeclareAsync(channel, topologyDescriptor, cancellationToken);
 
-            _logger.LogInformation(
-                "DebtExpiredConsumer subscribed to {QueueName}",
-                topologyDescriptor.QueueName);
+            LogEvents.ConsumerSubscribed(_logger, "DebtExpiredConsumer", topologyDescriptor.QueueName);
 
             await _messageDispatcher.RunAsync(
                 channel,
@@ -130,7 +129,7 @@ public sealed class DebtExpiredConsumer : BackgroundService
         }
         catch (Exception disposeException)
         {
-            _logger.LogWarning(disposeException, "Error disposing RabbitMQ resource");
+            LogEvents.RabbitMqResourceDisposeFailed(_logger, disposeException);
         }
     }
 }

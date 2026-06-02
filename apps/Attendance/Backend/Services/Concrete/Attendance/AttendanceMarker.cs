@@ -3,6 +3,7 @@ using AutoMapper;
 using Backend.Claims;
 using Backend.DB.Daos.Abstract.Single.Remain;
 using Backend.Hubs;
+using Backend.Logging;
 using Backend.Options;
 using Backend.Results.Attendance;
 using Backend.Services.Abstract.Attendance;
@@ -39,9 +40,7 @@ public sealed class AttendanceMarker(IClaimContext claimContext,
                 _attendanceOptions.AllowedWindowEnd,
                 out bool isWithinWindow))
         {
-            logger.LogWarning(
-                "Tenant timezone '{TimezoneId}' inválido — rechazando marcaje de asistencia",
-                tenantTimezoneId);
+            LogEvents.TenantTimezoneInvalidRejected(logger, tenantTimezoneId);
             return new MarkAttendanceOutcome.InvalidTenantTimezone();
         }
 

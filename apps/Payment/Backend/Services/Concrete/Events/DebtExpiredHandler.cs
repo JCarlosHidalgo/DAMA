@@ -3,6 +3,7 @@ using Backend.DB.Daos.Abstract.Single;
 using Backend.DB.Daos.Abstract.Single.QrPayments;
 using Backend.Entities.QrPayments;
 using Backend.Events;
+using Backend.Logging;
 using Backend.Results.QrPayments;
 using Backend.Services.Abstract.Events;
 
@@ -61,10 +62,7 @@ public sealed class DebtExpiredHandler : IDebtExpiredHandler
         }
         catch (Exception handlerException)
         {
-            _logger.LogError(
-                handlerException,
-                "Handle DebtExpired falló para {EventId}",
-                debtExpiredEvent.EventId);
+            LogEvents.EventHandlerFailed(_logger, handlerException, "DebtExpired", debtExpiredEvent.EventId);
             return new HandleDebtExpiredOutcome.Failed(handlerException.Message);
         }
     }

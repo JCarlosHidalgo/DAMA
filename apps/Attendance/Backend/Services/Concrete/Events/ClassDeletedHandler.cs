@@ -1,6 +1,7 @@
 using Backend.DB.Daos.Abstract.Single.Attendance;
 using Backend.DB.Daos.Abstract.Single.Events;
 using Backend.Events;
+using Backend.Logging;
 using Backend.Results.Events;
 using Backend.Services.Abstract.Events;
 
@@ -55,10 +56,7 @@ public sealed class ClassDeletedHandler : IClassDeletedHandler
         }
         catch (Exception handlerException)
         {
-            _logger.LogError(
-                handlerException,
-                "Handle ClassDeleted falló para {EventId}",
-                classDeletedEvent.EventId);
+            LogEvents.EventHandlerFailed(_logger, handlerException, "ClassDeleted", classDeletedEvent.EventId);
             return new ClassDeletedOutcome.Failed();
         }
     }

@@ -1,4 +1,5 @@
 using Backend.DB.Daos.Abstract.Single;
+using Backend.Logging;
 using Backend.Services.Abstract;
 
 using DAMA.Software.MySqlOutbox;
@@ -39,7 +40,7 @@ public sealed class OutboxRelayWorker<TOutboxEvent> : BackgroundService
             }
             catch (Exception exception)
             {
-                _logger.LogError(exception, "OutboxRelayWorker<{EventType}> loop error", typeof(TOutboxEvent).Name);
+                LogEvents.OutboxRelayLoopError(_logger, exception, typeof(TOutboxEvent).Name);
                 try
                 {
                     await Task.Delay(ErrorBackoff, cancellationToken);
@@ -83,7 +84,7 @@ public sealed class OutboxRelayWorker<TOutboxEvent> : BackgroundService
         }
         catch (Exception exception)
         {
-            _logger.LogWarning(exception, "Publish failed for {Id}", outboxEvent.Id);
+            LogEvents.OutboxPublishFailed(_logger, exception, outboxEvent.Id);
             string truncated = exception.Message.Length > MaxErrorLength ? exception.Message[..MaxErrorLength] : exception.Message;
             await outboxDao.RecordFailureAsync(outboxEvent.Id, truncated);
         }

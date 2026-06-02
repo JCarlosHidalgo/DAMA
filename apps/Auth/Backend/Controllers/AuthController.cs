@@ -4,6 +4,7 @@ using Backend.Claims;
 using Backend.Dtos.Users.Input;
 using Backend.Dtos.Users.Output;
 using Backend.Entities.Users;
+using Backend.Logging;
 using Backend.Pagination;
 using Backend.Results.Users;
 using Backend.Services.Abstract.Users;
@@ -23,18 +24,21 @@ public class AuthController : ControllerBase
     private readonly IUserRegistrationService _userRegistrationService;
     private readonly IUserDirectoryService _userDirectoryService;
     private readonly IClaimContext _claimContext;
+    private readonly ILogger<AuthController> _logger;
 
     public AuthController(IAuthenticationService authenticationService,
                           IRefreshService refreshService,
                           IUserRegistrationService userRegistrationService,
                           IUserDirectoryService userDirectoryService,
-                          IClaimContext claimContext)
+                          IClaimContext claimContext,
+                          ILogger<AuthController> logger)
     {
         _authenticationService = authenticationService;
         _refreshService = refreshService;
         _userRegistrationService = userRegistrationService;
         _userDirectoryService = userDirectoryService;
         _claimContext = claimContext;
+        _logger = logger;
     }
 
     [Authorize(Roles = UserRoles.Client)]
@@ -56,12 +60,17 @@ public class AuthController : ControllerBase
     public async Task<ActionResult> RegisterTeacher(RegisterCredentialsDto request)
     {
         RegisterUserOutcome outcome = await _userRegistrationService.RegisterAsync(request, UserRole.Teacher);
-        return outcome switch
+        switch (outcome)
         {
-            RegisterUserOutcome.Created => Ok(),
-            RegisterUserOutcome.DuplicateName => BadRequest("Usuario ya existente."),
-            _ => throw new UnreachableException()
-        };
+            case RegisterUserOutcome.Created:
+                LogEvents.UserRegistered(_logger, request.Username, UserRole.Teacher.ToString(), _claimContext.TenantId);
+                return Ok();
+            case RegisterUserOutcome.DuplicateName:
+                LogEvents.UserRegistrationDuplicateName(_logger, request.Username, UserRole.Teacher.ToString(), _claimContext.TenantId);
+                return BadRequest("Usuario ya existente.");
+            default:
+                throw new UnreachableException();
+        }
     }
 
     [Authorize(Roles = UserRoles.Client)]
@@ -69,12 +78,17 @@ public class AuthController : ControllerBase
     public async Task<ActionResult> RegisterStudent(RegisterCredentialsDto request)
     {
         RegisterUserOutcome outcome = await _userRegistrationService.RegisterAsync(request, UserRole.Student);
-        return outcome switch
+        switch (outcome)
         {
-            RegisterUserOutcome.Created => Ok(),
-            RegisterUserOutcome.DuplicateName => BadRequest("Usuario ya existente."),
-            _ => throw new UnreachableException()
-        };
+            case RegisterUserOutcome.Created:
+                LogEvents.UserRegistered(_logger, request.Username, UserRole.Student.ToString(), _claimContext.TenantId);
+                return Ok();
+            case RegisterUserOutcome.DuplicateName:
+                LogEvents.UserRegistrationDuplicateName(_logger, request.Username, UserRole.Student.ToString(), _claimContext.TenantId);
+                return BadRequest("Usuario ya existente.");
+            default:
+                throw new UnreachableException();
+        }
     }
 
     [Authorize(Roles = UserRoles.Client)]

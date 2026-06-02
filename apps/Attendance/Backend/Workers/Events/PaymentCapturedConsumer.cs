@@ -1,6 +1,7 @@
 using System.Diagnostics;
 
 using Backend.Events;
+using Backend.Logging;
 using Backend.Options;
 using Backend.Results.Events;
 using Backend.Services.Abstract.Events;
@@ -56,7 +57,7 @@ public sealed class PaymentCapturedConsumer : BackgroundService
             }
             catch (Exception consumerException)
             {
-                _logger.LogError(consumerException, "PaymentCapturedConsumer connection error");
+                LogEvents.ConsumerConnectionError(_logger, consumerException, "PaymentCapturedConsumer");
 
                 try
                 {
@@ -81,9 +82,7 @@ public sealed class PaymentCapturedConsumer : BackgroundService
             (connection, channel) = await _connectionFactory.OpenAsync(cancellationToken);
             await _topologyDeclarer.DeclareAsync(channel, topologyDescriptor, cancellationToken);
 
-            _logger.LogInformation(
-                "PaymentCapturedConsumer subscribed to {QueueName}",
-                topologyDescriptor.QueueName);
+            LogEvents.ConsumerSubscribed(_logger, "PaymentCapturedConsumer", topologyDescriptor.QueueName);
 
             await _messageDispatcher.RunAsync(
                 channel,
@@ -130,7 +129,7 @@ public sealed class PaymentCapturedConsumer : BackgroundService
         }
         catch (Exception disposeException)
         {
-            _logger.LogWarning(disposeException, "Error disposing RabbitMQ resource");
+            LogEvents.RabbitMqResourceDisposeFailed(_logger, disposeException);
         }
     }
 }

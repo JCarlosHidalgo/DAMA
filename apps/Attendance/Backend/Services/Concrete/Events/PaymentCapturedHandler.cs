@@ -1,6 +1,7 @@
 using Backend.DB.Daos.Abstract.Single.Events;
 using Backend.DB.Daos.Abstract.Single.Remain;
 using Backend.Events;
+using Backend.Logging;
 using Backend.Results.Events;
 using Backend.Services.Abstract.Events;
 
@@ -62,10 +63,7 @@ public sealed class PaymentCapturedHandler : IPaymentCapturedHandler
         }
         catch (Exception handlerException)
         {
-            _logger.LogError(
-                handlerException,
-                "Handle PaymentCaptured falló para {EventId}",
-                paymentCapturedEvent.EventId);
+            LogEvents.EventHandlerFailed(_logger, handlerException, "PaymentCaptured", paymentCapturedEvent.EventId);
             return new PaymentCapturedOutcome.Failed();
         }
     }

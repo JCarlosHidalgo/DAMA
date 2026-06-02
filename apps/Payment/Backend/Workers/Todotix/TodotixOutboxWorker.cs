@@ -1,5 +1,6 @@
 using Backend.DB.Daos.Abstract.Single.Todotix;
 using Backend.Entities.Todotix;
+using Backend.Logging;
 using Backend.Results.Todotix;
 using Backend.Services.Abstract.Todotix;
 
@@ -37,7 +38,7 @@ public sealed class TodotixOutboxWorker : BackgroundService
             }
             catch (Exception unexpectedException)
             {
-                _logger.LogError(unexpectedException, "TodotixOutboxWorker loop error");
+                LogEvents.TodotixOutboxWorkerLoopError(_logger, unexpectedException);
                 try
                 { await Task.Delay(ErrorBackoff, cancellationToken); }
                 catch (OperationCanceledException) { return; }
@@ -94,7 +95,7 @@ public sealed class TodotixOutboxWorker : BackgroundService
         }
         catch (Exception publisherException)
         {
-            _logger.LogWarning(publisherException, "Payment outbox row {Id} failed (attempt {Attempts})", outboxEvent.Id, outboxEvent.Attempts);
+            LogEvents.PaymentOutboxRowFailed(_logger, publisherException, outboxEvent.Id, outboxEvent.Attempts);
             return new PublishOutcome.TransientFailure(publisherException.Message);
         }
     }

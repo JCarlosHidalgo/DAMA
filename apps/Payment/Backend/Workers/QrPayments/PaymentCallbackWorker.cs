@@ -1,5 +1,6 @@
 using Backend.DB.Daos.Abstract.Single.QrPayments;
 using Backend.Entities.QrPayments;
+using Backend.Logging;
 using Backend.Services.Abstract.QrPayments;
 
 namespace Backend.Workers.QrPayments;
@@ -36,7 +37,7 @@ public sealed class PaymentCallbackWorker : BackgroundService
             }
             catch (Exception unexpectedException)
             {
-                _logger.LogError(unexpectedException, "PaymentCallbackWorker loop error");
+                LogEvents.PaymentCallbackWorkerLoopError(_logger, unexpectedException);
                 try
                 { await Task.Delay(ErrorBackoff, cancellationToken); }
                 catch (OperationCanceledException) { return; }
@@ -85,7 +86,7 @@ public sealed class PaymentCallbackWorker : BackgroundService
         }
         catch (Exception processingException)
         {
-            _logger.LogWarning(processingException, "Payment callback {Id} failed (attempt {Attempts})", callback.Id, callback.Attempts);
+            LogEvents.PaymentCallbackFailed(_logger, processingException, callback.Id, callback.Attempts);
             string truncated = Truncate(processingException.Message);
             if (callback.Attempts >= MaxAttempts)
             {

@@ -1,5 +1,6 @@
 using Backend.DB.Daos.Abstract.Single;
 using Backend.Entities;
+using Backend.Logging;
 using Backend.Services.Abstract;
 
 namespace Backend.Workers;
@@ -36,7 +37,7 @@ public class OutboxPublisher : BackgroundService
             }
             catch (Exception exception)
             {
-                _logger.LogError(exception, "OutboxPublisher loop error");
+                LogEvents.OutboxPublisherLoopError(_logger, exception);
                 try
                 {
                     await Task.Delay(ErrorBackoff, cancellationToken);
@@ -80,7 +81,7 @@ public class OutboxPublisher : BackgroundService
         }
         catch (Exception exception)
         {
-            _logger.LogWarning(exception, "Publish failed for {Id}", outboxEvent.Id);
+            LogEvents.OutboxPublishFailed(_logger, exception, outboxEvent.Id);
             string truncated = exception.Message.Length > 500 ? exception.Message[..500] : exception.Message;
             await outboxEventDao.RecordFailureAsync(outboxEvent.Id, truncated);
         }

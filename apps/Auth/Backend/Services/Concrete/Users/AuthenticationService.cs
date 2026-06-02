@@ -3,6 +3,7 @@ using Backend.DB.Daos.Abstract.Single.Users;
 using Backend.Dtos.Users.Input;
 using Backend.Dtos.Users.Output;
 using Backend.Entities.Users;
+using Backend.Logging;
 using Backend.Security;
 using Backend.Services.Abstract.Users;
 using Backend.Transporters.Entities;
@@ -21,13 +22,15 @@ public class AuthenticationService : IAuthenticationService
     private readonly IRefreshTokenGenerator _refreshTokenGenerator;
     private readonly IRefreshTokenWriteDao _refreshTokenWriteDao;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly ILogger<AuthenticationService> _logger;
 
     public AuthenticationService(IUserAuthenticationDao userDao,
                                  IPasswordHasher<User> passwordHasher,
                                  IAccessTokenGenerator tokenGenerator,
                                  IRefreshTokenGenerator refreshTokenGenerator,
                                  IRefreshTokenWriteDao refreshTokenWriteDao,
-                                 IUnitOfWork unitOfWork)
+                                 IUnitOfWork unitOfWork,
+                                 ILogger<AuthenticationService> logger)
     {
         _userDao = userDao;
         _passwordHasher = passwordHasher;
@@ -35,6 +38,7 @@ public class AuthenticationService : IAuthenticationService
         _refreshTokenGenerator = refreshTokenGenerator;
         _refreshTokenWriteDao = refreshTokenWriteDao;
         _unitOfWork = unitOfWork;
+        _logger = logger;
     }
 
     public async Task<TokenResponseDto?> LoginAsync(LoginCredentialsDto request)
@@ -42,6 +46,7 @@ public class AuthenticationService : IAuthenticationService
         UserWithTenant? userWithTenant = await _userDao.ReadUserWithTenantByUserNameAsync(request.Username);
         if (userWithTenant is null)
         {
+            LogEvents.LoginFailedUserNotFound(_logger, request.Username);
             return null;
         }
 
@@ -55,6 +60,7 @@ public class AuthenticationService : IAuthenticationService
             ) == PasswordVerificationResult.Failed
         )
         {
+            LogEvents.LoginFailedInvalidPassword(_logger, request.Username);
             return null;
         }
 
@@ -64,6 +70,8 @@ public class AuthenticationService : IAuthenticationService
         await using ITransactionScope scope = await _unitOfWork.BeginAsync();
         await _refreshTokenWriteDao.CreateAsync(issued.Entity, scope);
         await scope.CommitAsync();
+
+        LogEvents.LoginSucceeded(_logger, user.Id, userWithTenant.Tenant.Id);
 
         return new TokenResponseDto
         {

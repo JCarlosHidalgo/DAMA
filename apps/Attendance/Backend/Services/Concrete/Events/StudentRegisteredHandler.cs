@@ -1,6 +1,7 @@
 using Backend.DB.Daos.Abstract.Single.Events;
 using Backend.DB.Daos.Abstract.Single.Remain;
 using Backend.Events;
+using Backend.Logging;
 using Backend.Results.Events;
 using Backend.Services.Abstract.Events;
 
@@ -49,10 +50,7 @@ public sealed class StudentRegisteredHandler : IStudentRegisteredHandler
         }
         catch (Exception handlerException)
         {
-            _logger.LogError(
-                handlerException,
-                "Handle StudentRegistered falló para {EventId}",
-                studentRegisteredEvent.EventId);
+            LogEvents.EventHandlerFailed(_logger, handlerException, "StudentRegistered", studentRegisteredEvent.EventId);
             return new StudentRegisteredOutcome.Failed();
         }
     }

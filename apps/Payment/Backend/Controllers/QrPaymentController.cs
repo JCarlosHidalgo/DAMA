@@ -3,6 +3,7 @@ using System.Diagnostics;
 using Backend.Common;
 using Backend.DB.Daos.Abstract.Single.QrPayments;
 using Backend.Dtos.QrPayments.Input;
+using Backend.Logging;
 using Backend.Results.QrPayments;
 using Backend.Services.Abstract;
 using Backend.Services.Abstract.QrPayments;
@@ -96,7 +97,7 @@ public class QrPaymentController : ControllerBase
     {
         if (!_callbackSignature.Verify(transactionId.ToString("D"), signature ?? string.Empty))
         {
-            _logger.LogWarning("Rejected Todotix callback with invalid signature for transaction {TransactionId}", transactionId);
+            LogEvents.TodotixCallbackInvalidSignature(_logger, transactionId);
             return Ok();
         }
 

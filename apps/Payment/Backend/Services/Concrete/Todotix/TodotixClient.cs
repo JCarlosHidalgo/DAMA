@@ -1,6 +1,7 @@
 using System.Text.Json;
 
 using Backend.Dtos.External.Todotix;
+using Backend.Logging;
 using Backend.Services.Abstract.Todotix;
 
 namespace Backend.Services.Concrete.Todotix;
@@ -55,11 +56,7 @@ public sealed class TodotixClient(HttpClient httpClient,
         }
         catch (JsonException deserializationException)
         {
-            logger.LogWarning(
-                deserializationException,
-                "Todotix ConsultDebt {DebtId} body did not deserialize as ConsultDebtResponse. RawBody={RawBody}",
-                debtIdentifier,
-                rawBody);
+            LogEvents.TodotixConsultDebtDeserializationFailed(logger, deserializationException, debtIdentifier);
             throw;
         }
 
@@ -71,14 +68,13 @@ public sealed class TodotixClient(HttpClient httpClient,
         bool paid = IsPaid(responseBody);
         if (!paid)
         {
-            logger.LogWarning(
-                "Todotix ConsultDebt {DebtId} returned Unpaid. Error={Error} Existente={Existente} Pagado={Pagado} PagoAnulado={PagoAnulado} RawBody={RawBody}",
+            LogEvents.TodotixConsultDebtUnpaid(
+                logger,
                 debtIdentifier,
                 responseBody.Error,
                 responseBody.Existente,
                 responseBody.Datos?.Pagado,
-                responseBody.Datos?.PagoAnulado,
-                rawBody);
+                responseBody.Datos?.PagoAnulado);
         }
 
         return paid ? TodotixDebtState.Paid : TodotixDebtState.Unpaid;

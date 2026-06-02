@@ -8,6 +8,7 @@ using Backend.Dtos.Attendance.Input;
 using Backend.Dtos.Attendance.Output;
 using Backend.Entities.Attendance;
 using Backend.Hubs;
+using Backend.Logging;
 using Backend.Options;
 using Backend.Results.Attendance;
 using Backend.Services.Abstract;
@@ -103,11 +104,7 @@ public sealed class ScheduledClassService(IScheduledClassAttendanceDao scheduled
         }
         catch (Exception timezoneException) when (timezoneException is TimeZoneNotFoundException or InvalidTimeZoneException)
         {
-            logger.LogWarning(
-                timezoneException,
-                "Tenant timezone '{TimezoneId}' no usable ({ExceptionType}) — usando UTC como fallback",
-                ianaTimezoneId,
-                timezoneException.GetType().Name);
+            LogEvents.TenantTimezoneUnusableFallback(logger, timezoneException, ianaTimezoneId, timezoneException.GetType().Name);
             return DateOnly.FromDateTime(DateTime.UtcNow);
         }
     }

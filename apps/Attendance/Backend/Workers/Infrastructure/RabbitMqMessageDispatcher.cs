@@ -1,5 +1,7 @@
 using System.Text.Json;
 
+using Backend.Logging;
+
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 
@@ -34,13 +36,13 @@ public sealed class RabbitMqMessageDispatcher<TEvent> where TEvent : class
 
         channel.ChannelShutdownAsync += (_, shutdownEventArgs) =>
         {
-            _logger.LogWarning("RabbitMQ channel shutdown: {Reason}", shutdownEventArgs.ReplyText);
+            LogEvents.RabbitMqChannelShutdown(_logger, shutdownEventArgs.ReplyText);
             completionSource.TrySetResult();
             return Task.CompletedTask;
         };
         connection.ConnectionShutdownAsync += (_, shutdownEventArgs) =>
         {
-            _logger.LogWarning("RabbitMQ connection shutdown: {Reason}", shutdownEventArgs.ReplyText);
+            LogEvents.RabbitMqConnectionShutdown(_logger, shutdownEventArgs.ReplyText);
             completionSource.TrySetResult();
             return Task.CompletedTask;
         };
@@ -65,6 +67,12 @@ public sealed class RabbitMqMessageDispatcher<TEvent> where TEvent : class
         Predicate<TEvent>? isPoisonMessage,
         CancellationToken cancellationToken)
     {
+        using IDisposable? deliveryScope = _logger.BeginScope(new Dictionary<string, object>
+        {
+            ["EventId"] = deliveryEventArgs.BasicProperties.MessageId ?? string.Empty,
+            ["EventType"] = deliveryEventArgs.BasicProperties.Type ?? typeof(TEvent).Name
+        });
+
         TEvent? deserializedEvent;
         try
         {
@@ -72,9 +80,9 @@ public sealed class RabbitMqMessageDispatcher<TEvent> where TEvent : class
         }
         catch (Exception deserializationException)
         {
-            _logger.LogError(
+            LogEvents.BadPayloadDropped(
+                _logger,
                 deserializationException,
-                "Bad payload on {RoutingKey} (DeliveryTag {DeliveryTag}); dropping",
                 deliveryEventArgs.RoutingKey,
                 deliveryEventArgs.DeliveryTag);
             await channel.BasicAckAsync(deliveryEventArgs.DeliveryTag, multiple: false);
@@ -83,10 +91,7 @@ public sealed class RabbitMqMessageDispatcher<TEvent> where TEvent : class
 
         if (deserializedEvent is null || (isPoisonMessage is not null && isPoisonMessage(deserializedEvent)))
         {
-            _logger.LogError(
-                "Invalid {EventType} (DeliveryTag {DeliveryTag}); dropping",
-                typeof(TEvent).Name,
-                deliveryEventArgs.DeliveryTag);
+            LogEvents.InvalidEventDropped(_logger, typeof(TEvent).Name, deliveryEventArgs.DeliveryTag);
             await channel.BasicAckAsync(deliveryEventArgs.DeliveryTag, multiple: false);
             return;
         }
@@ -108,11 +113,7 @@ public sealed class RabbitMqMessageDispatcher<TEvent> where TEvent : class
         }
         catch (Exception handlerException)
         {
-            _logger.LogError(
-                handlerException,
-                "Handler threw for delivery {DeliveryTag} ({EventType})",
-                deliveryEventArgs.DeliveryTag,
-                typeof(TEvent).Name);
+            LogEvents.HandlerThrew(_logger, handlerException, deliveryEventArgs.DeliveryTag, typeof(TEvent).Name);
             return false;
         }
     }

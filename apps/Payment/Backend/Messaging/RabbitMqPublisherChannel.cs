@@ -1,3 +1,4 @@
+using Backend.Logging;
 using Backend.Options;
 
 using Microsoft.Extensions.Options;
@@ -79,7 +80,7 @@ public sealed class RabbitMqPublisherChannel : IAsyncDisposable
             Password = _options.Password
         };
         _connection = await connectionFactory.CreateConnectionAsync(cancellationToken);
-        _logger.LogInformation("RabbitMQ connection established to {Host}:{Port}", connectionFactory.HostName, connectionFactory.Port);
+        LogEvents.RabbitMqConnectionEstablished(_logger, connectionFactory.HostName, connectionFactory.Port);
     }
 
     public async ValueTask DisposeAsync()

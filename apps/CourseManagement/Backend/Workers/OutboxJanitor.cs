@@ -1,4 +1,5 @@
 using Backend.DB.Daos.Abstract.Single;
+using Backend.Logging;
 
 namespace Backend.Workers;
 
@@ -28,7 +29,7 @@ public class OutboxJanitor : BackgroundService
                 int deleted = await outboxEventDao.DeletePublishedOlderThanAsync(RetentionAge);
                 if (deleted > 0)
                 {
-                    _logger.LogInformation("OutboxJanitor deleted {Count} published events older than {Age}", deleted, RetentionAge);
+                    LogEvents.OutboxJanitorDeletedPublished(_logger, deleted, RetentionAge);
                 }
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
@@ -36,7 +37,7 @@ public class OutboxJanitor : BackgroundService
             }
             catch (Exception sweepException)
             {
-                _logger.LogError(sweepException, "OutboxJanitor sweep error");
+                LogEvents.OutboxJanitorSweepError(_logger, sweepException);
             }
 
             try
