@@ -18,6 +18,7 @@ interface FakeCalendarApi {
   prev: ReturnType<typeof vi.fn>;
   next: ReturnType<typeof vi.fn>;
   today: ReturnType<typeof vi.fn>;
+  gotoDate: ReturnType<typeof vi.fn>;
   view: { type: string; title: string; activeStart: Date };
   changeView: ReturnType<typeof vi.fn>;
 }
@@ -27,6 +28,7 @@ function buildFakeCalendarApi(): FakeCalendarApi {
     prev: vi.fn(),
     next: vi.fn(),
     today: vi.fn(),
+    gotoDate: vi.fn(),
     view: {
       type: 'timeGridWeek',
       title: 'Semana de prueba',
@@ -139,37 +141,44 @@ describe('Calendar', () => {
     expect(options.timeZone).toBe('America/La_Paz');
   });
 
-  it('prev() calls api.prev and emits weekDelta=-1', () => {
+  it('prev() emits weekDelta=-1', () => {
     fixture.detectChanges();
     let emitted: number | undefined;
     fixture.componentInstance.weekDelta.subscribe((delta: number) => (emitted = delta));
 
     fixture.componentInstance.prev();
 
-    expect(sharedFakeApi.prev).toHaveBeenCalledTimes(1);
     expect(emitted).toBe(-1);
   });
 
-  it('next() calls api.next and emits weekDelta=1', () => {
+  it('next() emits weekDelta=1', () => {
     fixture.detectChanges();
     let emitted: number | undefined;
     fixture.componentInstance.weekDelta.subscribe((delta: number) => (emitted = delta));
 
     fixture.componentInstance.next();
 
-    expect(sharedFakeApi.next).toHaveBeenCalledTimes(1);
     expect(emitted).toBe(1);
   });
 
-  it('today() calls api.today and emits weekDelta=0', () => {
+  it('today() emits weekDelta=0', () => {
     fixture.detectChanges();
     let emitted: number | undefined;
     fixture.componentInstance.weekDelta.subscribe((delta: number) => (emitted = delta));
 
     fixture.componentInstance.today();
 
-    expect(sharedFakeApi.today).toHaveBeenCalledTimes(1);
     expect(emitted).toBe(0);
+  });
+
+  it('navigates the calendar to the anchorDate when it changes', () => {
+    fixture.detectChanges();
+    expect(sharedFakeApi.gotoDate).not.toHaveBeenCalled();
+
+    fixture.componentRef.setInput('anchorDate', '2026-04-13');
+    fixture.detectChanges();
+
+    expect(sharedFakeApi.gotoDate).toHaveBeenCalledWith('2026-04-13');
   });
 
   describe('calendarOptions callbacks', () => {

@@ -15,6 +15,12 @@ function formatIsoDate(date: Date): string {
   return `${year}-${month}-${day}`;
 }
 
+export function weekAnchorIsoDate(todayLocal: Date, weekIndex: number): string {
+  const weekStart = startOfIsoWeek(todayLocal);
+  weekStart.setDate(weekStart.getDate() + weekIndex * 7);
+  return formatIsoDate(weekStart);
+}
+
 export function normalizeSchedule(
   scheduleResponse: GetCourseScheduleDTO,
   weekIndex: number,

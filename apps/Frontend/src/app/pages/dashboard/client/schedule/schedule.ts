@@ -17,7 +17,7 @@ import { AuthService } from '@core/auth';
 import { ClassGroup, Course, CourseScheduleEntry, UserListItem } from '@core/models';
 import { DialogService, NotificationService } from '@core/services';
 import { ClassKindStrategies } from '@core/strategies';
-import { normalizeSchedule, nowInTenant } from '@core/utils';
+import { normalizeSchedule, nowInTenant, weekAnchorIsoDate } from '@core/utils';
 import { Icon, LoadingSkeleton, PageHead } from '@shared/components';
 import { Calendar } from '@shared/components/calendar';
 import { GroupSelect } from '@shared/components/group-select/group-select';
@@ -389,7 +389,11 @@ export class ScheduleDialog {
           <app-loading-skeleton [height]="480" />
         } @else {
           @defer {
-            <app-calendar [entries]="selectedGroupEntries()" (weekDelta)="onWeekDelta($event)" />
+            <app-calendar
+              [entries]="selectedGroupEntries()"
+              [anchorDate]="anchorDate()"
+              (weekDelta)="onWeekDelta($event)"
+            />
           } @placeholder {
             <app-loading-skeleton [height]="480" />
           }
@@ -544,6 +548,10 @@ export class Schedule {
   protected readonly targetDayIndex = signal<number>(this.todayWeekdayIndex());
   protected readonly dayOptions = DAY_OF_WEEK_OPTIONS;
   private readonly weekIndex = signal(0);
+
+  protected readonly anchorDate = computed(() =>
+    weekAnchorIsoDate(nowInTenant(this.authService.tenantTimezone()), this.weekIndex()),
+  );
 
   protected readonly selectedGroup = computed<ClassGroup | undefined>(() =>
     this.groups().find((group) => group.id === this.selectedGroupId()),
@@ -706,11 +714,13 @@ export class Schedule {
   protected async onWeekDelta(delta: number): Promise<void> {
     const nextWeekIndex = delta === 0 ? 0 : this.weekIndex() + delta;
     this.weekIndex.set(nextWeekIndex);
-    await this.reloadSchedule();
+    await this.reloadSchedule(false);
   }
 
-  private async reloadSchedule(): Promise<void> {
-    this.loading.set(true);
+  private async reloadSchedule(showSkeleton = true): Promise<void> {
+    if (showSkeleton) {
+      this.loading.set(true);
+    }
     try {
       const scheduleResponse = await firstValueFrom(
         this.courseApi.getTenantSchedule(this.weekIndex()),
@@ -723,7 +733,9 @@ export class Schedule {
       this.notifications.error('Error al cargar horario.');
       this.entries.set([]);
     } finally {
-      this.loading.set(false);
+      if (showSkeleton) {
+        this.loading.set(false);
+      }
     }
   }
 

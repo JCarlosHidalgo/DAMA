@@ -7,7 +7,12 @@ import { AttendanceApi, CourseApi } from '@core/api';
 import { AuthService } from '@core/auth';
 import { ClassGroup, Course, CourseScheduleEntry } from '@core/models';
 import { NotificationService } from '@core/services';
-import { AttendanceMarkedDialog, normalizeSchedule, nowInTenant } from '@core/utils';
+import {
+  AttendanceMarkedDialog,
+  normalizeSchedule,
+  nowInTenant,
+  weekAnchorIsoDate,
+} from '@core/utils';
 import { LoadingSkeleton, PageHead } from '@shared/components';
 import { Calendar } from '@shared/components/calendar';
 import { GroupSelect } from '@shared/components/group-select/group-select';
@@ -38,6 +43,7 @@ import { ConfirmAttendanceDialog, ConfirmAttendanceDialogData } from './confirm-
           @defer {
             <app-calendar
               [entries]="filteredEntries()"
+              [anchorDate]="anchorDate()"
               (eventClick)="onEvent($event)"
               (weekDelta)="onWeekDelta($event)"
             />
@@ -76,6 +82,9 @@ export class StudentSchedule {
   protected readonly selectedGroupId = signal<string>('');
   private readonly courses = signal<Course[]>([]);
   private readonly weekIndex = signal(0);
+  protected readonly anchorDate = computed(() =>
+    weekAnchorIsoDate(nowInTenant(this.authService.tenantTimezone()), this.weekIndex()),
+  );
   private readonly markedScheduledKeys = signal<Set<string>>(new Set());
   private readonly markedUniqueIds = signal<Set<string>>(new Set());
 
@@ -132,11 +141,13 @@ export class StudentSchedule {
   protected async onWeekDelta(delta: number): Promise<void> {
     const nextWeekIndex = delta === 0 ? 0 : this.weekIndex() + delta;
     this.weekIndex.set(nextWeekIndex);
-    await this.reload();
+    await this.reload(false);
   }
 
-  private async reload(): Promise<void> {
-    this.loading.set(true);
+  private async reload(showSkeleton = true): Promise<void> {
+    if (showSkeleton) {
+      this.loading.set(true);
+    }
     try {
       const scheduleResponse = await firstValueFrom(
         this.courseApi.getStudentSchedule(this.weekIndex()),
@@ -150,7 +161,9 @@ export class StudentSchedule {
       this.notifications.error('Error al cargar horario.');
       this.entries.set([]);
     } finally {
-      this.loading.set(false);
+      if (showSkeleton) {
+        this.loading.set(false);
+      }
     }
   }
 

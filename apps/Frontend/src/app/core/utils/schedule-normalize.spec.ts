@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
-import { normalizeSchedule } from './schedule-normalize';
+import { normalizeSchedule, weekAnchorIsoDate } from './schedule-normalize';
 import {
   Course,
   GetCourseScheduleDTO,
@@ -145,5 +145,35 @@ describe('normalizeSchedule', () => {
       uniqueClasses: [],
     };
     expect(normalizeSchedule(response2, 0, COURSES, monday)[0].date).toBe('2026-04-12');
+  });
+});
+
+describe('weekAnchorIsoDate', () => {
+  const monday = new Date(2026, 3, 6);
+
+  it('returns the Monday of the current ISO week', () => {
+    expect(weekAnchorIsoDate(monday, 0)).toBe('2026-04-06');
+  });
+
+  it('shifts the anchor by weekIndex weeks', () => {
+    expect(weekAnchorIsoDate(monday, 1)).toBe('2026-04-13');
+    expect(weekAnchorIsoDate(monday, -1)).toBe('2026-03-30');
+  });
+
+  it('aligns to Monday when invoked on a Sunday', () => {
+    const sunday = new Date(2026, 3, 12);
+    expect(weekAnchorIsoDate(sunday, 0)).toBe('2026-04-06');
+  });
+
+  it('matches the Monday occurrence date that normalizeSchedule assigns', () => {
+    const response: GetCourseScheduleDTO = {
+      scheduledClasses: [buildScheduledClass({ dayOfWeekIndex: 1 })],
+      uniqueClasses: [],
+    };
+    for (const weekIndex of [-2, -1, 0, 1, 3]) {
+      expect(weekAnchorIsoDate(monday, weekIndex)).toBe(
+        normalizeSchedule(response, weekIndex, COURSES, monday)[0].date,
+      );
+    }
   });
 });

@@ -123,6 +123,7 @@ export class Calendar {
   private readonly calendarHost = viewChild<ElementRef<HTMLElement>>('calendarHost');
 
   readonly entries = input<CourseScheduleEntry[]>([]);
+  readonly anchorDate = input<string | null>(null);
   readonly mobile = input<boolean | null>(null);
 
   readonly eventClick = output<CourseScheduleEntry>();
@@ -154,6 +155,14 @@ export class Calendar {
         calendarApi.changeView(wantedView);
       }
       this.currentTitle.set(calendarApi.view.title);
+    });
+    effect(() => {
+      const calendarApi = this.fullCalendar()?.getApi();
+      const anchor = this.anchorDate();
+      if (!calendarApi || !anchor) {
+        return;
+      }
+      calendarApi.gotoDate(anchor);
     });
   }
 
@@ -233,15 +242,12 @@ export class Calendar {
   });
 
   prev(): void {
-    this.fullCalendar()?.getApi().prev();
     this.weekDelta.emit(-1);
   }
   next(): void {
-    this.fullCalendar()?.getApi().next();
     this.weekDelta.emit(1);
   }
   today(): void {
-    this.fullCalendar()?.getApi().today();
     this.weekDelta.emit(0);
   }
 
