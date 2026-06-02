@@ -47,6 +47,12 @@ module.exports = defineConfig([
     },
   },
   {
+    files: ['src/app/shared/directives/**/*.ts'],
+    rules: {
+      '@angular-eslint/directive-selector': 'off',
+    },
+  },
+  {
     files: ['**/*.html'],
     extends: [angular.configs.templateRecommended, angular.configs.templateAccessibility],
     rules: {},

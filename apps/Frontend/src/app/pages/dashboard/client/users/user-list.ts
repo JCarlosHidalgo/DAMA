@@ -28,6 +28,7 @@ import { AuthService } from '@core/auth';
 import { UserListItem } from '@core/models';
 import { DialogService, NotificationService } from '@core/services';
 import { EmptyState, Icon, LoadingSkeleton, PageHead, Paginator } from '@shared/components';
+import { NoPasswordManager } from '@shared/directives';
 
 const USERNAME_REGEX = /^[a-zA-Z0-9 ]+$/;
 const PASSWORD_REGEX = /^[a-zA-Z0-9 !@#$%^&*()_+=?-]+$/;
@@ -61,6 +62,7 @@ interface RenameDialogData {
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
+    NoPasswordManager,
   ],
   template: `
     <h2 mat-dialog-title>
@@ -145,6 +147,7 @@ export class RegisterUserDialog {
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
+    NoPasswordManager,
   ],
   template: `
     <h2 mat-dialog-title>Renombrar usuario</h2>

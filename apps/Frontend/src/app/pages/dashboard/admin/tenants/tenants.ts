@@ -11,6 +11,7 @@ import { AuthApi } from '@core/api';
 import { Tenant } from '@core/models';
 import { DialogService, NotificationService } from '@core/services';
 import { EmptyState, Icon, LoadingSkeleton, PageHead } from '@shared/components';
+import { NoPasswordManager } from '@shared/directives';
 
 interface TenantDialogData {
   mode: 'create' | 'edit';
@@ -25,6 +26,7 @@ interface TenantDialogData {
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
+    NoPasswordManager,
   ],
   template: `
     <h2 mat-dialog-title>{{ data.mode === 'create' ? 'Nuevo tenant' : 'Editar tenant' }}</h2>

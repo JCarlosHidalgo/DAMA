@@ -15,6 +15,7 @@ import { CourseApi } from '@core/api';
 import { Course } from '@core/models';
 import { DialogService, NotificationService } from '@core/services';
 import { CourseColorChip, EmptyState, Icon, LoadingSkeleton, PageHead } from '@shared/components';
+import { NoPasswordManager } from '@shared/directives';
 
 const COURSES_QUERY_KEY = ['courses'] as const;
 
@@ -31,6 +32,7 @@ interface CourseDialogData {
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
+    NoPasswordManager,
   ],
   template: `
     <h2 mat-dialog-title>{{ data.mode === 'create' ? 'Nuevo curso' : 'Editar curso' }}</h2>

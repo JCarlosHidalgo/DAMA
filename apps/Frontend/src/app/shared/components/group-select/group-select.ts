@@ -22,6 +22,7 @@ import { CourseApi } from '@core/api';
 import { ClassGroup } from '@core/models';
 import { DialogService, NotificationService } from '@core/services';
 import { Icon } from '@shared/components/icon';
+import { NoPasswordManager } from '@shared/directives';
 
 import { groupSelectStyles } from './group-select.variants';
 
@@ -43,6 +44,7 @@ interface GroupNameDialogData {
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
+    NoPasswordManager,
   ],
   template: `
     <h2 mat-dialog-title>{{ data.mode === 'create' ? 'Nuevo grupo' : 'Renombrar grupo' }}</h2>

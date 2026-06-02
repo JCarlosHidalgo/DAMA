@@ -19,6 +19,7 @@ import { DebtTemplate, QrDebtStatus } from '@core/models';
 import { DialogService, NotificationService } from '@core/services';
 import { pollQrDebtUntilSettled } from '@core/utils';
 import { EmptyState, Icon, LoadingSkeleton, PageHead, Tag } from '@shared/components';
+import { NoPasswordManager } from '@shared/directives';
 import { MoneyPipe } from '@shared/pipes';
 
 type PaymentMethod = 'qr';
@@ -122,6 +123,7 @@ export class NoPaymentCredentialsDialog {
     MatInputModule,
     MatRadioModule,
     MatButtonModule,
+    NoPasswordManager,
     MoneyPipe,
   ],
   template: `

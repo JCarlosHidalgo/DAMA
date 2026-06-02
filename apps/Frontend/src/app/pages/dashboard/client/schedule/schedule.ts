@@ -21,6 +21,7 @@ import { normalizeSchedule, nowInTenant } from '@core/utils';
 import { Icon, LoadingSkeleton, PageHead } from '@shared/components';
 import { Calendar } from '@shared/components/calendar';
 import { GroupSelect } from '@shared/components/group-select/group-select';
+import { NoPasswordManager } from '@shared/directives';
 
 type FormKind = 'scheduled' | 'unique';
 
@@ -65,6 +66,7 @@ interface ClassDialogResult {
     MatSelectModule,
     MatButtonModule,
     MatButtonToggleModule,
+    NoPasswordManager,
   ],
   template: `
     <h2 mat-dialog-title>

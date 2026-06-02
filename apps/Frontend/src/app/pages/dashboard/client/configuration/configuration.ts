@@ -10,6 +10,7 @@ import { AuthService } from '@core/auth';
 import { TodotixAppKeyStatus } from '@core/models';
 import { NotificationService } from '@core/services';
 import { PageHead } from '@shared/components';
+import { NoPasswordManager } from '@shared/directives';
 
 type AppKeyState =
   | { kind: 'loading' }
@@ -43,6 +44,7 @@ const APP_KEY_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-
     MatSelectModule,
     MatInputModule,
     MatButtonModule,
+    NoPasswordManager,
   ],
   template: `
     <app-page-head title="Configuración" subtitle="Zona horaria y credenciales de cobro" />
@@ -111,6 +113,7 @@ const APP_KEY_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-
               <input
                 matInput
                 formControlName="appKey"
+                autocomplete="off"
                 placeholder="00000000-0000-0000-0000-000000000000"
               />
               @if (form.controls.appKey.invalid && form.controls.appKey.touched) {

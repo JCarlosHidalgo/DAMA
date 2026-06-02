@@ -15,6 +15,7 @@ import { PaymentApi } from '@core/api';
 import { CreateDebtTemplatePayload, DebtTemplate, UpdateDebtTemplatePayload } from '@core/models';
 import { DialogService, NotificationService } from '@core/services';
 import { EmptyState, Icon, LoadingSkeleton, PageHead, Tag } from '@shared/components';
+import { NoPasswordManager } from '@shared/directives';
 import { MoneyPipe } from '@shared/pipes';
 
 const DEBT_TEMPLATES_QUERY_KEY = ['debt-templates'] as const;
@@ -38,6 +39,7 @@ interface TemplateDialogResult {
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
+    NoPasswordManager,
   ],
   template: `
     <h2 mat-dialog-title>

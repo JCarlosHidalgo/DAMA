@@ -11,6 +11,7 @@ import { AttendanceApi, AuthApi } from '@core/api';
 import { UserListItem } from '@core/models';
 import { DialogService, NotificationService } from '@core/services';
 import { Icon, PageHead } from '@shared/components';
+import { NoPasswordManager } from '@shared/directives';
 
 @Component({
   selector: 'app-recharge',
@@ -21,6 +22,7 @@ import { Icon, PageHead } from '@shared/components';
     MatInputModule,
     MatButtonModule,
     MatProgressSpinnerModule,
+    NoPasswordManager,
     Icon,
     PageHead,
   ],
