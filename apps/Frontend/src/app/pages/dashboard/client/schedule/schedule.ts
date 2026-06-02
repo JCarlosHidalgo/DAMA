@@ -13,11 +13,10 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { firstValueFrom } from 'rxjs';
 
 import { AuthApi, CourseApi } from '@core/api';
-import { AuthService } from '@core/auth';
 import { ClassGroup, Course, CourseScheduleEntry, UserListItem } from '@core/models';
 import { DialogService, NotificationService } from '@core/services';
 import { ClassKindStrategies } from '@core/strategies';
-import { normalizeSchedule, nowInTenant, weekAnchorIsoDate } from '@core/utils';
+import { isoWeekdayIndex, normalizeSchedule } from '@core/utils';
 import { Icon, LoadingSkeleton, PageHead } from '@shared/components';
 import { Calendar } from '@shared/components/calendar';
 import { GroupSelect } from '@shared/components/group-select/group-select';
@@ -531,7 +530,6 @@ export class ScheduleDialog {
 export class Schedule {
   private readonly courseApi = inject(CourseApi);
   private readonly authApi = inject(AuthApi);
-  private readonly authService = inject(AuthService);
   private readonly dialogs = inject(DialogService);
   private readonly notifications = inject(NotificationService);
   private readonly classKindStrategies = inject(ClassKindStrategies);
@@ -543,15 +541,14 @@ export class Schedule {
   protected readonly groups = signal<ClassGroup[]>([]);
   protected readonly selectedGroupId = signal<string>('');
   protected readonly transferMode = signal(false);
-  protected readonly selectedDayIndex = signal<number>(this.todayWeekdayIndex());
+  protected readonly selectedDayIndex = signal<number>(1);
   protected readonly targetGroupId = signal<string>('');
-  protected readonly targetDayIndex = signal<number>(this.todayWeekdayIndex());
+  protected readonly targetDayIndex = signal<number>(1);
   protected readonly dayOptions = DAY_OF_WEEK_OPTIONS;
   private readonly weekIndex = signal(0);
+  private dayDefaultApplied = false;
 
-  protected readonly anchorDate = computed(() =>
-    weekAnchorIsoDate(nowInTenant(this.authService.tenantTimezone()), this.weekIndex()),
-  );
+  protected readonly anchorDate = signal<string | null>(null);
 
   protected readonly selectedGroup = computed<ClassGroup | undefined>(() =>
     this.groups().find((group) => group.id === this.selectedGroupId()),
@@ -629,9 +626,14 @@ export class Schedule {
     }
   }
 
-  private todayWeekdayIndex(): number {
-    const weekday = nowInTenant(this.authService.tenantTimezone()).getDay();
-    return weekday === 0 ? 7 : weekday;
+  private applyTodayDayDefault(todayDate: string): void {
+    if (this.dayDefaultApplied) {
+      return;
+    }
+    this.dayDefaultApplied = true;
+    const todayWeekday = isoWeekdayIndex(todayDate);
+    this.selectedDayIndex.set(todayWeekday);
+    this.targetDayIndex.set(todayWeekday);
   }
 
   private weekdayIndexOf(entry: CourseScheduleEntry): number {
@@ -723,9 +725,10 @@ export class Schedule {
     }
     try {
       const scheduleResponse = await firstValueFrom(this.courseApi.getTenantSchedule(targetWeek));
-      const today = nowInTenant(this.authService.tenantTimezone());
       this.weekIndex.set(targetWeek);
-      this.entries.set(normalizeSchedule(scheduleResponse, targetWeek, this.courses(), today));
+      this.anchorDate.set(scheduleResponse.weekStartDate);
+      this.applyTodayDayDefault(scheduleResponse.todayDate);
+      this.entries.set(normalizeSchedule(scheduleResponse, this.courses()));
     } catch {
       this.notifications.error('Error al cargar horario.');
       this.entries.set([]);

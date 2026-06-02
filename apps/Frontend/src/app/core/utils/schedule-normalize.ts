@@ -1,11 +1,8 @@
 import { Course, CourseScheduleEntry, GetCourseScheduleDTO } from '@core/models';
 
-function startOfIsoWeek(date: Date): Date {
-  const copy = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-  const dayOfWeek = copy.getDay();
-  const offsetToMonday = (dayOfWeek + 6) % 7;
-  copy.setDate(copy.getDate() - offsetToMonday);
-  return copy;
+function parseIsoDate(isoDate: string): Date {
+  const [year, month, day] = isoDate.split('-').map(Number);
+  return new Date(year, month - 1, day);
 }
 
 function formatIsoDate(date: Date): string {
@@ -15,21 +12,17 @@ function formatIsoDate(date: Date): string {
   return `${year}-${month}-${day}`;
 }
 
-export function weekAnchorIsoDate(todayLocal: Date, weekIndex: number): string {
-  const weekStart = startOfIsoWeek(todayLocal);
-  weekStart.setDate(weekStart.getDate() + weekIndex * 7);
-  return formatIsoDate(weekStart);
+export function isoWeekdayIndex(isoDate: string): number {
+  const weekday = parseIsoDate(isoDate).getDay();
+  return weekday === 0 ? 7 : weekday;
 }
 
 export function normalizeSchedule(
   scheduleResponse: GetCourseScheduleDTO,
-  weekIndex: number,
   courses: Course[],
-  todayLocal: Date,
 ): CourseScheduleEntry[] {
   const courseNameById = new Map(courses.map((course) => [course.id, course.name]));
-  const weekStart = startOfIsoWeek(todayLocal);
-  weekStart.setDate(weekStart.getDate() + weekIndex * 7);
+  const weekStart = parseIsoDate(scheduleResponse.weekStartDate);
 
   const entries: CourseScheduleEntry[] = [];
 

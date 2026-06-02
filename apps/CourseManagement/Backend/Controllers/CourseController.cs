@@ -3,6 +3,7 @@ using System.Diagnostics;
 using Backend.Application.Courses;
 using Backend.Application.Mediator;
 using Backend.Application.Schedules;
+using Backend.Claims;
 using Backend.Dtos.Courses.Input;
 using Backend.Dtos.Courses.Output;
 using Backend.Dtos.Schedules.Input;
@@ -94,13 +95,14 @@ public class CourseController : ControllerBase
     [HttpGet("teacher/me")]
     public async Task<ActionResult<GetCourseScheduleDto>> GetMyTeacherSchedule(
         [FromQuery] WeekPointerDto requestParameters,
+        [FromServices] IClaimContext claimContext,
         [FromServices] IQueryHandler<GetTeacherScheduleQuery, GetTeacherScheduleResult> handler)
     {
-        DateOnly classDatePointer = ResolveWeekPointer(requestParameters.WeekPaginationIndex);
-        GetTeacherScheduleResult result = await handler.Handle(new GetTeacherScheduleQuery(classDatePointer));
+        ResolvedWeek week = ResolveWeek(requestParameters.WeekPaginationIndex, claimContext.TenantTimezone);
+        GetTeacherScheduleResult result = await handler.Handle(new GetTeacherScheduleQuery(week.Pointer));
         return result switch
         {
-            GetTeacherScheduleResult.Found found => Ok(found.Schedule),
+            GetTeacherScheduleResult.Found found => Ok(StampWeek(found.Schedule, week)),
             _ => throw new UnreachableException()
         };
     }
@@ -109,13 +111,14 @@ public class CourseController : ControllerBase
     [HttpGet("tenant/schedule")]
     public async Task<ActionResult<GetCourseScheduleDto>> GetTenantSchedule(
         [FromQuery] WeekPointerDto requestParameters,
+        [FromServices] IClaimContext claimContext,
         [FromServices] IQueryHandler<GetTenantScheduleQuery, GetTenantScheduleResult> handler)
     {
-        DateOnly classDatePointer = ResolveWeekPointer(requestParameters.WeekPaginationIndex);
-        GetTenantScheduleResult result = await handler.Handle(new GetTenantScheduleQuery(classDatePointer));
+        ResolvedWeek week = ResolveWeek(requestParameters.WeekPaginationIndex, claimContext.TenantTimezone);
+        GetTenantScheduleResult result = await handler.Handle(new GetTenantScheduleQuery(week.Pointer));
         return result switch
         {
-            GetTenantScheduleResult.Found found => Ok(found.Schedule),
+            GetTenantScheduleResult.Found found => Ok(StampWeek(found.Schedule, week)),
             _ => throw new UnreachableException()
         };
     }
@@ -124,13 +127,14 @@ public class CourseController : ControllerBase
     [HttpGet("student/schedule")]
     public async Task<ActionResult<GetCourseScheduleDto>> GetStudentSchedule(
         [FromQuery] WeekPointerDto requestParameters,
+        [FromServices] IClaimContext claimContext,
         [FromServices] IQueryHandler<GetTenantScheduleQuery, GetTenantScheduleResult> handler)
     {
-        DateOnly classDatePointer = ResolveWeekPointer(requestParameters.WeekPaginationIndex);
-        GetTenantScheduleResult result = await handler.Handle(new GetTenantScheduleQuery(classDatePointer));
+        ResolvedWeek week = ResolveWeek(requestParameters.WeekPaginationIndex, claimContext.TenantTimezone);
+        GetTenantScheduleResult result = await handler.Handle(new GetTenantScheduleQuery(week.Pointer));
         return result switch
         {
-            GetTenantScheduleResult.Found found => Ok(found.Schedule),
+            GetTenantScheduleResult.Found found => Ok(StampWeek(found.Schedule, week)),
             _ => throw new UnreachableException()
         };
     }
@@ -139,20 +143,31 @@ public class CourseController : ControllerBase
     [HttpGet("schedule")]
     public async Task<ActionResult<GetCourseScheduleDto>> GetCourseSchedule(
         [FromQuery] CourseScheduleParametersDto requestParameters,
+        [FromServices] IClaimContext claimContext,
         [FromServices] IQueryHandler<GetCourseScheduleQuery, GetCourseScheduleResult> handler)
     {
-        DateOnly classDatePointer = ResolveWeekPointer(requestParameters.WeekPaginationIndex);
-        GetCourseScheduleResult result = await handler.Handle(new GetCourseScheduleQuery(requestParameters.CourseId, classDatePointer));
+        ResolvedWeek week = ResolveWeek(requestParameters.WeekPaginationIndex, claimContext.TenantTimezone);
+        GetCourseScheduleResult result = await handler.Handle(new GetCourseScheduleQuery(requestParameters.CourseId, week.Pointer));
         return result switch
         {
-            GetCourseScheduleResult.Found found => Ok(found.Schedule),
+            GetCourseScheduleResult.Found found => Ok(StampWeek(found.Schedule, week)),
             _ => throw new UnreachableException()
         };
     }
 
-    private static DateOnly ResolveWeekPointer(int weekPaginationIndex)
+    private readonly record struct ResolvedWeek(DateOnly Pointer, DateOnly WeekStart, DateOnly Today);
+
+    private static ResolvedWeek ResolveWeek(int weekPaginationIndex, string ianaTimezoneId)
     {
-        DateOnly today = DateOnly.FromDateTime(DateTime.UtcNow);
-        return today.AddDays(weekPaginationIndex * 7);
+        DateOnly today = WeekResolver.TenantToday(ianaTimezoneId, DateTime.UtcNow);
+        (DateOnly pointer, DateOnly weekStart) = WeekResolver.ResolveWeek(today, weekPaginationIndex);
+        return new ResolvedWeek(pointer, weekStart, today);
+    }
+
+    private static GetCourseScheduleDto StampWeek(GetCourseScheduleDto schedule, ResolvedWeek week)
+    {
+        schedule.WeekStartDate = week.WeekStart;
+        schedule.TodayDate = week.Today;
+        return schedule;
     }
 }

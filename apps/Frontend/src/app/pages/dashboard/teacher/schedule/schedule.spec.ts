@@ -11,7 +11,12 @@ import { AuthService } from '@core/auth';
 import { NotificationService } from '@core/services';
 import { Course, CourseScheduleEntry } from '@core/models';
 
-const EMPTY_SCHEDULE = { scheduledClasses: [], uniqueClasses: [] };
+const EMPTY_SCHEDULE = {
+  scheduledClasses: [],
+  uniqueClasses: [],
+  weekStartDate: '2026-04-06',
+  todayDate: '2026-04-08',
+};
 
 function course(id: string, name: string): Course {
   return { id, name, tenantId: 'tenant-1' };

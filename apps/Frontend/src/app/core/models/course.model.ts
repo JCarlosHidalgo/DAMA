@@ -126,6 +126,8 @@ export interface GetUniqueClassDTO {
 export interface GetCourseScheduleDTO {
   scheduledClasses: GetScheduledClassDTO[];
   uniqueClasses: GetUniqueClassDTO[];
+  weekStartDate: string;
+  todayDate: string;
 }
 
 export interface CourseScheduleEntry {

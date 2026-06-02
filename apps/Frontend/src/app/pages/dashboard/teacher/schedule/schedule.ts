@@ -4,10 +4,9 @@ import { MatDialog } from '@angular/material/dialog';
 import { firstValueFrom } from 'rxjs';
 
 import { CourseApi } from '@core/api';
-import { AuthService } from '@core/auth';
 import { ClassGroup, Course, CourseScheduleEntry } from '@core/models';
 import { NotificationService } from '@core/services';
-import { normalizeSchedule, nowInTenant, weekAnchorIsoDate } from '@core/utils';
+import { normalizeSchedule } from '@core/utils';
 import { LoadingSkeleton, PageHead } from '@shared/components';
 import { Calendar } from '@shared/components/calendar';
 import { GroupSelect } from '@shared/components/group-select/group-select';
@@ -67,7 +66,6 @@ import { AttendanceQrDialog, AttendanceQrDialogData } from './attendance-qr-dial
 })
 export class TeacherSchedule {
   private readonly courseApi = inject(CourseApi);
-  private readonly authService = inject(AuthService);
   private readonly matDialog = inject(MatDialog);
   private readonly notifications = inject(NotificationService);
 
@@ -76,9 +74,7 @@ export class TeacherSchedule {
   protected readonly selectedGroupId = signal<string>('');
   private readonly courses = signal<Course[]>([]);
   private readonly weekIndex = signal(0);
-  protected readonly anchorDate = computed(() =>
-    weekAnchorIsoDate(nowInTenant(this.authService.tenantTimezone()), this.weekIndex()),
-  );
+  protected readonly anchorDate = signal<string | null>(null);
 
   protected readonly filteredEntries = computed<CourseScheduleEntry[]>(() => {
     const groupId = this.selectedGroupId();
@@ -115,9 +111,9 @@ export class TeacherSchedule {
     try {
       const scheduleResponse = await firstValueFrom(this.courseApi.getTeacherSchedule(targetWeek));
       await this.ensureCourseNames(scheduleResponse);
-      const today = nowInTenant(this.authService.tenantTimezone());
       this.weekIndex.set(targetWeek);
-      this.entries.set(normalizeSchedule(scheduleResponse, targetWeek, this.courses(), today));
+      this.anchorDate.set(scheduleResponse.weekStartDate);
+      this.entries.set(normalizeSchedule(scheduleResponse, this.courses()));
     } catch {
       this.notifications.error('Error al cargar horario.');
       this.entries.set([]);

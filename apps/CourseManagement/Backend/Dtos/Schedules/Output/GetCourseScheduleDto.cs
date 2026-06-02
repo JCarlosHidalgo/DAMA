@@ -8,4 +8,8 @@ public class GetCourseScheduleDto
     public required List<GetScheduledClassDto> ScheduledClasses { get; set; }
 
     public required List<GetUniqueClassDto> UniqueClasses { get; set; }
+
+    public DateOnly WeekStartDate { get; set; }
+
+    public DateOnly TodayDate { get; set; }
 }

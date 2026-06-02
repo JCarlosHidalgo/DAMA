@@ -7,12 +7,7 @@ import { AttendanceApi, CourseApi } from '@core/api';
 import { AuthService } from '@core/auth';
 import { ClassGroup, Course, CourseScheduleEntry } from '@core/models';
 import { NotificationService } from '@core/services';
-import {
-  AttendanceMarkedDialog,
-  normalizeSchedule,
-  nowInTenant,
-  weekAnchorIsoDate,
-} from '@core/utils';
+import { AttendanceMarkedDialog, normalizeSchedule } from '@core/utils';
 import { LoadingSkeleton, PageHead } from '@shared/components';
 import { Calendar } from '@shared/components/calendar';
 import { GroupSelect } from '@shared/components/group-select/group-select';
@@ -82,9 +77,7 @@ export class StudentSchedule {
   protected readonly selectedGroupId = signal<string>('');
   private readonly courses = signal<Course[]>([]);
   private readonly weekIndex = signal(0);
-  protected readonly anchorDate = computed(() =>
-    weekAnchorIsoDate(nowInTenant(this.authService.tenantTimezone()), this.weekIndex()),
-  );
+  protected readonly anchorDate = signal<string | null>(null);
   private readonly markedScheduledKeys = signal<Set<string>>(new Set());
   private readonly markedUniqueIds = signal<Set<string>>(new Set());
 
@@ -151,9 +144,9 @@ export class StudentSchedule {
     try {
       const scheduleResponse = await firstValueFrom(this.courseApi.getStudentSchedule(targetWeek));
       await this.ensureCourseNames(scheduleResponse);
-      const today = nowInTenant(this.authService.tenantTimezone());
       this.weekIndex.set(targetWeek);
-      this.entries.set(normalizeSchedule(scheduleResponse, targetWeek, this.courses(), today));
+      this.anchorDate.set(scheduleResponse.weekStartDate);
+      this.entries.set(normalizeSchedule(scheduleResponse, this.courses()));
     } catch {
       this.notifications.error('Error al cargar horario.');
       this.entries.set([]);
