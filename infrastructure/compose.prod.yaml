@@ -229,14 +229,15 @@ services:
     build:
       context: ${CONTEXT}
       dockerfile: ./infrastructure/environments/rabbitmq/Dockerfile
-    expose:
-      - "5672"
-      - "15672"
     environment:
       - RABBITMQ_DEFAULT_USER=${RABBITMQ_USER}
       - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASSWORD}
     volumes:
       - rabbitmq-data:/var/lib/rabbitmq
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
     mem_limit: 512m
     cpus: 1.0
     restart: unless-stopped

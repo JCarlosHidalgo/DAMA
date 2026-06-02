@@ -296,8 +296,10 @@ services:
     environment:
       - RABBITMQ_DEFAULT_USER=${RABBITMQ_USER}
       - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASSWORD}
-    ports:
-      - "${RABBITMQ_MANAGEMENT_HOST_PORT}:15672"
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
     mem_limit: 512m
     cpus: 1.0
     restart: unless-stopped
