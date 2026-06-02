@@ -24,9 +24,13 @@ import timeGridPlugin from '@fullcalendar/timegrid';
 
 import { AuthService } from '@core/auth';
 import { CourseScheduleEntry } from '@core/models';
-import { courseColor, shiftIsoDate } from '@core/utils';
+import { courseColor, isoWeekdayIndex, shiftIsoDate } from '@core/utils';
 
 const MOBILE_BREAKPOINT_PX = 768;
+const DEFAULT_SLOT_MIN_HOUR = 8;
+const SLOT_MAX_TIME = '23:00:00';
+const SUNDAY_DAY_INDEX = 0;
+const SUNDAY_WEEKDAY_INDEX = 7;
 
 @Component({
   selector: 'app-calendar',
@@ -182,6 +186,26 @@ export class Calendar {
     () => this.activeView() === 'timeGridDay' && this.selectedDayIndex() !== null,
   );
 
+  private slotMinTime = computed(() => {
+    const earliestHour = this.entries().reduce(
+      (minHour, scheduleEntry) => Math.min(minHour, Number(scheduleEntry.startTime.slice(0, 2))),
+      DEFAULT_SLOT_MIN_HOUR,
+    );
+    return `${String(earliestHour).padStart(2, '0')}:00:00`;
+  });
+
+  private hiddenDays = computed(() => {
+    if (this.activeView() === 'timeGridDay') {
+      return [];
+    }
+    const hasSunday = this.entries().some(
+      (scheduleEntry) =>
+        (scheduleEntry.dayOfWeekIndex ?? isoWeekdayIndex(scheduleEntry.date)) ===
+        SUNDAY_WEEKDAY_INDEX,
+    );
+    return hasSunday ? [] : [SUNDAY_DAY_INDEX];
+  });
+
   protected readonly calendarOptions = computed<CalendarOptions>(() => {
     const tenantTimezone = this.authService.tenantTimezone();
     const showDetails = this.showDetails();
@@ -202,11 +226,12 @@ export class Calendar {
       locale: esLocale,
       timeZone: tenantTimezone,
       firstDay: 1,
+      hiddenDays: this.hiddenDays(),
       headerToolbar: false,
       height: 'auto',
       allDaySlot: false,
-      slotMinTime: '06:00:00',
-      slotMaxTime: '23:00:00',
+      slotMinTime: this.slotMinTime(),
+      slotMaxTime: SLOT_MAX_TIME,
       nowIndicator: true,
       events,
       eventClick: (clickArg: EventClickArg) => {

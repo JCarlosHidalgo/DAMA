@@ -292,4 +292,52 @@ describe('Calendar', () => {
       expect(domNodes[0].querySelector('.ev-teachers')).toBeNull();
     });
   });
+
+  describe('adaptive viewport', () => {
+    function viewport() {
+      return (
+        fixture.componentInstance as unknown as {
+          calendarOptions: () => { slotMinTime: string; slotMaxTime: string; hiddenDays: number[] };
+        }
+      ).calendarOptions();
+    }
+
+    it('defaults to 08:00 start, 23:00 end and hides Sunday in the week view', () => {
+      fixture.detectChanges();
+      expect(viewport().slotMinTime).toBe('08:00:00');
+      expect(viewport().slotMaxTime).toBe('23:00:00');
+      expect(viewport().hiddenDays).toEqual([0]);
+    });
+
+    it('keeps Sunday hidden when no entry falls on Sunday', () => {
+      fixture.componentRef.setInput('entries', sampleEntries);
+      fixture.detectChanges();
+      expect(viewport().hiddenDays).toEqual([0]);
+    });
+
+    it('lowers slotMinTime when a class starts before 08:00', () => {
+      fixture.componentRef.setInput('entries', [{ ...sampleEntries[0], startTime: '07:00:00' }]);
+      fixture.detectChanges();
+      expect(viewport().slotMinTime).toBe('07:00:00');
+    });
+
+    it('shows Sunday when a Scheduled class has dayOfWeekIndex 7', () => {
+      fixture.componentRef.setInput('entries', [{ ...sampleEntries[0], dayOfWeekIndex: 7 }]);
+      fixture.detectChanges();
+      expect(viewport().hiddenDays).toEqual([]);
+    });
+
+    it('shows Sunday when a Unique class lands on a Sunday date', () => {
+      fixture.componentRef.setInput('entries', [{ ...sampleEntries[1], date: '2026-04-12' }]);
+      fixture.detectChanges();
+      expect(viewport().hiddenDays).toEqual([]);
+    });
+
+    it('never hides any day in the mobile day view', () => {
+      fixture.componentRef.setInput('mobile', true);
+      fixture.detectChanges();
+      expect(viewport().hiddenDays).toEqual([]);
+      expect(viewport().slotMinTime).toBe('08:00:00');
+    });
+  });
 });
