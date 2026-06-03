@@ -13,9 +13,8 @@ import { PaginatedTabState } from '@core/utils';
 import { EmptyState, Icon, LoadingSkeleton, PageHead, Paginator } from '@shared/components';
 import { MoneyPipe, TenantDatePipe } from '@shared/pipes';
 
+import { TabKind, tabKindForIndex } from './debt-status.logic';
 import { debtStatusStyles } from './debt-status.variants';
-
-type TabKind = 'pending' | 'success' | 'failed';
 
 @Component({
   selector: 'app-debt-status',
@@ -235,7 +234,7 @@ export class DebtStatus {
   }
 
   onTabChange(index: number): void {
-    const kind = (['pending', 'success', 'failed'] as const)[index];
+    const kind = tabKindForIndex(index);
     const tab = this.tabFor(kind);
     if (!tab.state().page) {
       this.loadTab(kind, 0);
