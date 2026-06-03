@@ -87,6 +87,7 @@ CREATE TABLE IF NOT EXISTS UniqueClassTeacher (
 DELIMITER //
 CREATE PROCEDURE GetScheduledClassesByCourseId(IN courseId CHAR(36))
 BEGIN
+    SET SESSION group_concat_max_len = 1000000;
     SELECT
         sc.Id,
         sc.DayOfWeekIndex,
@@ -111,6 +112,7 @@ DELIMITER ;
 DELIMITER //
 CREATE PROCEDURE GetUniqueClassesOnSameWeekByDate(IN courseId CHAR(36),IN dateInput DATE)
 BEGIN
+    SET SESSION group_concat_max_len = 1000000;
     SELECT
         uc.Id,
         uc.Date,
@@ -325,6 +327,7 @@ DELIMITER ;
 DELIMITER //
 CREATE PROCEDURE GetScheduledClassesByTeacherForTenant(IN tenantId CHAR(36), IN teacherId CHAR(36))
 BEGIN
+    SET SESSION group_concat_max_len = 1000000;
     SELECT
         sc.Id,
         sc.DayOfWeekIndex,
@@ -353,6 +356,7 @@ DELIMITER ;
 DELIMITER //
 CREATE PROCEDURE GetUniqueClassesByTeacherForTenant(IN tenantId CHAR(36), IN teacherId CHAR(36))
 BEGIN
+    SET SESSION group_concat_max_len = 1000000;
     SELECT
         uc.Id,
         uc.Date,
@@ -381,6 +385,7 @@ DELIMITER ;
 DELIMITER //
 CREATE PROCEDURE GetScheduledClassByIdForTenant(IN tenantId CHAR(36), IN id CHAR(36))
 BEGIN
+    SET SESSION group_concat_max_len = 1000000;
     SELECT
         sc.Id,
         sc.DayOfWeekIndex,
@@ -406,6 +411,7 @@ DELIMITER ;
 DELIMITER //
 CREATE PROCEDURE GetUniqueClassByIdForTenant(IN tenantId CHAR(36), IN id CHAR(36))
 BEGIN
+    SET SESSION group_concat_max_len = 1000000;
     SELECT
         uc.Id,
         uc.Date,
@@ -431,6 +437,7 @@ DELIMITER ;
 DELIMITER //
 CREATE PROCEDURE GetScheduledClassesForTenant(IN tenantId CHAR(36))
 BEGIN
+    SET SESSION group_concat_max_len = 1000000;
     SELECT
         sc.Id,
         sc.DayOfWeekIndex,
@@ -455,6 +462,7 @@ DELIMITER ;
 DELIMITER //
 CREATE PROCEDURE GetUniqueClassesOnWeekForTenant(IN tenantId CHAR(36), IN dateInput DATE)
 BEGIN
+    SET SESSION group_concat_max_len = 1000000;
     SELECT
         uc.Id,
         uc.Date,
@@ -483,6 +491,7 @@ DELIMITER ;
 DELIMITER //
 CREATE PROCEDURE GetUniqueClassesOnWeekByTeacherForTenant(IN tenantId CHAR(36), IN teacherId CHAR(36), IN dateInput DATE)
 BEGIN
+    SET SESSION group_concat_max_len = 1000000;
     SELECT
         uc.Id,
         uc.Date,
