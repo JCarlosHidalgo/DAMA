@@ -4,6 +4,7 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'jsdom',
+    setupFiles: ['src/testing/setup/vitest-setup.ts'],
     include: ['src/**/*.spec.ts'],
     reporters: ['default', 'junit'],
     outputFile: {
