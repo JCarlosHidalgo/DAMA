@@ -60,23 +60,34 @@ public sealed class OutboxRelayWorker<TOutboxEvent> : BackgroundService
 
         var batch = await outboxDao.LeasePendingAsync(BatchSize, LeaseDuration);
 
-        foreach (var outboxEvent in batch)
-        {
-            await PublishOneAsync(outboxDao, outboxEvent, cancellationToken);
-        }
-
         if (batch.Count == 0)
         {
             await Task.Delay(IdleDelay, cancellationToken);
+            return;
+        }
+
+        (TOutboxEvent Event, string? FailureMessage)[] outcomes =
+            await Task.WhenAll(batch.Select(outboxEvent => PublishOneAsync(outboxEvent, cancellationToken)));
+
+        foreach ((TOutboxEvent outboxEvent, string? failureMessage) in outcomes)
+        {
+            if (failureMessage is null)
+            {
+                await outboxDao.MarkPublishedAsync(outboxEvent.Id);
+            }
+            else
+            {
+                await outboxDao.RecordFailureAsync(outboxEvent.Id, failureMessage);
+            }
         }
     }
 
-    private async Task PublishOneAsync(IOutboxDao<TOutboxEvent> outboxDao, TOutboxEvent outboxEvent, CancellationToken cancellationToken)
+    private async Task<(TOutboxEvent Event, string? FailureMessage)> PublishOneAsync(TOutboxEvent outboxEvent, CancellationToken cancellationToken)
     {
         try
         {
             await _publisher.PublishAsync(outboxEvent, cancellationToken);
-            await outboxDao.MarkPublishedAsync(outboxEvent.Id);
+            return (outboxEvent, null);
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
@@ -85,8 +96,7 @@ public sealed class OutboxRelayWorker<TOutboxEvent> : BackgroundService
         catch (Exception exception)
         {
             LogEvents.OutboxPublishFailed(_logger, exception, outboxEvent.Id);
-            string truncated = exception.Message.Length > MaxErrorLength ? exception.Message[..MaxErrorLength] : exception.Message;
-            await outboxDao.RecordFailureAsync(outboxEvent.Id, truncated);
+            return (outboxEvent, exception.Message.Length > MaxErrorLength ? exception.Message[..MaxErrorLength] : exception.Message);
         }
     }
 }
