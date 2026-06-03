@@ -3,6 +3,7 @@ using System.Diagnostics;
 using Backend.Application.Courses;
 using Backend.Application.Mediator;
 using Backend.Results.Courses;
+using Backend.Security;
 
 using DAMA.Software.GrpcContracts;
 
@@ -12,7 +13,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace Backend.Grpc.Services;
 
-[Authorize(Roles = "Client")]
+[Authorize(Roles = UserRoles.Client)]
 public sealed class CourseExistenceGrpcService(
     IQueryHandler<CourseExistsQuery, CourseExistsResult> courseExistsHandler)
     : CourseExistence.CourseExistenceBase

@@ -5,7 +5,6 @@ using Backend.Dtos.Attendance.Input;
 using Backend.Dtos.Attendance.Output;
 using Backend.Dtos.Remain.Input;
 using Backend.Dtos.Remain.Output;
-using Backend.Entities.Users;
 using Backend.Options;
 using Backend.Results.Attendance;
 using Backend.Results.Remain;

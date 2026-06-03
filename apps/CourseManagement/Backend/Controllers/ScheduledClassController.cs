@@ -23,7 +23,7 @@ public class ScheduledClassController : ControllerBase
     private const string GroupNotFoundMessage = "Class group not found for tenant.";
     private const string GroupOverlapMessage = "A class in this group already overlaps the requested time slot.";
 
-    [Authorize(Roles = "Client")]
+    [Authorize(Roles = UserRoles.Client)]
     [HttpPost]
     public async Task<ActionResult<GetScheduledClassDto>> CreateScheduledClass(CreateScheduledClassDto createScheduledClassDto,
         [FromServices] ICommandHandler<CreateScheduledClassCommand, CreateScheduledClassResult> handler)
@@ -40,7 +40,7 @@ public class ScheduledClassController : ControllerBase
         };
     }
 
-    [Authorize(Roles = "Client")]
+    [Authorize(Roles = UserRoles.Client)]
     [HttpPut("{id}")]
     public async Task<ActionResult> UpdateScheduledClass(Guid id, UpdateScheduledClassDto updateScheduledClassDto,
         [FromServices] ICommandHandler<UpdateScheduledClassCommand, UpdateScheduledClassResult> handler)
@@ -55,7 +55,7 @@ public class ScheduledClassController : ControllerBase
         };
     }
 
-    [Authorize(Roles = "Client")]
+    [Authorize(Roles = UserRoles.Client)]
     [HttpPut("{id}/transfer")]
     public async Task<ActionResult> TransferScheduledClass(Guid id, TransferClassDto transferClassDto,
         [FromServices] ICommandHandler<TransferScheduledClassCommand, TransferScheduledClassResult> handler)
@@ -71,7 +71,7 @@ public class ScheduledClassController : ControllerBase
         };
     }
 
-    [Authorize(Roles = "Client")]
+    [Authorize(Roles = UserRoles.Client)]
     [HttpDelete("{id}")]
     public async Task<ActionResult> DeleteScheduledClass(Guid id,
         [FromServices] ICommandHandler<DeleteScheduledClassCommand, DeleteScheduledClassResult> handler)

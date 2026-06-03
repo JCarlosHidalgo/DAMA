@@ -39,7 +39,7 @@ public class QrPaymentController : ControllerBase
         _logger = logger;
     }
 
-    [Authorize(Roles = "Student")]
+    [Authorize(Roles = UserRoles.Student)]
     [RequiresServiceTier(3)]
     [HttpPost("{templateId:guid}")]
     public async Task<ActionResult> CreateDebt(Guid templateId, CreateQrDebtDto dto)
@@ -56,7 +56,7 @@ public class QrPaymentController : ControllerBase
         };
     }
 
-    [Authorize(Roles = "Student")]
+    [Authorize(Roles = UserRoles.Student)]
     [RequiresServiceTier(3)]
     [HttpGet("{id:guid}/status")]
     public async Task<ActionResult> GetDebtStatus(Guid id)
@@ -70,7 +70,7 @@ public class QrPaymentController : ControllerBase
         };
     }
 
-    [Authorize(Roles = "Student")]
+    [Authorize(Roles = UserRoles.Student)]
     [RequiresServiceTier(3)]
     [HttpGet("pending")]
     public async Task<ActionResult> ListPending([FromQuery] PaginationParamsDto pagination)
@@ -79,7 +79,7 @@ public class QrPaymentController : ControllerBase
         return Ok(paginatedPayments);
     }
 
-    [Authorize(Roles = "Student")]
+    [Authorize(Roles = UserRoles.Student)]
     [RequiresServiceTier(3)]
     [HttpGet("success")]
     public async Task<ActionResult> ListSuccess([FromQuery] PaginationParamsDto pagination)
@@ -88,7 +88,7 @@ public class QrPaymentController : ControllerBase
         return Ok(paginatedPayments);
     }
 
-    [Authorize(Roles = "Student")]
+    [Authorize(Roles = UserRoles.Student)]
     [RequiresServiceTier(3)]
     [HttpGet("failed")]
     public async Task<ActionResult> ListFailed([FromQuery] PaginationParamsDto pagination)

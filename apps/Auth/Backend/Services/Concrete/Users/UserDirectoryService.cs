@@ -5,6 +5,7 @@ using Backend.Dtos.Users.Output;
 using Backend.Entities.Users;
 using Backend.Pagination;
 using Backend.Results.Users;
+using Backend.Security;
 using Backend.Services.Abstract.Users;
 
 namespace Backend.Services.Concrete.Users;

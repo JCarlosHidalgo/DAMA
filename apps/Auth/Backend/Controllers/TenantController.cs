@@ -2,8 +2,8 @@ using System.Diagnostics;
 
 using Backend.Dtos.Tenants.Input;
 using Backend.Dtos.Tenants.Output;
-using Backend.Entities.Users;
 using Backend.Results.Tenants;
+using Backend.Security;
 using Backend.Services.Abstract.Tenants;
 
 using Microsoft.AspNetCore.Authorization;

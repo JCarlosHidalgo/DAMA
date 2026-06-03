@@ -22,7 +22,7 @@ public class DebtTemplateController : ControllerBase
         _service = service;
     }
 
-    [Authorize(Roles = "Client")]
+    [Authorize(Roles = UserRoles.Client)]
     [HttpPost]
     public async Task<ActionResult> Create(CreateDebtTemplateDto dto)
     {
@@ -35,7 +35,7 @@ public class DebtTemplateController : ControllerBase
         };
     }
 
-    [Authorize(Roles = "Client,Student")]
+    [Authorize(Roles = UserRoles.ClientOrStudent)]
     [HttpGet]
     public async Task<ActionResult> ListByTenant()
     {
@@ -43,7 +43,7 @@ public class DebtTemplateController : ControllerBase
         return Ok(templates);
     }
 
-    [Authorize(Roles = "Client")]
+    [Authorize(Roles = UserRoles.Client)]
     [HttpGet("{templateId:guid}")]
     public async Task<ActionResult> GetById(Guid templateId)
     {
@@ -56,7 +56,7 @@ public class DebtTemplateController : ControllerBase
         };
     }
 
-    [Authorize(Roles = "Client")]
+    [Authorize(Roles = UserRoles.Client)]
     [HttpPut("{templateId:guid}")]
     public async Task<ActionResult> Update(Guid templateId, UpdateDebtTemplateDto dto)
     {
@@ -69,7 +69,7 @@ public class DebtTemplateController : ControllerBase
         };
     }
 
-    [Authorize(Roles = "Client")]
+    [Authorize(Roles = UserRoles.Client)]
     [HttpDelete("{templateId:guid}")]
     public async Task<ActionResult> Delete(Guid templateId)
     {

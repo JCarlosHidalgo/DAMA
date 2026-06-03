@@ -1,6 +1,7 @@
 using Backend.Builders;
 using Backend.Dtos.Users.Output;
 using Backend.Entities.Users;
+using Backend.Security;
 
 namespace Test.Builders;
 

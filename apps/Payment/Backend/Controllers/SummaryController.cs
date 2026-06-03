@@ -1,3 +1,4 @@
+using Backend.Security;
 using Backend.Services.Abstract.Summary;
 
 using Microsoft.AspNetCore.Authorization;
@@ -16,7 +17,7 @@ public class SummaryController : ControllerBase
         _service = service;
     }
 
-    [Authorize(Roles = "Client")]
+    [Authorize(Roles = UserRoles.Client)]
     [HttpGet]
     public async Task<ActionResult> GetSummary()
     {

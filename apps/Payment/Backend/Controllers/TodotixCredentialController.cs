@@ -22,7 +22,7 @@ public class TodotixCredentialController : ControllerBase
         _service = service;
     }
 
-    [Authorize(Roles = "Client")]
+    [Authorize(Roles = UserRoles.Client)]
     [HttpGet]
     public async Task<ActionResult> GetStatus()
     {
@@ -30,7 +30,7 @@ public class TodotixCredentialController : ControllerBase
         return Ok(status);
     }
 
-    [Authorize(Roles = "Student")]
+    [Authorize(Roles = UserRoles.Student)]
     [HttpGet("availability")]
     public async Task<ActionResult> GetAvailability()
     {
@@ -38,7 +38,7 @@ public class TodotixCredentialController : ControllerBase
         return Ok(availability);
     }
 
-    [Authorize(Roles = "Client")]
+    [Authorize(Roles = UserRoles.Client)]
     [HttpGet("reveal")]
     public async Task<ActionResult> Reveal()
     {
@@ -46,7 +46,7 @@ public class TodotixCredentialController : ControllerBase
         return Ok(reveal);
     }
 
-    [Authorize(Roles = "Client")]
+    [Authorize(Roles = UserRoles.Client)]
     [HttpPut]
     public async Task<ActionResult> Update(UpdateTodotixAppKeyDto dto)
     {
@@ -58,7 +58,7 @@ public class TodotixCredentialController : ControllerBase
         };
     }
 
-    [Authorize(Roles = "Client")]
+    [Authorize(Roles = UserRoles.Client)]
     [HttpPost("test")]
     public async Task<ActionResult> Test()
     {

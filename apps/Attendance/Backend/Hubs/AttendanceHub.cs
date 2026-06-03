@@ -1,5 +1,5 @@
 using Backend.Claims;
-using Backend.Entities.Users;
+using Backend.Security;
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;

@@ -24,7 +24,7 @@ public class CourseController : ControllerBase
 {
     private const string CourseNotFoundMessage = "Course not found for tenant.";
 
-    [Authorize(Roles = "Client,Student")]
+    [Authorize(Roles = UserRoles.ClientOrStudent)]
     [HttpGet]
     public async Task<ActionResult<List<GetCourseDto>>> GetAllCourses(
         [FromServices] IQueryHandler<ListCoursesQuery, ListCoursesResult> handler)
@@ -37,7 +37,7 @@ public class CourseController : ControllerBase
         };
     }
 
-    [Authorize(Roles = "Client,Teacher")]
+    [Authorize(Roles = UserRoles.ClientOrTeacher)]
     [HttpGet("{id}")]
     public async Task<ActionResult<GetCourseDto>> GetCourseById(Guid id,
         [FromServices] IQueryHandler<GetCourseByIdQuery, GetCourseByIdResult> handler)
@@ -51,7 +51,7 @@ public class CourseController : ControllerBase
         };
     }
 
-    [Authorize(Roles = "Client")]
+    [Authorize(Roles = UserRoles.Client)]
     [HttpPost]
     public async Task<ActionResult<GetCourseDto>> CreateCourse(CreateCourseDto createCourseDto,
         [FromServices] ICommandHandler<CreateCourseCommand, CreateCourseResult> handler)
@@ -65,7 +65,7 @@ public class CourseController : ControllerBase
         };
     }
 
-    [Authorize(Roles = "Client")]
+    [Authorize(Roles = UserRoles.Client)]
     [HttpPut("{id}")]
     public async Task<ActionResult<GetCourseDto>> UpdateCourse(Guid id, UpdateCourseDto updateCourseDto,
         [FromServices] ICommandHandler<UpdateCourseCommand, UpdateCourseResult> handler)
@@ -79,7 +79,7 @@ public class CourseController : ControllerBase
         };
     }
 
-    [Authorize(Roles = "Client")]
+    [Authorize(Roles = UserRoles.Client)]
     [HttpDelete("{id}")]
     public async Task<ActionResult> DeleteCourse(Guid id,
         [FromServices] ICommandHandler<DeleteCourseCommand, DeleteCourseResult> handler)
@@ -93,7 +93,7 @@ public class CourseController : ControllerBase
         };
     }
 
-    [Authorize(Roles = "Teacher")]
+    [Authorize(Roles = UserRoles.Teacher)]
     [HttpGet("teacher/me")]
     public async Task<ActionResult<GetCourseScheduleDto>> GetMyTeacherSchedule(
         [FromQuery] WeekPointerDto requestParameters,
@@ -109,7 +109,7 @@ public class CourseController : ControllerBase
         };
     }
 
-    [Authorize(Roles = "Client")]
+    [Authorize(Roles = UserRoles.Client)]
     [HttpGet("tenant/schedule")]
     public async Task<ActionResult<GetCourseScheduleDto>> GetTenantSchedule(
         [FromQuery] WeekPointerDto requestParameters,
@@ -125,7 +125,7 @@ public class CourseController : ControllerBase
         };
     }
 
-    [Authorize(Roles = "Student")]
+    [Authorize(Roles = UserRoles.Student)]
     [HttpGet("student/schedule")]
     public async Task<ActionResult<GetCourseScheduleDto>> GetStudentSchedule(
         [FromQuery] WeekPointerDto requestParameters,
@@ -141,7 +141,7 @@ public class CourseController : ControllerBase
         };
     }
 
-    [Authorize(Roles = "Client")]
+    [Authorize(Roles = UserRoles.Client)]
     [HttpGet("schedule")]
     public async Task<ActionResult<GetCourseScheduleDto>> GetCourseSchedule(
         [FromQuery] CourseScheduleParametersDto requestParameters,

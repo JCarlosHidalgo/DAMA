@@ -1,5 +1,5 @@
 using Backend.Claims;
-using Backend.Entities.Users;
+using Backend.Security;
 
 namespace Backend.Services.Concrete;
 

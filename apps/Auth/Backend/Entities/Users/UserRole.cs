@@ -1,3 +1,5 @@
+using Backend.Security;
+
 namespace Backend.Entities.Users;
 
 public sealed class UserRole : IEquatable<UserRole>

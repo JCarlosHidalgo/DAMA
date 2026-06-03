@@ -20,7 +20,7 @@ public class ClassGroupController : ControllerBase
     private const string GroupNotFoundMessage = "Class group not found for tenant.";
     private const string GroupNotEmptyMessage = "Class group still has classes; move or delete them before deleting the group.";
 
-    [Authorize(Roles = "Client,Student")]
+    [Authorize(Roles = UserRoles.ClientOrStudent)]
     [HttpGet]
     public async Task<ActionResult<List<GetClassGroupDto>>> GetGroups(
         [FromServices] IQueryHandler<ListClassGroupsQuery, ListClassGroupsResult> handler)
@@ -33,7 +33,7 @@ public class ClassGroupController : ControllerBase
         };
     }
 
-    [Authorize(Roles = "Teacher")]
+    [Authorize(Roles = UserRoles.Teacher)]
     [HttpGet("teacher/me")]
     public async Task<ActionResult<List<GetClassGroupDto>>> GetMyTeacherGroups(
         [FromServices] IQueryHandler<ListTeacherClassGroupsQuery, ListClassGroupsResult> handler)
@@ -46,7 +46,7 @@ public class ClassGroupController : ControllerBase
         };
     }
 
-    [Authorize(Roles = "Client")]
+    [Authorize(Roles = UserRoles.Client)]
     [HttpPost]
     public async Task<ActionResult<GetClassGroupDto>> CreateGroup(CreateClassGroupDto createClassGroupDto,
         [FromServices] ICommandHandler<CreateClassGroupCommand, CreateClassGroupResult> handler)
@@ -59,7 +59,7 @@ public class ClassGroupController : ControllerBase
         };
     }
 
-    [Authorize(Roles = "Client")]
+    [Authorize(Roles = UserRoles.Client)]
     [HttpPut("{id}")]
     public async Task<ActionResult> UpdateGroup(Guid id, UpdateClassGroupDto updateClassGroupDto,
         [FromServices] ICommandHandler<UpdateClassGroupCommand, UpdateClassGroupResult> handler)
@@ -73,7 +73,7 @@ public class ClassGroupController : ControllerBase
         };
     }
 
-    [Authorize(Roles = "Client")]
+    [Authorize(Roles = UserRoles.Client)]
     [HttpDelete("{id}")]
     public async Task<ActionResult> DeleteGroup(Guid id,
         [FromServices] ICommandHandler<DeleteClassGroupCommand, DeleteClassGroupResult> handler)

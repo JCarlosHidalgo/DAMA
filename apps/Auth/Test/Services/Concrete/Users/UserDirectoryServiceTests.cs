@@ -4,6 +4,7 @@ using Backend.DB.Daos.Abstract.Single.Users;
 using Backend.Dtos.Users.Output;
 using Backend.Entities.Users;
 using Backend.Results.Users;
+using Backend.Security;
 using Backend.Services.Concrete.Users;
 
 using Moq;

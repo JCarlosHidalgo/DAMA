@@ -1,4 +1,4 @@
-namespace Backend.Entities.Users;
+namespace Backend.Security;
 
 public static class UserRoles
 {

@@ -5,8 +5,8 @@ using Backend.Claims;
 using Backend.DB.Daos.Abstract.Single.Remain;
 using Backend.Dtos.Remain.Output;
 using Backend.Entities.Remain;
-using Backend.Entities.Users;
 using Backend.Results.Remain;
+using Backend.Security;
 using Backend.Services.Concrete.Remain;
 
 using Moq;

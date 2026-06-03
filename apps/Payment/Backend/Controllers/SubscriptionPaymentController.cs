@@ -5,6 +5,7 @@ using Backend.Application.Mediator;
 using Backend.Application.Results;
 using Backend.Dtos.Subscriptions.Input;
 using Backend.Results.QrPayments;
+using Backend.Security;
 using Backend.Services.Abstract.Subscriptions;
 
 using Microsoft.AspNetCore.Authorization;
@@ -30,7 +31,7 @@ public class SubscriptionPaymentController : ControllerBase
         _planService = planService;
     }
 
-    [Authorize(Roles = "Client")]
+    [Authorize(Roles = UserRoles.Client)]
     [HttpPost("qr")]
     public async Task<ActionResult> CreateDebt(CreateSubscriptionDebtDto dto)
     {
@@ -46,7 +47,7 @@ public class SubscriptionPaymentController : ControllerBase
         };
     }
 
-    [Authorize(Roles = "Client")]
+    [Authorize(Roles = UserRoles.Client)]
     [HttpGet("qr/{id:guid}/status")]
     public async Task<ActionResult> GetDebtStatus(Guid id)
     {
@@ -59,14 +60,14 @@ public class SubscriptionPaymentController : ControllerBase
         };
     }
 
-    [Authorize(Roles = "Client,Admin")]
+    [Authorize(Roles = UserRoles.ClientOrAdmin)]
     [HttpGet("plans")]
     public async Task<ActionResult> ListPlans()
     {
         return Ok(await _queryService.ListPlansAsync());
     }
 
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = UserRoles.Admin)]
     [HttpPut("plans/{level:int}")]
     public async Task<ActionResult> UpdatePlan(int level, UpdateSubscriptionPlanDto dto)
     {

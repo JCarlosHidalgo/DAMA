@@ -23,7 +23,7 @@ public class UniqueClassController : ControllerBase
     private const string GroupNotFoundMessage = "Class group not found for tenant.";
     private const string GroupOverlapMessage = "A class in this group already overlaps the requested time slot.";
 
-    [Authorize(Roles = "Client")]
+    [Authorize(Roles = UserRoles.Client)]
     [HttpPost]
     public async Task<ActionResult<GetUniqueClassDto>> CreateUniqueClass(CreateUniqueClassDto createUniqueClassDto,
         [FromServices] ICommandHandler<CreateUniqueClassCommand, CreateUniqueClassResult> handler)
@@ -40,7 +40,7 @@ public class UniqueClassController : ControllerBase
         };
     }
 
-    [Authorize(Roles = "Client")]
+    [Authorize(Roles = UserRoles.Client)]
     [HttpPut("{id}")]
     public async Task<ActionResult> UpdateUniqueClass(Guid id, UpdateUniqueClassDto updateUniqueClassDto,
         [FromServices] ICommandHandler<UpdateUniqueClassCommand, UpdateUniqueClassResult> handler)
@@ -55,7 +55,7 @@ public class UniqueClassController : ControllerBase
         };
     }
 
-    [Authorize(Roles = "Client")]
+    [Authorize(Roles = UserRoles.Client)]
     [HttpPut("{id}/transfer")]
     public async Task<ActionResult> TransferUniqueClass(Guid id, TransferClassDto transferClassDto,
         [FromServices] ICommandHandler<TransferUniqueClassCommand, TransferUniqueClassResult> handler)
@@ -71,7 +71,7 @@ public class UniqueClassController : ControllerBase
         };
     }
 
-    [Authorize(Roles = "Client")]
+    [Authorize(Roles = UserRoles.Client)]
     [HttpDelete("{id}")]
     public async Task<ActionResult> DeleteUniqueClass(Guid id,
         [FromServices] ICommandHandler<DeleteUniqueClassCommand, DeleteUniqueClassResult> handler)
