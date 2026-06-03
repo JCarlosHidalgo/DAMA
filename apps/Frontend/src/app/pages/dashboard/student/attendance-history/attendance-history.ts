@@ -10,9 +10,8 @@ import { PaginatedTabState } from '@core/utils';
 import { EmptyState, LoadingSkeleton, PageHead, Paginator } from '@shared/components';
 import { TenantDatePipe } from '@shared/pipes';
 
+import { TabKind, formatTimeRange, tabKindForIndex } from './attendance-history.logic';
 import { attendanceHistoryStyles } from './attendance-history.variants';
-
-type TabKind = 'scheduled' | 'unique';
 
 @Component({
   selector: 'app-attendance-history',
@@ -153,6 +152,7 @@ export class AttendanceHistory {
 
   protected readonly styles = attendanceHistoryStyles();
   protected readonly columns = ['course', 'date', 'time'];
+  protected readonly formatTimeRange = formatTimeRange;
 
   protected readonly scheduled = new PaginatedTabState<ScheduledClassAttendance>();
   protected readonly unique = new PaginatedTabState<UniqueClassAttendance>();
@@ -162,7 +162,7 @@ export class AttendanceHistory {
   }
 
   onTabChange(index: number): void {
-    const kind: TabKind = index === 0 ? 'scheduled' : 'unique';
+    const kind = tabKindForIndex(index);
     const tab = kind === 'scheduled' ? this.scheduled : this.unique;
     if (!tab.state().page) {
       this.loadTab(kind, 0);
@@ -189,9 +189,5 @@ export class AttendanceHistory {
     } catch {
       this.notifications.error('Error al cargar asistencias.');
     }
-  }
-
-  protected formatTimeRange(start: string, end: string): string {
-    return `${start.slice(0, 5)} – ${end.slice(0, 5)}`;
   }
 }
