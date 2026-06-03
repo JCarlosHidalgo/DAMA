@@ -13,6 +13,7 @@ import { DialogService, NotificationService } from '@core/services';
 import { EmptyState, Icon, LoadingSkeleton, PageHead } from '@shared/components';
 import { NoPasswordManager } from '@shared/directives';
 
+import { resolveTenantCreate, resolveTenantEdit } from './tenants.logic';
 import { tenantsStyles } from './tenants.variants';
 
 interface TenantDialogData {
@@ -141,11 +142,12 @@ export class Tenants {
       { mode: 'create', name: '' },
       { width: '420px' },
     );
-    if (!name) {
+    const outcome = resolveTenantCreate(name);
+    if (outcome.kind === 'skip') {
       return;
     }
     try {
-      await firstValueFrom(this.authApi.createTenant({ name }));
+      await firstValueFrom(this.authApi.createTenant({ name: outcome.name }));
       this.notifications.success('Tenant creado.');
       await this.load();
     } catch {
@@ -159,11 +161,12 @@ export class Tenants {
       { mode: 'edit', name: tenant.name },
       { width: '420px' },
     );
-    if (!name || name === tenant.name) {
+    const outcome = resolveTenantEdit(tenant.name, name);
+    if (outcome.kind === 'skip') {
       return;
     }
     try {
-      await firstValueFrom(this.authApi.renameTenant(tenant.id, { name }));
+      await firstValueFrom(this.authApi.renameTenant(tenant.id, { name: outcome.name }));
       this.notifications.success('Tenant actualizado.');
       await this.load();
     } catch {
