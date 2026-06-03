@@ -13,6 +13,12 @@ import { DialogService, NotificationService } from '@core/services';
 import { Icon, PageHead } from '@shared/components';
 import { NoPasswordManager } from '@shared/directives';
 
+import {
+  studentRechargeConfirmMessage,
+  studentRechargeSuccessMessage,
+  tenantRechargeConfirmMessage,
+  tenantRechargeSuccessMessage,
+} from './recharge.logic';
 import { rechargeStyles } from './recharge.variants';
 
 @Component({
@@ -156,7 +162,7 @@ export class Recharge {
 
       const confirmed = await this.dialogs.confirm({
         title: 'Confirmar recarga',
-        message: `Agregar ${quantity} clase(s) a ${student.username}?`,
+        message: studentRechargeConfirmMessage(quantity, student.username),
       });
       if (!confirmed) {
         return;
@@ -169,7 +175,7 @@ export class Recharge {
           studentName: student.username,
         }),
       );
-      this.notifications.success(`Recargadas ${quantity} clase(s) a ${student.username}.`);
+      this.notifications.success(studentRechargeSuccessMessage(quantity, student.username));
       this.studentForm.reset({ name: '', quantity: 1 });
     } catch {
       this.notifications.error('Error al recargar.');
@@ -185,7 +191,7 @@ export class Recharge {
     const { quantity } = this.tenantForm.getRawValue();
     const confirmed = await this.dialogs.confirm({
       title: 'Confirmar recarga masiva',
-      message: `Agregar ${quantity} clase(s) a TODOS los estudiantes con saldo previo. ¿Continuar?`,
+      message: tenantRechargeConfirmMessage(quantity),
       destructive: true,
       confirmLabel: 'Recargar a todos',
     });
@@ -197,7 +203,7 @@ export class Recharge {
       const result = await firstValueFrom(
         this.attendanceApi.clientIncrementTenant({ requestId: crypto.randomUUID(), quantity }),
       );
-      this.notifications.success(`Actualizados ${result.affected} estudiantes.`);
+      this.notifications.success(tenantRechargeSuccessMessage(result.affected));
       this.tenantForm.reset({ quantity: 1 });
     } catch {
       this.notifications.error('Error al recargar.');
