@@ -22,6 +22,8 @@ import { EmptyState, Icon, LoadingSkeleton, PageHead, Tag } from '@shared/compon
 import { NoPasswordManager } from '@shared/directives';
 import { MoneyPipe } from '@shared/pipes';
 
+import { normalizeOptionalEmail, resolveQrPaymentOutcome } from './pay-classes.logic';
+
 import {
   noPaymentCredentialsDialogStyles,
   payClassesStyles,
@@ -164,7 +166,7 @@ export class PayDialog {
     const formValue = this.form.getRawValue();
     this.dialogRef.close({
       method: formValue.method,
-      email: formValue.email.trim() === '' ? null : formValue.email.trim(),
+      email: normalizeOptionalEmail(formValue.email),
     });
   }
 }
@@ -295,14 +297,17 @@ export class PayClasses {
       }
       const finalStatus = await this.pollUntilSettled(queued.identificadorDeuda);
 
-      if (finalStatus.status === 'Ready' && finalStatus.qrSimpleUrl) {
-        this.openQrDialog(finalStatus.identificadorDeuda, finalStatus.qrSimpleUrl);
-      } else if (finalStatus.status === 'Failed') {
-        this.notifications.error(
-          `Error al generar QR: ${finalStatus.error ?? 'reintente más tarde.'}`,
-        );
-      } else {
-        this.notifications.info('Generación en curso. Revise sus pendientes en unos segundos.');
+      const outcome = resolveQrPaymentOutcome(finalStatus);
+      switch (outcome.kind) {
+        case 'qr':
+          this.openQrDialog(outcome.debtId, outcome.qrUrl);
+          break;
+        case 'failed':
+          this.notifications.error(outcome.message);
+          break;
+        case 'pending':
+          this.notifications.info(outcome.message);
+          break;
       }
     } catch {
       this.notifications.error('Error al generar QR. Intente de nuevo.');
