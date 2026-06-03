@@ -74,6 +74,12 @@ grants on that schema. If you named it differently, after running the init as ro
 Alternatively, run the same `.sql` files through DbGate once the stack is up (step 7) — it understands
 `DELIMITER`. No seeding in prod — there is no `SEED_DB=true` and no CSV bind mounts (those are dev-only).
 
+This first release ships the subscription tiers (the "core-services pyramid"): Auth's `init.sql` adds
+`TenantAllowedServices` and its `CreateTenant` procedure inserts a level-0 row for every new tenant, so
+on a clean launch **every tenant starts at level 0** (no paid services) and ascends by paying — there is
+nothing to backfill. Payment's `init.sql` adds the subscription ledgers and seeds the three default
+`SubscriptionPlan` rows (Admin edits price + duration later from the UI).
+
 ### 3. Generate fresh production secrets
 
 Never reuse dev values in production. Full inventory and rotation playbook live in
@@ -86,12 +92,14 @@ Never reuse dev values in production. Full inventory and rotation playbook live 
   base64 -w0 priv.pem   # JWT_PRIVATE_KEY_B64
   base64 -w0 pub.pem    # JWT_PUBLIC_KEY_B64
   ```
-- Payment callback secret → `PAYMENT_CALLBACK_SECRET`:
+- Payment callback secret → `PAYMENT_CALLBACK_SECRET`, and the Payment→Auth subscription gRPC secret
+  → `SUBSCRIPTION_GRPC_SECRET` (same recipe, one value shared by both Auth and Payment):
   ```bash
   openssl rand -base64 64 | tr -d '\n=' | tr '+/' '-_'
   ```
 - RabbitMQ and DbGate credentials → strong random strings.
-- `TODOTIX_APPKEY` → from the Todotix prod merchant panel.
+- `TODOTIX_APPKEY` → from the Todotix prod merchant panel (the global fallback **and** the account that
+  collects tenant subscription payments).
 
 Each backend's `SecretsValidationModule` (Order = -100) fails fast at boot if any secret is missing
 or malformed — a wrong key kills the container with a precise message, not a runtime 500.
@@ -100,10 +108,15 @@ or malformed — a wrong key kills the container with a precise message, not a r
 
 TLS is bootstrapped **inside the compose stack** by the one-shot **`tls-init`** service
 (`infrastructure/environments/tls-init/Dockerfile`), which runs `bootstrap-tls.sh` into the named
-volume **`dama-tls`** on every `docker compose up`. It generates the internal CA + the CourseManagement
-server cert (SAN = `${COURSE_MANAGEMENT_HOST_NAME}`, passed to the `tls-init` service). CourseManagement mounts the volume read-only and Kestrel serves
-`course-management.crt/.key`; Attendance mounts it and its `entrypoint.sh` installs `ca.crt` into the OS
-trust store at container start. Both backends gate on `depends_on: tls-init`
+volume **`dama-tls`** on every `docker compose up`. It generates the internal CA + one server cert per
+gRPC server: `course-management.crt/.key` (SAN = `${COURSE_MANAGEMENT_HOST_NAME}`) for the
+Attendance→CourseManagement edge, and `auth.crt/.key` (SAN = `${AUTH_HOST_NAME}`) for the
+Payment→Auth edge — Auth serves a gRPC endpoint so Payment can apply a tenant's subscription level the
+moment a payment is captured. Both hostnames are passed to the `tls-init` service.
+
+The two gRPC servers (CourseManagement, Auth) mount the volume read-only and their Kestrel serves the
+matching `<name>.crt/.key`; the two clients (Attendance, Payment) mount it and their `entrypoint.sh`
+installs `ca.crt` into the OS trust store at container start. All four gate on `depends_on: tls-init`
 (`service_completed_successfully`), so the bundle always exists before they boot.
 
 Generation is **idempotent** (skips anything already present) and the volume persists across deploys, so
@@ -122,15 +135,18 @@ hand. Set:
 - `CONTEXT` → the Dokploy checkout path from step 0.
 - The five `*_HOST_NAME` (app: `AuthService`, `CourseManagementService`, … defaults) → set each to the
   **real container name Dokploy assigns** (it appends an identifier). They drive `container_name`, the
-  gateway upstreams, the Attendance→CourseManagement gRPC URL and the gRPC cert SAN, so they must match
-  what Docker DNS actually resolves. If you change `COURSE_MANAGEMENT_HOST_NAME` after a first deploy,
-  delete the `dama-tls` volume so the cert SAN regenerates.
+  gateway upstreams, the two gRPC URLs (Attendance→CourseManagement at `${COURSE_MANAGEMENT_HOST_NAME}`,
+  Payment→Auth at `https://${AUTH_HOST_NAME}:81`, derived in compose) and the two gRPC cert SANs, so they
+  must match what Docker DNS actually resolves. If you change `COURSE_MANAGEMENT_HOST_NAME` or
+  `AUTH_HOST_NAME` after a first deploy, delete the `dama-tls` volume so the affected cert SAN regenerates.
 - The four `*_DB_HOST_NAME` → each managed DB's internal host (these interpolate into `server=` of the
   matching `*_DB_CONNECTION_STRING`). Then set the four `*_DB_CONNECTION_STRING` with prod credentials
   (no `*_DB_PASSWORD`/`*_DB_SCHEMA` here — those only feed the dev mysql containers).
 - `FRONTEND_API_BASE_URL` / `GATEWAY_FRONTEND_ORIGIN` → the prod published URLs
   (`https://api.dama-software.org` / `https://dama-software.org`).
 - `JWT_*`, `PAYMENT_CALLBACK_SECRET`, `TODOTIX_BASE_URL`, `TODOTIX_APPKEY`, `TODOTIX_CALLBACK_URL`, `RABBITMQ_*`.
+- `SUBSCRIPTION_GRPC_SECRET` → the shared secret for the Payment→Auth subscription call (compose injects
+  the same value into both services; `SUBSCRIPTION_GRPC_AUTH_URL` is derived, no need to set it).
 - `DBGATE_LOGIN` / `DBGATE_PASSWORD`.
 
 ### 6. Deploy the stack
@@ -161,14 +177,28 @@ This is the production backup story; the schema-evolution story is DbGate (step 
 
 ## Verification
 
-- **TLS auto-bootstrap:** `tls-init` exits successfully and populates `dama-tls`; CourseManagement and
-  Attendance start only after it completes. Images build with no `infrastructure/tls/` on the host.
+- **TLS auto-bootstrap:** `tls-init` exits successfully and populates `dama-tls` with the CA + the
+  `course-management` and `auth` server certs; the four gRPC services (CourseManagement, Auth,
+  Attendance, Payment) start only after it completes. Images build with no `infrastructure/tls/` on the host.
 - **Frontend & API reachable:** `https://dama-software.org` loads; `https://api.dama-software.org`
   routes `/api/<service>/*` to each backend (`infrastructure/verify-gateway-routes.sh` from the host
   checks each upstream resolves through the gateway).
 - **Backends live:** each of the five answers `GET /health` (anonymous, shallow — liveness only).
-- **gRPC mTLS:** Attendance calls CourseManagement/Payment without a cert error (CA is in the
-  caller's trust store; cert SAN = container name, which is identical in prod).
+- **gRPC TLS:** both edges resolve without cert errors — Attendance→CourseManagement and Payment→Auth
+  (each client has the CA in its trust store; each cert SAN = the server's container name).
 - **DbGate:** `https://api.dama-software.org/api/db-gate/` shows the login form; after authenticating,
   the four databases connect and show the schema created in step 2.
 - **Backups:** the first scheduled `mysqldump` lands in the S3 bucket with the configured retention.
+- **Subscription tiers (smoke test):** every tenant launches at level 0 (the `index_core_services_pyramid`
+  JWT claim) and ascends by paying DAMA via QR. Drive one purchase end-to-end with the Bruno `Payment`
+  collection (`api-endpoints/collections/Payment/`): *Admin: List/Update Subscription Plans* (price +
+  duration are seeded and editable) → *Client: Create Subscription QR Debt* (`level` 1–3) → *Client: Get
+  Subscription QR Debt Status* (poll until `Ready`) → *Public: Todotix Callback* with that
+  `transaction_id` and a valid `sig` (HMAC-SHA256 of the id with `PAYMENT_CALLBACK_SECRET`), or pay the
+  QR for real. On capture `PaymentCallbackWorker` makes the **synchronous gRPC Payment→Auth** call
+  (authenticated by `SUBSCRIPTION_GRPC_SECRET`) and `Auth.TenantAllowedServices` shows the bought level +
+  `ExpiresAt`; re-login the Client and the fresh JWT carries that `index_core_services_pyramid` and
+  `subscription_expires_at`. Confirm gating: a level-0 Client sees only Resumen + Suscripción (plus the
+  timezone part of Configuración), Teacher/Student of a level-0 tenant are blocked at login, and after the
+  purchase the new level's tabs unlock — the schedule read-only at level 1, interactable at ≥2 — falling
+  back to level 0 in place when `ExpiresAt` passes (Auth's `SubscriptionExpiryJanitor` persists the reset).
