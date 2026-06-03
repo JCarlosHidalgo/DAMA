@@ -14,6 +14,12 @@ import { AttendanceMarkedDialog, decodeQr, todayDateOnlyInTenant } from '@core/u
 import { Icon, LoadingSkeleton, PageHead } from '@shared/components';
 import { CameraScanner } from '@shared/components/camera-scanner/camera-scanner';
 
+import {
+  classifyMarkAttendanceError,
+  classKindFromPayload,
+  resolveScannedQr,
+  scheduledAttendanceKey,
+} from './mark-attendance.logic';
 import { markAttendanceStatusStyles, markAttendanceStyles } from './mark-attendance.variants';
 
 type ScanState = 'idle' | 'submitting' | 'success' | 'error';
@@ -118,7 +124,11 @@ export class MarkAttendance {
         firstValueFrom(this.attendanceApi.myUniqueHistory(studentId)),
       ]);
       this.markedScheduledKeys.set(
-        new Set(scheduled.map((attendance) => `${attendance.classId}|${attendance.classDate}`)),
+        new Set(
+          scheduled.map((attendance) =>
+            scheduledAttendanceKey(attendance.classId, attendance.classDate),
+          ),
+        ),
       );
       this.markedUniqueIds.set(new Set(unique.map((attendance) => attendance.classId)));
     } catch {
@@ -133,19 +143,15 @@ export class MarkAttendance {
     }
     this.scannerEnabled.set(false);
 
-    const payload = decodeQr(rawQrText);
-    if (!payload) {
-      this.fail('Código QR no válido.');
-      return;
-    }
-
     const expectedTenantId = this.authService.claims()?.tenantId ?? '';
-    if (payload.tenantId !== expectedTenantId) {
-      this.fail('Este QR no corresponde a tu cuenta.');
+    const outcome = resolveScannedQr(decodeQr(rawQrText), expectedTenantId);
+    if (outcome.kind === 'invalid' || outcome.kind === 'foreign') {
+      this.fail(outcome.message);
       return;
     }
+    const payload = outcome.payload;
 
-    const kind = payload.kind === 'SCHEDULED' ? 'Scheduled' : 'Unique';
+    const kind = classKindFromPayload(payload.kind);
     if (this.isAlreadyMarked(kind, payload.classId)) {
       this.showAlreadyMarked();
       return;
@@ -164,22 +170,19 @@ export class MarkAttendance {
       this.notifications.success('Asistencia registrada.', { duration: 3000 });
       setTimeout(() => this.router.navigateByUrl('/yo/resumen'), 1200);
     } catch (error: unknown) {
-      if (error instanceof Error && error.message.includes('AlreadyMarked')) {
+      const errorOutcome = classifyMarkAttendanceError(error);
+      if (errorOutcome.kind === 'alreadyMarked') {
         this.showAlreadyMarked();
         return;
       }
-      const userMessage =
-        error instanceof Error && error.message.includes('OutsideAllowedWindow')
-          ? 'Fuera del horario permitido (01:00–23:00 local).'
-          : 'No se pudo registrar la asistencia.';
-      this.fail(userMessage);
+      this.fail(errorOutcome.message);
     }
   }
 
   private isAlreadyMarked(kind: 'Scheduled' | 'Unique', classId: string): boolean {
     if (kind === 'Scheduled') {
       const today = todayDateOnlyInTenant(this.authService.tenantTimezone());
-      return this.markedScheduledKeys().has(`${classId}|${today}`);
+      return this.markedScheduledKeys().has(scheduledAttendanceKey(classId, today));
     }
     return this.markedUniqueIds().has(classId);
   }
