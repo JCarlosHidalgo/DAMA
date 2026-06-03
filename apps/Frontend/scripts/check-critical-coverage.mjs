@@ -10,6 +10,8 @@ const CRITICAL_PREFIXES = [
   'src/app/shared/pipes/',
 ];
 
+const CRITICAL_SUFFIXES = ['.logic.ts', '.validators.ts', '-store.ts'];
+
 const METRIC_FLOORS = {
   statements: 100,
   functions: 100,
@@ -36,7 +38,10 @@ function loadCoverage() {
 }
 
 function isCritical(relativePath) {
-  return CRITICAL_PREFIXES.some((prefix) => relativePath.startsWith(prefix));
+  return (
+    CRITICAL_PREFIXES.some((prefix) => relativePath.startsWith(prefix)) ||
+    CRITICAL_SUFFIXES.some((suffix) => relativePath.endsWith(suffix))
+  );
 }
 
 function relaxedBranchOk(relativePath, branchPct) {
