@@ -7,3 +7,4 @@ export * from './page-head/page-head';
 export * from './paginator/paginator';
 export * from './stat-card/stat-card';
 export * from './tag/tag';
+export * from './theme-toggle/theme-toggle';

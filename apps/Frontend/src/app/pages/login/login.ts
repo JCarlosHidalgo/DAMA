@@ -14,6 +14,8 @@ import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import { AuthService } from '@core/auth';
 import { defaultRouteForRole } from '@core/router';
 
+import { ThemeToggle } from '@shared/components';
+
 import { loginStyles } from './login.variants';
 
 @Component({
@@ -26,6 +28,7 @@ import { loginStyles } from './login.variants';
     MatButtonModule,
     MatProgressSpinnerModule,
     FaIconComponent,
+    ThemeToggle,
   ],
   templateUrl: './login.html',
   host: { class: 'block min-h-dvh bg-bg' },

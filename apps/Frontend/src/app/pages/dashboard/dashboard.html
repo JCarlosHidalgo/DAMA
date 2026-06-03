@@ -31,6 +31,7 @@
       </button>
       <span [class]="styles().toolbarSpacer()"></span>
       <span [class]="styles().userLabel()">{{ displayName() }}</span>
+      <app-theme-toggle />
       <button mat-icon-button (click)="onLogout()" aria-label="Cerrar sesión">
         <fa-icon [icon]="faLogout" />
       </button>

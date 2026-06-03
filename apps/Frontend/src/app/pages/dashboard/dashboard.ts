@@ -38,6 +38,8 @@ import {
 
 import { AuthService, UserRole } from '@core/auth';
 
+import { ThemeToggle } from '@shared/components';
+
 import { dashboardStyles } from './dashboard.variants';
 
 interface TabEntry {
@@ -84,6 +86,7 @@ const TABS_BY_ROLE: Record<UserRole, TabEntry[]> = {
     MatButtonModule,
     MatListModule,
     FaIconComponent,
+    ThemeToggle,
   ],
   templateUrl: './dashboard.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

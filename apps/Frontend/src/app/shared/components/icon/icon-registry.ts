@@ -27,6 +27,8 @@ import {
   faLayerGroup,
   faRightLeft,
   faClock,
+  faSun,
+  faMoon,
   type IconDefinition,
 } from '@fortawesome/free-solid-svg-icons';
 
@@ -58,7 +60,9 @@ export type IconName =
   | 'building'
   | 'layer-group'
   | 'transfer'
-  | 'clock';
+  | 'clock'
+  | 'sun'
+  | 'moon';
 
 export const ICON_REGISTRY: Record<IconName, IconDefinition> = {
   'graduation-cap': faGraduationCap,
@@ -89,4 +93,6 @@ export const ICON_REGISTRY: Record<IconName, IconDefinition> = {
   'layer-group': faLayerGroup,
   transfer: faRightLeft,
   clock: faClock,
+  sun: faSun,
+  moon: faMoon,
 };

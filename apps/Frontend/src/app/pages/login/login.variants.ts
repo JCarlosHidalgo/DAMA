@@ -2,7 +2,8 @@ import { tv } from '@shared/design';
 
 export const loginStyles = tv({
   slots: {
-    grid: 'grid min-h-dvh grid-cols-1 md:grid-cols-[1.1fr_1fr]',
+    grid: 'relative grid min-h-dvh grid-cols-1 md:grid-cols-[1.1fr_1fr]',
+    themeToggle: 'absolute right-4 top-4 z-10',
     brandPanel:
       'flex flex-col justify-center border-b border-border px-6 py-8 bg-[linear-gradient(135deg,color-mix(in_oklab,var(--dama-primary-soft)_70%,var(--dama-bg)),var(--dama-bg)_80%)] md:border-b-0 md:border-r md:p-16',
     brand: 'mb-8 flex items-center gap-form',
