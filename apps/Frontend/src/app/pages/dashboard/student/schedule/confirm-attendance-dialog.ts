@@ -9,6 +9,8 @@ import { NotificationService } from '@core/services';
 import { ClassKindStrategies } from '@core/strategies';
 import { Icon } from '@shared/components';
 
+import { confirmAttendanceDialogStyles } from './confirm-attendance-dialog.variants';
+
 export interface ConfirmAttendanceDialogData {
   entry: CourseScheduleEntry;
 }
@@ -21,13 +23,13 @@ type SubmitState = 'idle' | 'submitting';
   template: `
     <h2 mat-dialog-title>Confirmar asistencia</h2>
     <mat-dialog-content>
-      <div class="detail">
-        <span class="course">{{ data.entry.courseName }}</span>
-        <span class="time">
+      <div [class]="styles.detail()">
+        <span [class]="styles.course()">{{ data.entry.courseName }}</span>
+        <span [class]="styles.time()">
           <app-icon name="clock" />
           {{ data.entry.startTime.slice(0, 5) }} – {{ data.entry.endTime.slice(0, 5) }}
         </span>
-        <span class="date t-small">{{ data.entry.date }}</span>
+        <span [class]="styles.date()">{{ data.entry.date }}</span>
       </div>
     </mat-dialog-content>
     <mat-dialog-actions align="end">
@@ -48,28 +50,6 @@ type SubmitState = 'idle' | 'submitting';
       </button>
     </mat-dialog-actions>
   `,
-  styles: `
-    .detail {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      min-width: 280px;
-      padding: 8px 0;
-    }
-    .course {
-      font-weight: 600;
-      font-size: 1.1rem;
-    }
-    .time {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-variant-numeric: tabular-nums;
-    }
-    .date {
-      color: var(--dama-text-muted);
-    }
-  `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ConfirmAttendanceDialog {
@@ -78,6 +58,7 @@ export class ConfirmAttendanceDialog {
   private readonly notifications = inject(NotificationService);
   private readonly classKindStrategies = inject(ClassKindStrategies);
 
+  protected readonly styles = confirmAttendanceDialogStyles();
   protected readonly state = signal<SubmitState>('idle');
 
   async confirm(): Promise<void> {

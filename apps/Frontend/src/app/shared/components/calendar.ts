@@ -26,6 +26,8 @@ import { AuthService } from '@core/auth';
 import { CourseScheduleEntry } from '@core/models';
 import { courseColor, isoWeekdayIndex, shiftIsoDate } from '@core/utils';
 
+import { calendarStyles } from './calendar.variants';
+
 const MOBILE_BREAKPOINT_PX = 768;
 const DEFAULT_SLOT_MIN_HOUR = 8;
 const SLOT_MAX_TIME = '23:00:00';
@@ -42,8 +44,8 @@ const SUNDAY_WEEKDAY_INDEX = 7;
     FaIconComponent,
   ],
   template: `
-    <div class="toolbar">
-      <div class="nav">
+    <div [class]="styles.toolbar()">
+      <div [class]="styles.nav()">
         <button mat-icon-button (click)="prev()" matTooltip="Anterior">
           <fa-icon [icon]="faChevronLeft" />
         </button>
@@ -51,9 +53,9 @@ const SUNDAY_WEEKDAY_INDEX = 7;
         <button mat-icon-button (click)="next()" matTooltip="Siguiente">
           <fa-icon [icon]="faChevronRight" />
         </button>
-        <span class="title">{{ currentTitle() }}</span>
+        <span [class]="styles.title()">{{ currentTitle() }}</span>
       </div>
-      <div class="spacer"></div>
+      <div [class]="styles.spacer()"></div>
       <mat-slide-toggle [checked]="showDetails()" (change)="showDetails.set($event.checked)">
         Mostrar datos de clases
       </mat-slide-toggle>
@@ -67,64 +69,19 @@ const SUNDAY_WEEKDAY_INDEX = 7;
       </button>
     </div>
 
-    <div class="calendar-host" #calendarHost>
+    <div [class]="styles.calendarHost()" #calendarHost>
       <full-calendar #fc [options]="calendarOptions()" />
     </div>
   `,
-  styles: `
-    :host {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-    .toolbar {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-    .nav {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-    .title {
-      margin-left: 8px;
-      font-weight: 600;
-    }
-    .spacer {
-      flex: 1;
-    }
-    .calendar-host {
-      background: var(--mat-sys-surface);
-      border-radius: 8px;
-      padding: 8px;
-    }
-    .fc-event-body {
-      font-size: 12px;
-      line-height: 1.25;
-      padding: 2px 4px;
-      display: flex;
-      flex-direction: column;
-      gap: 1px;
-    }
-    .fc-event-body .ev-course {
-      font-weight: 600;
-    }
-    .fc-event-body .ev-time {
-      opacity: 0.9;
-      font-variant-numeric: tabular-nums;
-    }
-    .fc-event-body .ev-teachers {
-      opacity: 0.85;
-    }
-  `,
+  host: { class: 'flex flex-col gap-3' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Calendar {
   private readonly authService = inject(AuthService);
   private readonly fullCalendar = viewChild<FullCalendarComponent>('fc');
   private readonly calendarHost = viewChild<ElementRef<HTMLElement>>('calendarHost');
+
+  protected readonly styles = calendarStyles();
 
   readonly entries = input<CourseScheduleEntry[]>([]);
   readonly anchorDate = input<string | null>(null);

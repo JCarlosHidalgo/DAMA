@@ -10,6 +10,8 @@ import { PaginatedTabState } from '@core/utils';
 import { EmptyState, LoadingSkeleton, PageHead, Paginator } from '@shared/components';
 import { TenantDatePipe } from '@shared/pipes';
 
+import { attendanceHistoryStyles } from './attendance-history.variants';
+
 type TabKind = 'scheduled' | 'unique';
 
 @Component({
@@ -30,13 +32,13 @@ type TabKind = 'scheduled' | 'unique';
       subtitle="Historial de clases donde marcaste asistencia."
     />
 
-    <mat-card class="tabs-card">
-      <mat-card-content>
+    <mat-card [class]="styles.tabsCard()">
+      <mat-card-content [class]="styles.cardContent()">
         <mat-tab-group (selectedIndexChange)="onTabChange($event)">
           <mat-tab label="Recurrentes">
             <ng-template matTabContent>
               @if (scheduled.state().loading) {
-                <div class="skel-stack">
+                <div [class]="styles.skelStack()">
                   <app-loading-skeleton [height]="40" />
                   <app-loading-skeleton [height]="40" />
                   <app-loading-skeleton [height]="40" />
@@ -47,8 +49,12 @@ type TabKind = 'scheduled' | 'unique';
                   message="Aún no tienes asistencias registradas."
                 />
               } @else {
-                <div class="table-wrap">
-                  <table mat-table [dataSource]="scheduled.state().page!.items" class="full">
+                <div [class]="styles.tableWrap()">
+                  <table
+                    mat-table
+                    [dataSource]="scheduled.state().page!.items"
+                    [class]="styles.table()"
+                  >
                     <ng-container matColumnDef="course">
                       <th mat-header-cell *matHeaderCellDef>Nombre de curso</th>
                       <td mat-cell *matCellDef="let attendance">{{ attendance.courseName }}</td>
@@ -69,7 +75,7 @@ type TabKind = 'scheduled' | 'unique';
                     <tr mat-row *matRowDef="let row; columns: columns"></tr>
                   </table>
                 </div>
-                <div class="paginator-wrap">
+                <div [class]="styles.paginatorWrap()">
                   <app-paginator
                     [page]="{
                       currentIndex: scheduled.state().pageIndex,
@@ -85,7 +91,7 @@ type TabKind = 'scheduled' | 'unique';
           <mat-tab label="Únicas">
             <ng-template matTabContent>
               @if (unique.state().loading) {
-                <div class="skel-stack">
+                <div [class]="styles.skelStack()">
                   <app-loading-skeleton [height]="40" />
                   <app-loading-skeleton [height]="40" />
                   <app-loading-skeleton [height]="40" />
@@ -96,8 +102,12 @@ type TabKind = 'scheduled' | 'unique';
                   message="Aún no tienes asistencias a clases únicas."
                 />
               } @else {
-                <div class="table-wrap">
-                  <table mat-table [dataSource]="unique.state().page!.items" class="full">
+                <div [class]="styles.tableWrap()">
+                  <table
+                    mat-table
+                    [dataSource]="unique.state().page!.items"
+                    [class]="styles.table()"
+                  >
                     <ng-container matColumnDef="course">
                       <th mat-header-cell *matHeaderCellDef>Nombre de curso</th>
                       <td mat-cell *matCellDef="let attendance">{{ attendance.courseName }}</td>
@@ -118,7 +128,7 @@ type TabKind = 'scheduled' | 'unique';
                     <tr mat-row *matRowDef="let row; columns: columns"></tr>
                   </table>
                 </div>
-                <div class="paginator-wrap">
+                <div [class]="styles.paginatorWrap()">
                   <app-paginator
                     [page]="{
                       currentIndex: unique.state().pageIndex,
@@ -134,41 +144,14 @@ type TabKind = 'scheduled' | 'unique';
       </mat-card-content>
     </mat-card>
   `,
-  styles: `
-    :host {
-      display: block;
-    }
-    .tabs-card {
-      padding: 0;
-    }
-    .tabs-card mat-card-content {
-      padding: 0;
-    }
-    .skel-stack {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      padding: 20px;
-    }
-    .table-wrap {
-      overflow-x: auto;
-    }
-    .full {
-      width: 100%;
-    }
-    .paginator-wrap {
-      display: flex;
-      justify-content: center;
-      padding: 16px;
-      border-top: 1px solid var(--dama-divider);
-    }
-  `,
+  host: { class: 'block' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AttendanceHistory {
   private readonly attendanceApi = inject(AttendanceApi);
   private readonly notifications = inject(NotificationService);
 
+  protected readonly styles = attendanceHistoryStyles();
   protected readonly columns = ['course', 'date', 'time'];
 
   protected readonly scheduled = new PaginatedTabState<ScheduledClassAttendance>();

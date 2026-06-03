@@ -4,6 +4,7 @@ import {
   Component,
   OnDestroy,
   OnInit,
+  computed,
   inject,
   signal,
 } from '@angular/core';
@@ -20,6 +21,8 @@ import { ClassKindStrategies, RosterEntry } from '@core/strategies';
 import { encodeQr } from '@core/utils';
 import { LoadingSkeleton } from '@shared/components';
 import { QrCard } from '@shared/components/qr-card/qr-card';
+
+import { attendanceQrDialogStyles } from './attendance-qr-dialog.variants';
 
 export interface AttendanceQrDialogData {
   entry: CourseScheduleEntry;
@@ -44,19 +47,21 @@ type ActiveView = 'qr' | 'roster';
 
     @if (isHandset()) {
       <mat-button-toggle-group
-        class="view-toggle"
+        [class]="styles().viewToggle()"
         [value]="activeView()"
         (change)="setView($event.value)"
         hideSingleSelectionIndicator
       >
-        <mat-button-toggle value="qr">QR</mat-button-toggle>
-        <mat-button-toggle value="roster"> Asistencia ({{ roster().length }}) </mat-button-toggle>
+        <mat-button-toggle value="qr" [class]="styles().viewToggleButton()">QR</mat-button-toggle>
+        <mat-button-toggle value="roster" [class]="styles().viewToggleButton()">
+          Asistencia ({{ roster().length }})
+        </mat-button-toggle>
       </mat-button-toggle-group>
     }
 
-    <mat-dialog-content [class.split]="!isHandset()">
+    <mat-dialog-content [class]="styles().content()">
       @if (!isHandset() || activeView() === 'qr') {
-        <section class="qr-pane">
+        <section [class]="styles().qrPane()">
           @defer {
             <app-qr-card
               [payload]="qrData"
@@ -69,20 +74,20 @@ type ActiveView = 'qr' | 'roster';
           } @placeholder {
             <app-loading-skeleton [height]="260" />
           }
-          <p class="hint t-small">Los estudiantes deben escanear este código.</p>
+          <p [class]="styles().hint()">Los estudiantes deben escanear este código.</p>
         </section>
       }
 
       @if (!isHandset() || activeView() === 'roster') {
-        <section class="roster-pane">
-          <header class="roster-head">
+        <section [class]="styles().rosterPane()">
+          <header [class]="styles().rosterHead()">
             <span class="t-small">Asistentes</span>
-            <span class="count">{{ roster().length }}</span>
+            <span [class]="styles().rosterCount()">{{ roster().length }}</span>
           </header>
           @if (roster().length === 0) {
-            <p class="empty t-small">Aún no hay asistencias.</p>
+            <p [class]="styles().empty()">Aún no hay asistencias.</p>
           } @else {
-            <mat-list class="roster-list">
+            <mat-list [class]="styles().rosterList()">
               @for (entry of roster(); track entry.studentId) {
                 <mat-list-item>
                   <span matListItemTitle>{{ entry.studentName }}</span>
@@ -90,7 +95,7 @@ type ActiveView = 'qr' | 'roster';
                     {{ entry.classDate | date: 'shortDate' }}
                   </span>
                   @if (isNew(entry.studentId)) {
-                    <span matListItemMeta class="badge">Nuevo</span>
+                    <span matListItemMeta [class]="styles().badge()">Nuevo</span>
                   }
                 </mat-list-item>
               }
@@ -104,79 +109,7 @@ type ActiveView = 'qr' | 'roster';
       <button mat-button (click)="dialogRef.close()">Cerrar</button>
     </mat-dialog-actions>
   `,
-  styles: `
-    :host {
-      display: block;
-    }
-    .view-toggle {
-      display: flex;
-      margin: 0 24px 8px;
-    }
-    .view-toggle mat-button-toggle {
-      flex: 1;
-    }
-    mat-dialog-content.split {
-      display: flex;
-      gap: 24px;
-      align-items: stretch;
-    }
-    .qr-pane {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      flex: 0 0 auto;
-    }
-    .hint {
-      text-align: center;
-      color: var(--dama-text-muted);
-      margin: 12px 0 0;
-    }
-    .roster-pane {
-      flex: 1 1 280px;
-      min-width: 240px;
-      display: flex;
-      flex-direction: column;
-      max-height: 340px;
-    }
-    .roster-head {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 4px 4px 8px;
-      border-bottom: 1px solid var(--mat-sys-outline-variant, rgba(0, 0, 0, 0.12));
-    }
-    .roster-head .count {
-      font-weight: 600;
-    }
-    .empty {
-      color: var(--dama-text-muted);
-      text-align: center;
-      padding: 16px 0;
-    }
-    .roster-list {
-      overflow-y: auto;
-      flex: 1;
-      padding: 0;
-    }
-    .badge {
-      background: var(--mat-sys-primary-container, #d0e4ff);
-      color: var(--mat-sys-on-primary-container, #001b3d);
-      border-radius: 10px;
-      padding: 2px 8px;
-      font-size: 11px;
-      font-weight: 600;
-      animation: fadeOut 4s forwards;
-    }
-    @keyframes fadeOut {
-      0%,
-      60% {
-        opacity: 1;
-      }
-      100% {
-        opacity: 0;
-      }
-    }
-  `,
+  host: { class: 'block' },
 })
 export class AttendanceQrDialog implements OnInit, OnDestroy {
   readonly dialogRef = inject(MatDialogRef<AttendanceQrDialog>);
@@ -184,6 +117,10 @@ export class AttendanceQrDialog implements OnInit, OnDestroy {
   private readonly authService = inject(AuthService);
   private readonly classKindStrategies = inject(ClassKindStrategies);
   private readonly breakpoints = inject(BreakpointObserver);
+
+  protected readonly styles = computed(() =>
+    attendanceQrDialogStyles({ split: !this.isHandset() }),
+  );
 
   private streamSubscription?: Subscription;
   private breakpointSubscription?: Subscription;

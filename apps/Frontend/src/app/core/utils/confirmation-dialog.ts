@@ -2,6 +2,8 @@ import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 
+import { confirmationDialogStyles } from './confirmation-dialog.variants';
+
 export interface ConfirmDialogData {
   title: string;
   message: string;
@@ -16,7 +18,7 @@ export interface ConfirmDialogData {
   template: `
     <h2 mat-dialog-title>{{ data.title }}</h2>
     <mat-dialog-content>
-      <p class="t-body">{{ data.message }}</p>
+      <p [class]="styles.message()">{{ data.message }}</p>
     </mat-dialog-content>
     <mat-dialog-actions align="end">
       <button mat-button (click)="dialogRef.close(false)">
@@ -25,29 +27,20 @@ export interface ConfirmDialogData {
       <button
         mat-flat-button
         color="primary"
-        [class.destructive]="data.destructive"
+        [class]="styles.confirmButton()"
         (click)="dialogRef.close(true)"
       >
         {{ data.confirmLabel ?? 'Confirmar' }}
       </button>
     </mat-dialog-actions>
   `,
-  styles: `
-    p {
-      margin: 0;
-      color: var(--dama-text);
-    }
-    .destructive {
-      --mdc-filled-button-container-color: var(--dama-danger);
-      --mdc-filled-button-label-text-color: white;
-    }
-    .destructive:hover {
-      --mdc-filled-button-container-color: color-mix(in oklab, var(--dama-danger) 85%, black);
-    }
-  `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ConfirmationDialog {
   readonly dialogRef = inject(MatDialogRef<ConfirmationDialog, boolean>);
   readonly data = inject<ConfirmDialogData>(MAT_DIALOG_DATA);
+
+  protected readonly styles = confirmationDialogStyles({
+    destructive: this.data.destructive ?? false,
+  });
 }

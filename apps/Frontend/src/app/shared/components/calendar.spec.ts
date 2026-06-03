@@ -113,7 +113,7 @@ describe('Calendar', () => {
 
   it('mounts and renders the toolbar', () => {
     fixture.detectChanges();
-    expect(fixture.nativeElement.querySelector('.toolbar')).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('mat-slide-toggle')).not.toBeNull();
     expect(fixture.nativeElement.querySelector('full-calendar')).not.toBeNull();
   });
 

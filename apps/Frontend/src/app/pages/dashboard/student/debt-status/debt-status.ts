@@ -13,6 +13,8 @@ import { PaginatedTabState } from '@core/utils';
 import { EmptyState, Icon, LoadingSkeleton, PageHead, Paginator } from '@shared/components';
 import { MoneyPipe, TenantDatePipe } from '@shared/pipes';
 
+import { debtStatusStyles } from './debt-status.variants';
+
 type TabKind = 'pending' | 'success' | 'failed';
 
 @Component({
@@ -34,13 +36,13 @@ type TabKind = 'pending' | 'success' | 'failed';
   template: `
     <app-page-head title="Estado de deudas" subtitle="Historial de QRs generados." />
 
-    <mat-card class="tabs-card">
-      <mat-card-content>
+    <mat-card [class]="styles.tabsCard()">
+      <mat-card-content [class]="styles.cardContent()">
         <mat-tab-group (selectedIndexChange)="onTabChange($event)">
           <mat-tab label="Pendientes">
             <ng-template matTabContent>
               @if (pending.state().loading) {
-                <div class="skel-stack">
+                <div [class]="styles.skelStack()">
                   <app-loading-skeleton [height]="40" />
                   <app-loading-skeleton [height]="40" />
                   <app-loading-skeleton [height]="40" />
@@ -48,17 +50,21 @@ type TabKind = 'pending' | 'success' | 'failed';
               } @else if (!pending.hasItems()) {
                 <app-empty-state icon="receipt" message="Sin deudas pendientes." />
               } @else {
-                <div class="table-wrap">
-                  <table mat-table [dataSource]="pending.state().page!.items" class="full">
+                <div [class]="styles.tableWrap()">
+                  <table
+                    mat-table
+                    [dataSource]="pending.state().page!.items"
+                    [class]="styles.table()"
+                  >
                     <ng-container matColumnDef="quantity">
-                      <th mat-header-cell *matHeaderCellDef class="num">Clases</th>
-                      <td mat-cell *matCellDef="let payment" class="num">
+                      <th mat-header-cell *matHeaderCellDef [class]="styles.num()">Clases</th>
+                      <td mat-cell *matCellDef="let payment" [class]="styles.num()">
                         {{ payment.classQuantity }}
                       </td>
                     </ng-container>
                     <ng-container matColumnDef="cost">
-                      <th mat-header-cell *matHeaderCellDef class="num">Costo</th>
-                      <td mat-cell *matCellDef="let payment" class="num tabular-nums">
+                      <th mat-header-cell *matHeaderCellDef [class]="styles.num()">Costo</th>
+                      <td mat-cell *matCellDef="let payment" [class]="styles.numMono()">
                         {{ payment.cost | money }}
                       </td>
                     </ng-container>
@@ -88,7 +94,7 @@ type TabKind = 'pending' | 'success' | 'failed';
                     <tr mat-row *matRowDef="let row; columns: pendingColumns"></tr>
                   </table>
                 </div>
-                <div class="paginator-wrap">
+                <div [class]="styles.paginatorWrap()">
                   <app-paginator
                     [page]="{
                       currentIndex: pending.state().pageIndex,
@@ -104,7 +110,7 @@ type TabKind = 'pending' | 'success' | 'failed';
           <mat-tab label="Pagadas">
             <ng-template matTabContent>
               @if (success.state().loading) {
-                <div class="skel-stack">
+                <div [class]="styles.skelStack()">
                   <app-loading-skeleton [height]="40" />
                   <app-loading-skeleton [height]="40" />
                   <app-loading-skeleton [height]="40" />
@@ -112,17 +118,21 @@ type TabKind = 'pending' | 'success' | 'failed';
               } @else if (!success.hasItems()) {
                 <app-empty-state icon="check" message="Sin pagos confirmados." />
               } @else {
-                <div class="table-wrap">
-                  <table mat-table [dataSource]="success.state().page!.items" class="full">
+                <div [class]="styles.tableWrap()">
+                  <table
+                    mat-table
+                    [dataSource]="success.state().page!.items"
+                    [class]="styles.table()"
+                  >
                     <ng-container matColumnDef="quantity">
-                      <th mat-header-cell *matHeaderCellDef class="num">Clases</th>
-                      <td mat-cell *matCellDef="let payment" class="num">
+                      <th mat-header-cell *matHeaderCellDef [class]="styles.num()">Clases</th>
+                      <td mat-cell *matCellDef="let payment" [class]="styles.num()">
                         {{ payment.classQuantity }}
                       </td>
                     </ng-container>
                     <ng-container matColumnDef="cost">
-                      <th mat-header-cell *matHeaderCellDef class="num">Costo</th>
-                      <td mat-cell *matCellDef="let payment" class="num tabular-nums">
+                      <th mat-header-cell *matHeaderCellDef [class]="styles.num()">Costo</th>
+                      <td mat-cell *matCellDef="let payment" [class]="styles.numMono()">
                         {{ payment.cost | money }}
                       </td>
                     </ng-container>
@@ -136,7 +146,7 @@ type TabKind = 'pending' | 'success' | 'failed';
                     <tr mat-row *matRowDef="let row; columns: successColumns"></tr>
                   </table>
                 </div>
-                <div class="paginator-wrap">
+                <div [class]="styles.paginatorWrap()">
                   <app-paginator
                     [page]="{
                       currentIndex: success.state().pageIndex,
@@ -152,7 +162,7 @@ type TabKind = 'pending' | 'success' | 'failed';
           <mat-tab label="Fallidas">
             <ng-template matTabContent>
               @if (failed.state().loading) {
-                <div class="skel-stack">
+                <div [class]="styles.skelStack()">
                   <app-loading-skeleton [height]="40" />
                   <app-loading-skeleton [height]="40" />
                   <app-loading-skeleton [height]="40" />
@@ -160,17 +170,21 @@ type TabKind = 'pending' | 'success' | 'failed';
               } @else if (!failed.hasItems()) {
                 <app-empty-state icon="ban" message="Sin pagos fallidos." />
               } @else {
-                <div class="table-wrap">
-                  <table mat-table [dataSource]="failed.state().page!.items" class="full">
+                <div [class]="styles.tableWrap()">
+                  <table
+                    mat-table
+                    [dataSource]="failed.state().page!.items"
+                    [class]="styles.table()"
+                  >
                     <ng-container matColumnDef="quantity">
-                      <th mat-header-cell *matHeaderCellDef class="num">Clases</th>
-                      <td mat-cell *matCellDef="let payment" class="num">
+                      <th mat-header-cell *matHeaderCellDef [class]="styles.num()">Clases</th>
+                      <td mat-cell *matCellDef="let payment" [class]="styles.num()">
                         {{ payment.classQuantity }}
                       </td>
                     </ng-container>
                     <ng-container matColumnDef="cost">
-                      <th mat-header-cell *matHeaderCellDef class="num">Costo</th>
-                      <td mat-cell *matCellDef="let payment" class="num tabular-nums">
+                      <th mat-header-cell *matHeaderCellDef [class]="styles.num()">Costo</th>
+                      <td mat-cell *matCellDef="let payment" [class]="styles.numMono()">
                         {{ payment.cost | money }}
                       </td>
                     </ng-container>
@@ -184,7 +198,7 @@ type TabKind = 'pending' | 'success' | 'failed';
                     <tr mat-row *matRowDef="let row; columns: failedColumns"></tr>
                   </table>
                 </div>
-                <div class="paginator-wrap">
+                <div [class]="styles.paginatorWrap()">
                   <app-paginator
                     [page]="{
                       currentIndex: failed.state().pageIndex,
@@ -200,44 +214,14 @@ type TabKind = 'pending' | 'success' | 'failed';
       </mat-card-content>
     </mat-card>
   `,
-  styles: `
-    :host {
-      display: block;
-    }
-    .tabs-card {
-      padding: 0;
-    }
-    .tabs-card mat-card-content {
-      padding: 0;
-    }
-    .skel-stack {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      padding: 20px;
-    }
-    .table-wrap {
-      overflow-x: auto;
-    }
-    .full {
-      width: 100%;
-    }
-    .num {
-      text-align: right;
-    }
-    .paginator-wrap {
-      display: flex;
-      justify-content: center;
-      padding: 16px;
-      border-top: 1px solid var(--dama-divider);
-    }
-  `,
+  host: { class: 'block' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DebtStatus {
   private readonly paymentApi = inject(PaymentApi);
   private readonly notifications = inject(NotificationService);
 
+  protected readonly styles = debtStatusStyles();
   protected readonly pendingColumns = ['quantity', 'cost', 'ref', 'qr'];
   protected readonly successColumns = ['quantity', 'cost', 'paidAt'];
   protected readonly failedColumns = ['quantity', 'cost', 'failedAt'];

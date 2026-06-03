@@ -22,6 +22,13 @@ import { EmptyState, Icon, LoadingSkeleton, PageHead, Tag } from '@shared/compon
 import { NoPasswordManager } from '@shared/directives';
 import { MoneyPipe } from '@shared/pipes';
 
+import {
+  noPaymentCredentialsDialogStyles,
+  payClassesStyles,
+  payDialogStyles,
+  qrImageDialogStyles,
+} from './pay-classes.variants';
+
 type PaymentMethod = 'qr';
 
 interface PayDialogData {
@@ -43,14 +50,14 @@ interface QrImageDialogData {
   imports: [MatDialogModule, MatButtonModule],
   template: `
     <h2 mat-dialog-title>QR generado</h2>
-    <mat-dialog-content class="qr-content">
+    <mat-dialog-content [class]="styles.content()">
       <img
-        class="qr-image"
+        [class]="styles.image()"
         [src]="data.qrUrl"
         [alt]="'QR de pago ' + data.debtId"
         referrerpolicy="no-referrer"
       />
-      <p class="hint t-small">Escanea el QR desde tu app bancaria para completar el pago.</p>
+      <p [class]="styles.hint()">Escanea el QR desde tu app bancaria para completar el pago.</p>
     </mat-dialog-content>
     <mat-dialog-actions align="end">
       <a
@@ -65,31 +72,13 @@ interface QrImageDialogData {
       <button mat-flat-button color="primary" (click)="dialogRef.close()">Cerrar</button>
     </mat-dialog-actions>
   `,
-  styles: `
-    .qr-content {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 12px;
-      min-width: 280px;
-    }
-    .qr-image {
-      width: 100%;
-      max-width: 320px;
-      height: auto;
-      display: block;
-    }
-    .hint {
-      color: var(--dama-text-muted);
-      text-align: center;
-      margin: 0;
-    }
-  `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class QrImageDialog {
   readonly dialogRef = inject(MatDialogRef<QrImageDialog>);
   readonly data = inject<QrImageDialogData>(MAT_DIALOG_DATA);
+
+  protected readonly styles = qrImageDialogStyles();
 }
 
 @Component({
@@ -98,7 +87,7 @@ export class QrImageDialog {
   template: `
     <h2 mat-dialog-title>Pagos no disponibles</h2>
     <mat-dialog-content>
-      <p class="message t-body">
+      <p [class]="styles.message()">
         Tu escuela no tiene credenciales de pago configuradas, comunícate con los administradores.
       </p>
     </mat-dialog-content>
@@ -106,17 +95,12 @@ export class QrImageDialog {
       <button mat-flat-button color="primary" (click)="dialogRef.close()">Entendido</button>
     </mat-dialog-actions>
   `,
-  styles: `
-    .message {
-      margin: 0;
-      min-width: 280px;
-      color: var(--dama-text);
-    }
-  `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NoPaymentCredentialsDialog {
   readonly dialogRef = inject(MatDialogRef<NoPaymentCredentialsDialog>);
+
+  protected readonly styles = noPaymentCredentialsDialogStyles();
 }
 
 @Component({
@@ -134,19 +118,19 @@ export class NoPaymentCredentialsDialog {
   template: `
     <h2 mat-dialog-title>Pagar</h2>
     <mat-dialog-content>
-      <div class="info">
+      <div [class]="styles.info()">
         <div>
           <strong>{{ data.template.description }}</strong>
         </div>
         <div>{{ data.template.classQuantity }} clase(s) · {{ data.template.cost | money }}</div>
       </div>
 
-      <form [formGroup]="form" class="form">
-        <mat-radio-group formControlName="method" class="methods">
+      <form [formGroup]="form" [class]="styles.form()">
+        <mat-radio-group formControlName="method" [class]="styles.methods()">
           <mat-radio-button value="qr">QR (Todotix)</mat-radio-button>
         </mat-radio-group>
 
-        <mat-form-field appearance="outline">
+        <mat-form-field appearance="outline" [class]="styles.field()">
           <mat-label>Email (opcional)</mat-label>
           <input matInput type="email" formControlName="email" autocomplete="email" />
           @if (form.controls.email.hasError('email')) {
@@ -162,31 +146,14 @@ export class NoPaymentCredentialsDialog {
       </button>
     </mat-dialog-actions>
   `,
-  styles: `
-    .info {
-      margin-bottom: 12px;
-    }
-    .form {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      min-width: 320px;
-    }
-    .methods {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    mat-form-field {
-      width: 100%;
-    }
-  `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PayDialog {
   private readonly formBuilder = inject(FormBuilder);
   readonly dialogRef = inject(MatDialogRef<PayDialog, PayDialogResult>);
   readonly data = inject<PayDialogData>(MAT_DIALOG_DATA);
+
+  protected readonly styles = payDialogStyles();
 
   protected readonly form = this.formBuilder.nonNullable.group({
     method: ['qr' as PaymentMethod, Validators.required],
@@ -219,7 +186,7 @@ export class PayDialog {
     <app-page-head title="Comprar clases" subtitle="Elige un paquete y paga con QR." />
 
     @if (!loading() && !paymentConfigured()) {
-      <div class="no-credentials-banner">
+      <div [class]="styles.banner()">
         <app-icon name="warning" />
         <span
           >Tu escuela no tiene credenciales de pago configuradas, comunícate con los
@@ -229,7 +196,7 @@ export class PayDialog {
     }
 
     @if (loading()) {
-      <div class="grid">
+      <div [class]="styles.grid()">
         <app-loading-skeleton [height]="180" />
         <app-loading-skeleton [height]="180" />
         <app-loading-skeleton [height]="180" />
@@ -237,17 +204,17 @@ export class PayDialog {
     } @else if (templates().length === 0) {
       <app-empty-state icon="receipt" message="No hay paquetes disponibles." />
     } @else {
-      <div class="grid">
+      <div [class]="styles.grid()">
         @for (template of templates(); track template.id) {
-          <mat-card class="pack-card">
+          <mat-card [class]="styles.packCard()">
             <mat-card-content>
-              <div class="pack-head">
+              <div [class]="styles.packHead()">
                 <span class="t-h2">{{ template.description }}</span>
                 <app-tag variant="primary" [dot]="true"
                   >{{ template.classQuantity }} clase(s)</app-tag
                 >
               </div>
-              <div class="t-num-lg price tabular-nums">{{ template.cost | money }}</div>
+              <div [class]="styles.price()">{{ template.cost | money }}</div>
             </mat-card-content>
             <mat-card-actions align="end">
               <button
@@ -259,7 +226,7 @@ export class PayDialog {
                 @if (paying() === template.id) {
                   <mat-spinner diameter="20" />
                 } @else {
-                  <app-icon name="qr" /><span class="btn-label">Pagar</span>
+                  <app-icon name="qr" /><span [class]="styles.buttonLabel()">Pagar</span>
                 }
               </button>
             </mat-card-actions>
@@ -268,44 +235,7 @@ export class PayDialog {
       </div>
     }
   `,
-  styles: `
-    :host {
-      display: block;
-    }
-    .no-credentials-banner {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 12px 16px;
-      margin-bottom: var(--dama-space-4);
-      border-radius: var(--dama-radius);
-      background: color-mix(in oklab, var(--dama-warning) 14%, transparent);
-      color: var(--dama-text-strong);
-      border: 1px solid color-mix(in oklab, var(--dama-warning) 40%, transparent);
-    }
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: var(--dama-space-4);
-    }
-    .pack-card {
-      display: flex;
-      flex-direction: column;
-    }
-    .pack-head {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-      margin-bottom: 12px;
-    }
-    .price {
-      color: var(--dama-text-strong);
-    }
-    .btn-label {
-      margin-left: 6px;
-    }
-  `,
+  host: { class: 'block' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PayClasses {
@@ -314,6 +244,7 @@ export class PayClasses {
   private readonly dialogs = inject(DialogService);
   private readonly notifications = inject(NotificationService);
 
+  protected readonly styles = payClassesStyles();
   protected readonly templates = signal<DebtTemplate[]>([]);
   protected readonly loading = signal(true);
   protected readonly paying = signal<string | null>(null);

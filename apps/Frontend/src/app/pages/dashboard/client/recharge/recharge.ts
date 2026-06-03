@@ -13,6 +13,8 @@ import { DialogService, NotificationService } from '@core/services';
 import { Icon, PageHead } from '@shared/components';
 import { NoPasswordManager } from '@shared/directives';
 
+import { rechargeStyles } from './recharge.variants';
+
 @Component({
   selector: 'app-recharge',
   imports: [
@@ -29,15 +31,15 @@ import { NoPasswordManager } from '@shared/directives';
   template: `
     <app-page-head title="Recargas" subtitle="Asigna clases a estudiantes." />
 
-    <div class="grid">
+    <div [class]="styles.grid()">
       <mat-card>
         <mat-card-header>
           <mat-card-title>Recarga por estudiante</mat-card-title>
           <mat-card-subtitle>Buscar por nombre exacto</mat-card-subtitle>
         </mat-card-header>
         <mat-card-content>
-          <form [formGroup]="studentForm" (ngSubmit)="onSubmitStudent()">
-            <mat-form-field appearance="outline">
+          <form [formGroup]="studentForm" (ngSubmit)="onSubmitStudent()" [class]="styles.form()">
+            <mat-form-field appearance="outline" [class]="styles.field()">
               <mat-label>Nombre del estudiante</mat-label>
               <input matInput formControlName="name" autocomplete="off" />
               @if (studentForm.controls.name.hasError('required')) {
@@ -48,7 +50,7 @@ import { NoPasswordManager } from '@shared/directives';
               }
             </mat-form-field>
 
-            <mat-form-field appearance="outline">
+            <mat-form-field appearance="outline" [class]="styles.field()">
               <mat-label>Cantidad de clases</mat-label>
               <input matInput type="number" formControlName="quantity" min="1" max="49" />
               @if (studentForm.controls.quantity.invalid && studentForm.controls.quantity.touched) {
@@ -60,6 +62,7 @@ import { NoPasswordManager } from '@shared/directives';
               mat-flat-button
               color="primary"
               type="submit"
+              [class]="styles.submit()"
               [disabled]="studentForm.invalid || studentBusy()"
             >
               @if (studentBusy()) {
@@ -78,16 +81,16 @@ import { NoPasswordManager } from '@shared/directives';
           <mat-card-subtitle>Aplica a todos los estudiantes con saldo previo</mat-card-subtitle>
         </mat-card-header>
         <mat-card-content>
-          <div class="callout warn">
-            <app-icon name="warning" />
-            <p>
+          <div [class]="styles.callout()">
+            <app-icon name="warning" [class]="styles.calloutIcon()" />
+            <p [class]="styles.calloutText()">
               Solo se recargarán estudiantes que ya tengan al menos 1 clase de saldo. No se crearán
               filas nuevas.
             </p>
           </div>
 
-          <form [formGroup]="tenantForm" (ngSubmit)="onSubmitTenant()">
-            <mat-form-field appearance="outline">
+          <form [formGroup]="tenantForm" (ngSubmit)="onSubmitTenant()" [class]="styles.form()">
+            <mat-form-field appearance="outline" [class]="styles.field()">
               <mat-label>Cantidad de clases</mat-label>
               <input matInput type="number" formControlName="quantity" min="1" max="49" />
               @if (tenantForm.controls.quantity.invalid && tenantForm.controls.quantity.touched) {
@@ -99,6 +102,7 @@ import { NoPasswordManager } from '@shared/directives';
               mat-flat-button
               color="primary"
               type="submit"
+              [class]="styles.submit()"
               [disabled]="tenantForm.invalid || tenantBusy()"
             >
               @if (tenantBusy()) {
@@ -112,55 +116,7 @@ import { NoPasswordManager } from '@shared/directives';
       </mat-card>
     </div>
   `,
-  styles: `
-    :host {
-      display: block;
-    }
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-      gap: var(--dama-space-4);
-    }
-    form {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-    mat-form-field {
-      width: 100%;
-    }
-    button[mat-flat-button] {
-      align-self: flex-end;
-      min-width: 140px;
-      height: 44px;
-    }
-
-    .callout {
-      display: flex;
-      align-items: flex-start;
-      gap: 10px;
-      padding: 12px 14px;
-      border-radius: var(--dama-radius-sm);
-      margin-bottom: 14px;
-      font-size: 13px;
-      line-height: 1.4;
-
-      &.warn {
-        background: var(--dama-warning-soft);
-        color: color-mix(in oklab, var(--dama-warning) 80%, var(--dama-text));
-        border: 1px solid color-mix(in oklab, var(--dama-warning) 30%, transparent);
-        app-icon {
-          color: var(--dama-warning);
-          font-size: 16px;
-          flex-shrink: 0;
-          margin-top: 1px;
-        }
-      }
-      p {
-        margin: 0;
-      }
-    }
-  `,
+  host: { class: 'block' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Recharge {
@@ -170,6 +126,7 @@ export class Recharge {
   private readonly dialogs = inject(DialogService);
   private readonly notifications = inject(NotificationService);
 
+  protected readonly styles = rechargeStyles();
   protected readonly studentBusy = signal(false);
   protected readonly tenantBusy = signal(false);
 

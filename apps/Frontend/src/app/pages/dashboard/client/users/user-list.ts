@@ -30,6 +30,8 @@ import { DialogService, NotificationService } from '@core/services';
 import { EmptyState, Icon, LoadingSkeleton, PageHead, Paginator } from '@shared/components';
 import { NoPasswordManager } from '@shared/directives';
 
+import { userDialogStyles, userListStyles } from './user-list.variants';
+
 const USERNAME_REGEX = /^[a-zA-Z0-9 ]+$/;
 const PASSWORD_REGEX = /^[a-zA-Z0-9 !@#$%^&*()_+=?-]+$/;
 const MIN_USERNAME = 5;
@@ -69,8 +71,8 @@ interface RenameDialogData {
       {{ data.kind === 'student' ? 'Nuevo estudiante' : 'Nuevo profesor' }}
     </h2>
     <mat-dialog-content>
-      <form [formGroup]="form" class="form">
-        <mat-form-field appearance="outline">
+      <form [formGroup]="form" [class]="styles.form()">
+        <mat-form-field appearance="outline" [class]="styles.field()">
           <mat-label>Nombre</mat-label>
           <input matInput formControlName="username" autocomplete="off" />
           @if (form.controls.username.invalid && form.controls.username.touched) {
@@ -78,7 +80,7 @@ interface RenameDialogData {
           }
         </mat-form-field>
 
-        <mat-form-field appearance="outline">
+        <mat-form-field appearance="outline" [class]="styles.field()">
           <mat-label>Contraseña</mat-label>
           <input matInput type="password" formControlName="password" autocomplete="new-password" />
           @if (form.controls.password.invalid && form.controls.password.touched) {
@@ -99,23 +101,14 @@ interface RenameDialogData {
       </button>
     </mat-dialog-actions>
   `,
-  styles: `
-    .form {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      min-width: 320px;
-    }
-    mat-form-field {
-      width: 100%;
-    }
-  `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RegisterUserDialog {
   private readonly formBuilder = inject(FormBuilder);
   readonly dialogRef = inject(MatDialogRef<RegisterUserDialog, RegisterDialogResult>);
   readonly data = inject<RegisterDialogData>(MAT_DIALOG_DATA);
+
+  protected readonly styles = userDialogStyles();
 
   protected readonly form = this.formBuilder.nonNullable.group({
     username: [
@@ -152,8 +145,8 @@ export class RegisterUserDialog {
   template: `
     <h2 mat-dialog-title>Renombrar usuario</h2>
     <mat-dialog-content>
-      <form [formGroup]="form" class="form">
-        <mat-form-field appearance="outline">
+      <form [formGroup]="form" [class]="styles.form()">
+        <mat-form-field appearance="outline" [class]="styles.field()">
           <mat-label>Nuevo nombre</mat-label>
           <input matInput formControlName="username" autocomplete="off" />
           @if (form.controls.username.invalid && form.controls.username.touched) {
@@ -174,23 +167,14 @@ export class RegisterUserDialog {
       </button>
     </mat-dialog-actions>
   `,
-  styles: `
-    .form {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      min-width: 320px;
-    }
-    mat-form-field {
-      width: 100%;
-    }
-  `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RenameUserDialog {
   private readonly formBuilder = inject(FormBuilder);
   readonly dialogRef = inject(MatDialogRef<RenameUserDialog, string>);
   readonly data = inject<RenameDialogData>(MAT_DIALOG_DATA);
+
+  protected readonly styles = userDialogStyles();
 
   protected readonly form = this.formBuilder.nonNullable.group({
     username: [
@@ -222,14 +206,14 @@ export class RenameUserDialog {
     <app-page-head [title]="title()" [subtitle]="subtitle()">
       <button actions mat-flat-button color="primary" (click)="onRegister()">
         <app-icon name="user-plus" />
-        <span class="btn-label">Nuevo</span>
+        <span [class]="styles.buttonLabel()">Nuevo</span>
       </button>
     </app-page-head>
 
-    <mat-card class="list-card">
-      <mat-card-content>
+    <mat-card [class]="styles.listCard()">
+      <mat-card-content [class]="styles.cardContent()">
         @if (usersQuery.isPending()) {
-          <div class="skel-stack">
+          <div [class]="styles.skelStack()">
             <app-loading-skeleton [height]="40" />
             <app-loading-skeleton [height]="40" />
             <app-loading-skeleton [height]="40" />
@@ -238,13 +222,13 @@ export class RenameUserDialog {
         } @else if (users().length === 0) {
           <app-empty-state icon="users" message="No hay usuarios." />
         } @else {
-          <div class="table-wrap">
-            <table mat-table [dataSource]="users()" class="full">
+          <div [class]="styles.tableWrap()">
+            <table mat-table [dataSource]="users()" [class]="styles.table()">
               <ng-container matColumnDef="username">
                 <th mat-header-cell *matHeaderCellDef>Nombre</th>
                 <td mat-cell *matCellDef="let user">
-                  <span class="user-cell">
-                    <span class="avatar" [style.background]="avatarColor(user.username)">
+                  <span [class]="styles.userCell()">
+                    <span [class]="styles.avatar()" [style.background]="avatarColor(user.username)">
                       {{ initials(user.username) }}
                     </span>
                     <span class="truncate">{{ user.username }}</span>
@@ -262,7 +246,7 @@ export class RenameUserDialog {
                     matTooltip="Eliminar"
                     (click)="onDelete(user)"
                     [disabled]="isSelf(user)"
-                    class="danger-btn"
+                    [class]="styles.dangerButton()"
                   >
                     <app-icon name="trash" />
                   </button>
@@ -273,7 +257,7 @@ export class RenameUserDialog {
             </table>
           </div>
 
-          <div class="paginator-wrap">
+          <div [class]="styles.paginatorWrap()">
             <app-paginator
               [page]="{ currentIndex: pageIndex(), maxIndex: maxPageIndex() }"
               (pageChange)="changePage($event)"
@@ -283,69 +267,7 @@ export class RenameUserDialog {
       </mat-card-content>
     </mat-card>
   `,
-  styles: `
-    :host {
-      display: block;
-    }
-
-    .list-card {
-      padding: 0;
-    }
-    .list-card mat-card-content {
-      padding: 0;
-    }
-
-    .skel-stack {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      padding: 20px;
-    }
-
-    .table-wrap {
-      overflow-x: auto;
-    }
-    .full {
-      width: 100%;
-    }
-
-    .danger-btn {
-      color: var(--dama-danger);
-    }
-    .danger-btn[disabled] {
-      color: var(--dama-text-faint);
-    }
-
-    .user-cell {
-      display: inline-flex;
-      align-items: center;
-      gap: 12px;
-      max-width: 100%;
-    }
-    .avatar {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      display: inline-grid;
-      place-items: center;
-      color: white;
-      font-weight: 600;
-      font-size: 12px;
-      flex-shrink: 0;
-      letter-spacing: 0.02em;
-    }
-
-    .paginator-wrap {
-      display: flex;
-      justify-content: center;
-      padding: 16px;
-      border-top: 1px solid var(--dama-divider);
-    }
-
-    .btn-label {
-      margin-left: 6px;
-    }
-  `,
+  host: { class: 'block' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class UserList {
@@ -357,6 +279,7 @@ export class UserList {
   private readonly notifications = inject(NotificationService);
   private readonly queryClient = inject(QueryClient);
 
+  protected readonly styles = userListStyles();
   protected readonly pageIndex = signal(0);
   protected readonly columns = ['username', 'actions'];
 

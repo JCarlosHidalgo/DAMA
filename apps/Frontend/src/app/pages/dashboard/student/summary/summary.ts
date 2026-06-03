@@ -7,6 +7,8 @@ import { AttendanceApi } from '@core/api';
 import { StudentRemainClasses } from '@core/models';
 import { ErrorState, Icon, LoadingSkeleton, PageHead } from '@shared/components';
 
+import { studentSummaryStyles } from './summary.variants';
+
 type RemainState =
   | { kind: 'loading' }
   | { kind: 'ready'; data: StudentRemainClasses }
@@ -27,14 +29,17 @@ type RemainState =
       }
       @case ('ready') {
         @if (ready(); as remainStatus) {
-          <mat-card class="remain" [class.zero]="remainStatus.numberOfClasses === 0">
+          <mat-card [class]="styles().remain()">
             <mat-card-content>
-              <div class="head">
+              <div [class]="styles().head()">
                 <span class="t-label-up">Clases restantes</span>
                 <span class="t-small">{{ remainStatus.studentName ?? 'Tu cuenta' }}</span>
               </div>
-              <div class="count">
-                <app-icon [name]="remainStatus.numberOfClasses === 0 ? 'ban' : 'calendar-check'" />
+              <div [class]="styles().count()">
+                <app-icon
+                  [class]="styles().countIcon()"
+                  [name]="remainStatus.numberOfClasses === 0 ? 'ban' : 'calendar-check'"
+                />
                 <span class="t-num-xl tabular-nums">{{ remainStatus.numberOfClasses }}</span>
               </div>
               <p class="t-small">
@@ -50,45 +55,15 @@ type RemainState =
       }
     }
   `,
-  styles: `
-    :host {
-      display: block;
-    }
-
-    .remain {
-      max-width: 480px;
-      margin: 0 auto;
-      position: relative;
-    }
-    .remain.zero {
-      border-left: 4px solid var(--dama-danger);
-    }
-
-    .head {
-      display: flex;
-      align-items: baseline;
-      justify-content: space-between;
-      gap: 12px;
-      margin-bottom: 8px;
-    }
-    .count {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      margin: 12px 0 16px;
-      app-icon {
-        font-size: 40px;
-        color: var(--dama-text-muted);
-      }
-    }
-    .remain.zero app-icon {
-      color: var(--dama-danger);
-    }
-  `,
+  host: { class: 'block' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class StudentSummary {
   private readonly attendanceApi = inject(AttendanceApi);
+
+  protected readonly styles = computed(() =>
+    studentSummaryStyles({ zero: this.ready()?.numberOfClasses === 0 }),
+  );
 
   readonly state = toSignal(
     this.attendanceApi.getMyRemain().pipe(

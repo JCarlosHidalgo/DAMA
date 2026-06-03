@@ -18,6 +18,8 @@ import { EmptyState, Icon, LoadingSkeleton, PageHead, Tag } from '@shared/compon
 import { NoPasswordManager } from '@shared/directives';
 import { MoneyPipe } from '@shared/pipes';
 
+import { debtTemplateDialogStyles, debtTemplatesStyles } from './debt-templates.variants';
+
 const DEBT_TEMPLATES_QUERY_KEY = ['debt-templates'] as const;
 
 interface TemplateDialogData {
@@ -46,18 +48,18 @@ interface TemplateDialogResult {
       {{ data.mode === 'create' ? 'Nueva plantilla' : 'Editar plantilla' }}
     </h2>
     <mat-dialog-content>
-      <form [formGroup]="form" class="form">
-        <mat-form-field appearance="outline">
+      <form [formGroup]="form" [class]="styles.form()">
+        <mat-form-field appearance="outline" [class]="styles.field()">
           <mat-label>Descripción</mat-label>
           <input matInput formControlName="description" autocomplete="off" />
         </mat-form-field>
 
-        <mat-form-field appearance="outline">
+        <mat-form-field appearance="outline" [class]="styles.field()">
           <mat-label>Cantidad de clases</mat-label>
           <input matInput type="number" min="1" formControlName="classQuantity" />
         </mat-form-field>
 
-        <mat-form-field appearance="outline">
+        <mat-form-field appearance="outline" [class]="styles.field()">
           <mat-label>Costo (Bs)</mat-label>
           <input matInput type="number" min="1" formControlName="cost" />
         </mat-form-field>
@@ -75,23 +77,14 @@ interface TemplateDialogResult {
       </button>
     </mat-dialog-actions>
   `,
-  styles: `
-    .form {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      min-width: 320px;
-    }
-    mat-form-field {
-      width: 100%;
-    }
-  `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DebtTemplateDialog {
   private readonly formBuilder = inject(FormBuilder);
   readonly dialogRef = inject(MatDialogRef<DebtTemplateDialog, TemplateDialogResult>);
   readonly data = inject<TemplateDialogData>(MAT_DIALOG_DATA);
+
+  protected readonly styles = debtTemplateDialogStyles();
 
   protected readonly form = this.formBuilder.nonNullable.group({
     description: [
@@ -123,14 +116,14 @@ export class DebtTemplateDialog {
   template: `
     <app-page-head title="Plantillas de cobro" [subtitle]="subtitle()">
       <button actions mat-flat-button color="primary" (click)="onCreate()">
-        <app-icon name="plus" /><span class="btn-label">Nueva plantilla</span>
+        <app-icon name="plus" /><span [class]="styles.buttonLabel()">Nueva plantilla</span>
       </button>
     </app-page-head>
 
-    <mat-card class="list-card">
-      <mat-card-content>
+    <mat-card [class]="styles.listCard()">
+      <mat-card-content [class]="styles.cardContent()">
         @if (templatesQuery.isPending()) {
-          <div class="skel-stack">
+          <div [class]="styles.skelStack()">
             <app-loading-skeleton [height]="40" />
             <app-loading-skeleton [height]="40" />
             <app-loading-skeleton [height]="40" />
@@ -138,21 +131,21 @@ export class DebtTemplateDialog {
         } @else if (templates().length === 0) {
           <app-empty-state icon="receipt" message="No hay plantillas." />
         } @else {
-          <div class="table-wrap">
-            <table mat-table [dataSource]="templates()" class="full">
+          <div [class]="styles.tableWrap()">
+            <table mat-table [dataSource]="templates()" [class]="styles.table()">
               <ng-container matColumnDef="description">
                 <th mat-header-cell *matHeaderCellDef>Descripción</th>
                 <td mat-cell *matCellDef="let template">{{ template.description }}</td>
               </ng-container>
               <ng-container matColumnDef="classes">
-                <th mat-header-cell *matHeaderCellDef class="num">Clases</th>
-                <td mat-cell *matCellDef="let template" class="num">
+                <th mat-header-cell *matHeaderCellDef [class]="styles.num()">Clases</th>
+                <td mat-cell *matCellDef="let template" [class]="styles.num()">
                   <app-tag variant="primary">{{ template.classQuantity }}</app-tag>
                 </td>
               </ng-container>
               <ng-container matColumnDef="cost">
-                <th mat-header-cell *matHeaderCellDef class="num">Costo</th>
-                <td mat-cell *matCellDef="let template" class="num tabular-nums">
+                <th mat-header-cell *matHeaderCellDef [class]="styles.num()">Costo</th>
+                <td mat-cell *matCellDef="let template" [class]="styles.numMono()">
                   {{ template.cost | money }}
                 </td>
               </ng-container>
@@ -165,7 +158,7 @@ export class DebtTemplateDialog {
                   <button
                     mat-icon-button
                     matTooltip="Eliminar"
-                    class="danger-btn"
+                    [class]="styles.dangerButton()"
                     (click)="onDelete(template)"
                   >
                     <app-icon name="trash" />
@@ -180,38 +173,7 @@ export class DebtTemplateDialog {
       </mat-card-content>
     </mat-card>
   `,
-  styles: `
-    :host {
-      display: block;
-    }
-    .list-card {
-      padding: 0;
-    }
-    .list-card mat-card-content {
-      padding: 0;
-    }
-    .skel-stack {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      padding: 20px;
-    }
-    .table-wrap {
-      overflow-x: auto;
-    }
-    .full {
-      width: 100%;
-    }
-    .num {
-      text-align: right;
-    }
-    .danger-btn {
-      color: var(--dama-danger);
-    }
-    .btn-label {
-      margin-left: 6px;
-    }
-  `,
+  host: { class: 'block' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DebtTemplates {
@@ -220,6 +182,7 @@ export class DebtTemplates {
   private readonly notifications = inject(NotificationService);
   private readonly queryClient = inject(QueryClient);
 
+  protected readonly styles = debtTemplatesStyles();
   protected readonly columns = ['description', 'classes', 'cost', 'actions'];
 
   protected readonly templatesQuery = injectQuery(() => ({

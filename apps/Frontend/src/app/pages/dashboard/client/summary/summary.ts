@@ -7,6 +7,8 @@ import { PaymentSummary } from '@core/models';
 import { ErrorState, LoadingSkeleton, PageHead, StatCard } from '@shared/components';
 import { MoneyPipe, TenantDatePipe } from '@shared/pipes';
 
+import { clientSummaryStyles } from './summary.variants';
+
 type SummaryState =
   | { kind: 'loading' }
   | { kind: 'ready'; data: PaymentSummary }
@@ -20,7 +22,7 @@ type SummaryState =
 
     @switch (state().kind) {
       @case ('loading') {
-        <div class="kpi-grid">
+        <div [class]="styles.kpiGrid()">
           <app-loading-skeleton [height]="120" />
           <app-loading-skeleton [height]="120" />
           <app-loading-skeleton [height]="120" />
@@ -32,7 +34,7 @@ type SummaryState =
       }
       @case ('ready') {
         @if (ready(); as summary) {
-          <div class="kpi-grid">
+          <div [class]="styles.kpiGrid()">
             <app-stat-card
               label="Ganancias totales"
               [value]="summary.totalEarnings | money"
@@ -48,9 +50,9 @@ type SummaryState =
               [value]="summary.firstPaymentDate | tenantDate"
               icon="calendar"
             />
-            <div class="range-card">
+            <div [class]="styles.rangeCard()">
               <span class="t-label-up">Rango consultado</span>
-              <span class="range-value t-body-md">
+              <span [class]="styles.rangeValue()">
                 {{ summary.from | tenantDate }} → {{ summary.to | tenantDate }}
               </span>
             </div>
@@ -59,36 +61,13 @@ type SummaryState =
       }
     }
   `,
-  styles: `
-    :host {
-      display: block;
-    }
-
-    .kpi-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: var(--dama-space-4);
-    }
-    .range-card {
-      grid-column: 1 / -1;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      padding: var(--dama-space-4) var(--dama-space-5);
-      background: var(--dama-surface);
-      border: 1px solid var(--dama-border);
-      border-radius: var(--dama-radius-md);
-      box-shadow: var(--dama-shadow-xs);
-    }
-    .range-value {
-      color: var(--dama-text);
-      font-variant-numeric: tabular-nums;
-    }
-  `,
+  host: { class: 'block' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ClientSummary {
   private readonly paymentApi = inject(PaymentApi);
+
+  protected readonly styles = clientSummaryStyles();
 
   readonly state = toSignal(
     this.paymentApi.getSummary().pipe(

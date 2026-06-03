@@ -13,6 +13,8 @@ import { DialogService, NotificationService } from '@core/services';
 import { EmptyState, Icon, LoadingSkeleton, PageHead } from '@shared/components';
 import { NoPasswordManager } from '@shared/directives';
 
+import { tenantsStyles } from './tenants.variants';
+
 interface TenantDialogData {
   mode: 'create' | 'edit';
   name: string;
@@ -86,64 +88,23 @@ export class TenantDialog {
     } @else if (tenants().length === 0) {
       <app-empty-state icon="building" message="Aún no hay tenants registrados." />
     } @else {
-      <div class="tenant-grid">
+      <div [class]="styles.grid()">
         @for (tenant of tenants(); track tenant.id) {
           <mat-card
-            class="tenant-card"
+            [class]="styles.card()"
             appearance="outlined"
             tabindex="0"
             (click)="onEdit(tenant)"
             (keyup.enter)="onEdit(tenant)"
           >
-            <mat-card-content class="tenant-card__content">
-              <app-icon class="tenant-card__icon" name="building" />
-              <h2 class="tenant-card__name">{{ tenant.name }}</h2>
-              <p class="tenant-card__tz">{{ tenant.timezone }}</p>
+            <mat-card-content [class]="styles.cardContent()">
+              <app-icon [class]="styles.cardIcon()" name="building" />
+              <h2 [class]="styles.cardName()">{{ tenant.name }}</h2>
+              <p [class]="styles.cardTz()">{{ tenant.timezone }}</p>
             </mat-card-content>
           </mat-card>
         }
       </div>
-    }
-  `,
-  styles: `
-    .tenant-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-      gap: 1rem;
-    }
-
-    .tenant-card {
-      cursor: pointer;
-      transition: box-shadow 150ms ease;
-    }
-
-    .tenant-card:hover,
-    .tenant-card:focus-visible {
-      box-shadow: 0 4px 16px rgb(0 0 0 / 0.12);
-    }
-
-    .tenant-card__content {
-      display: flex;
-      flex-direction: column;
-      gap: 0.25rem;
-    }
-
-    .tenant-card__icon {
-      margin-bottom: 0.5rem;
-      font-size: 1.75rem;
-      color: var(--mat-sys-primary, #3f51b5);
-    }
-
-    .tenant-card__name {
-      margin: 0;
-      font-size: 1.1rem;
-      font-weight: 600;
-    }
-
-    .tenant-card__tz {
-      margin: 0;
-      color: rgb(0 0 0 / 0.6);
-      font-size: 0.85rem;
     }
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -153,6 +114,7 @@ export class Tenants {
   private readonly dialogs = inject(DialogService);
   private readonly notifications = inject(NotificationService);
 
+  protected readonly styles = tenantsStyles();
   protected readonly tenants = signal<Tenant[]>([]);
   protected readonly isLoading = signal(true);
   protected readonly isError = signal(false);

@@ -14,6 +14,8 @@ import { AttendanceMarkedDialog, decodeQr, todayDateOnlyInTenant } from '@core/u
 import { Icon, LoadingSkeleton, PageHead } from '@shared/components';
 import { CameraScanner } from '@shared/components/camera-scanner/camera-scanner';
 
+import { markAttendanceStatusStyles, markAttendanceStyles } from './mark-attendance.variants';
+
 type ScanState = 'idle' | 'submitting' | 'success' | 'error';
 
 @Component({
@@ -30,13 +32,13 @@ type ScanState = 'idle' | 'submitting' | 'success' | 'error';
   template: `
     <app-page-head title="Marcar asistencia" subtitle="Escanea el código QR del profesor." />
 
-    <mat-card class="scanner-card">
+    <mat-card [class]="styles.scannerCard()">
       <mat-card-content>
         @if (remain() !== null && remain() === 0) {
-          <div class="zero-state">
-            <app-icon name="ban" />
-            <p class="t-h2">No tienes clases disponibles.</p>
-            <p class="t-small">Compra un paquete antes de marcar asistencia.</p>
+          <div [class]="styles.zeroState()">
+            <app-icon name="ban" [class]="styles.zeroIcon()" />
+            <p [class]="styles.zeroTitle()">No tienes clases disponibles.</p>
+            <p [class]="styles.zeroHint()">Compra un paquete antes de marcar asistencia.</p>
           </div>
         } @else {
           @defer {
@@ -47,19 +49,19 @@ type ScanState = 'idle' | 'submitting' | 'success' | 'error';
 
           @switch (state()) {
             @case ('submitting') {
-              <div class="status">
+              <div [class]="statusStyles({ tone: 'neutral' })">
                 <mat-spinner diameter="24" />
                 <span class="t-body">Registrando...</span>
               </div>
             }
             @case ('success') {
-              <div class="status ok">
+              <div [class]="statusStyles({ tone: 'ok' })">
                 <app-icon name="check" />
                 <span class="t-body">Asistencia registrada.</span>
               </div>
             }
             @case ('error') {
-              <div class="status err">
+              <div [class]="statusStyles({ tone: 'err' })">
                 <app-icon name="warning" />
                 <span class="t-body">{{ errorMessage() }}</span>
                 <button mat-stroked-button (click)="reset()">Reintentar</button>
@@ -70,59 +72,7 @@ type ScanState = 'idle' | 'submitting' | 'success' | 'error';
       </mat-card-content>
     </mat-card>
   `,
-  styles: `
-    :host {
-      display: block;
-    }
-    .scanner-card {
-      max-width: 600px;
-      margin: 0 auto;
-    }
-
-    .status {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      padding: 16px;
-      margin-top: 14px;
-      border-radius: var(--dama-radius-sm);
-      flex-wrap: wrap;
-
-      &.ok {
-        background: var(--dama-success-soft);
-        color: var(--dama-success);
-      }
-      &.err {
-        background: var(--dama-danger-soft);
-        color: var(--dama-danger);
-      }
-    }
-
-    .zero-state {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 6px;
-      padding: 36px 20px;
-      text-align: center;
-      background: var(--dama-danger-soft);
-      border: 1px solid color-mix(in oklab, var(--dama-danger) 25%, transparent);
-      border-radius: var(--dama-radius-md);
-      app-icon {
-        font-size: 48px;
-        color: var(--dama-danger);
-        margin-bottom: 8px;
-      }
-      p {
-        margin: 0;
-        color: var(--dama-text);
-      }
-      .t-small {
-        color: var(--dama-text-muted);
-      }
-    }
-  `,
+  host: { class: 'block' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MarkAttendance {
@@ -133,6 +83,8 @@ export class MarkAttendance {
   private readonly matDialog = inject(MatDialog);
   private readonly router = inject(Router);
 
+  protected readonly styles = markAttendanceStyles();
+  protected readonly statusStyles = markAttendanceStatusStyles;
   protected readonly state = signal<ScanState>('idle');
   protected readonly errorMessage = signal<string>('');
   protected readonly remain = signal<number | null>(null);

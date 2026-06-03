@@ -88,13 +88,17 @@ describe('ConfirmationDialog', () => {
     });
     const confirmButton = (fixture.nativeElement as HTMLElement).querySelectorAll('button')[1];
 
-    expect(confirmButton.classList.contains('destructive')).toBe(true);
+    expect(
+      confirmButton.classList.contains('[--mdc-filled-button-container-color:var(--dama-danger)]'),
+    ).toBe(true);
   });
 
   it('does not mark the confirm button as destructive by default', () => {
     const fixture = configureWithData({ title: 't', message: 'm' });
     const confirmButton = (fixture.nativeElement as HTMLElement).querySelectorAll('button')[1];
 
-    expect(confirmButton.classList.contains('destructive')).toBe(false);
+    expect(
+      confirmButton.classList.contains('[--mdc-filled-button-container-color:var(--dama-danger)]'),
+    ).toBe(false);
   });
 });

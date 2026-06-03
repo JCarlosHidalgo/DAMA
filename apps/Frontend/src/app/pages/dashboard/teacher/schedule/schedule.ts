@@ -12,6 +12,7 @@ import { LoadingSkeleton, PageHead } from '@shared/components';
 import { Calendar } from '@shared/components/calendar';
 import { GroupSelect } from '@shared/components/group-select/group-select';
 import { AttendanceQrDialog, AttendanceQrDialogData } from './attendance-qr-dialog';
+import { teacherScheduleStyles } from './schedule.variants';
 
 @Component({
   selector: 'app-teacher-schedule',
@@ -19,7 +20,7 @@ import { AttendanceQrDialog, AttendanceQrDialogData } from './attendance-qr-dial
   template: `
     <app-page-head title="Mi horario" [subtitle]="scheduleSubtitle()" />
 
-    <mat-card class="controls-card">
+    <mat-card [class]="styles.controlsCard()">
       <mat-card-content>
         <app-group-select
           source="teacher"
@@ -30,8 +31,8 @@ import { AttendanceQrDialog, AttendanceQrDialogData } from './attendance-qr-dial
       </mat-card-content>
     </mat-card>
 
-    <mat-card class="cal-card">
-      <mat-card-content>
+    <mat-card [class]="styles.calCard()">
+      <mat-card-content [class]="styles.calCardContent()">
         @if (loading()) {
           <app-loading-skeleton [height]="480" />
         } @else {
@@ -49,20 +50,7 @@ import { AttendanceQrDialog, AttendanceQrDialogData } from './attendance-qr-dial
       </mat-card-content>
     </mat-card>
   `,
-  styles: `
-    :host {
-      display: block;
-    }
-    .controls-card {
-      margin-bottom: 12px;
-    }
-    .cal-card {
-      padding: 0;
-    }
-    .cal-card mat-card-content {
-      padding: 12px;
-    }
-  `,
+  host: { class: 'block' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TeacherSchedule {
@@ -71,6 +59,7 @@ export class TeacherSchedule {
   private readonly notifications = inject(NotificationService);
   private readonly authService = inject(AuthService);
 
+  protected readonly styles = teacherScheduleStyles();
   protected readonly interactable = computed(
     () => this.authService.effectiveSubscriptionIndex() >= 2,
   );

@@ -21,6 +21,12 @@ import { pollQrDebtUntilSettled } from '@core/utils';
 import { EmptyState, LoadingSkeleton, PageHead, Tag } from '@shared/components';
 import { MoneyPipe } from '@shared/pipes';
 
+import {
+  clientSubscriptionStyles,
+  subscriptionPayDialogStyles,
+  subscriptionQrImageDialogStyles,
+} from './subscription.variants';
+
 const LEVEL_LABELS: Record<number, string> = {
   1: 'Base — cursos y clases',
   2: 'Intermedio — + estudiantes, profesores y asistencia',
@@ -47,14 +53,14 @@ interface SubscriptionQrImageDialogData {
   imports: [MatDialogModule, MatButtonModule],
   template: `
     <h2 mat-dialog-title>QR de suscripción</h2>
-    <mat-dialog-content class="qr-content">
+    <mat-dialog-content [class]="styles.content()">
       <img
-        class="qr-image"
+        [class]="styles.image()"
         [src]="data.qrUrl"
         [alt]="'QR de suscripción ' + data.debtId"
         referrerpolicy="no-referrer"
       />
-      <p class="hint t-small">Escanea el QR desde tu app bancaria para completar el pago.</p>
+      <p [class]="styles.hint()">Escanea el QR desde tu app bancaria para completar el pago.</p>
     </mat-dialog-content>
     <mat-dialog-actions align="end">
       <a
@@ -69,31 +75,13 @@ interface SubscriptionQrImageDialogData {
       <button mat-flat-button color="primary" (click)="dialogRef.close()">Cerrar</button>
     </mat-dialog-actions>
   `,
-  styles: `
-    .qr-content {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 12px;
-      min-width: 280px;
-    }
-    .qr-image {
-      width: 100%;
-      max-width: 320px;
-      height: auto;
-      display: block;
-    }
-    .hint {
-      color: var(--dama-text-muted);
-      text-align: center;
-      margin: 0;
-    }
-  `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SubscriptionQrImageDialog {
   readonly dialogRef = inject(MatDialogRef<SubscriptionQrImageDialog>);
   readonly data = inject<SubscriptionQrImageDialogData>(MAT_DIALOG_DATA);
+
+  protected readonly styles = subscriptionQrImageDialogStyles();
 }
 
 interface SubscriptionPayDialogData {
@@ -117,8 +105,8 @@ interface SubscriptionPayDialogResult {
   template: `
     <h2 mat-dialog-title>Pagar suscripción</h2>
     <mat-dialog-content>
-      <form [formGroup]="form" class="form">
-        <mat-form-field appearance="outline">
+      <form [formGroup]="form" [class]="styles.form()">
+        <mat-form-field appearance="outline" [class]="styles.field()">
           <mat-label>Nivel de suscripción</mat-label>
           <mat-select formControlName="level">
             @for (plan of data.plans; track plan.level) {
@@ -129,7 +117,7 @@ interface SubscriptionPayDialogResult {
           </mat-select>
         </mat-form-field>
 
-        <mat-form-field appearance="outline">
+        <mat-form-field appearance="outline" [class]="styles.field()">
           <mat-label>Método de pago</mat-label>
           <mat-select formControlName="method">
             <mat-option value="QR">QR (Todotix)</mat-option>
@@ -144,23 +132,14 @@ interface SubscriptionPayDialogResult {
       </button>
     </mat-dialog-actions>
   `,
-  styles: `
-    .form {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      min-width: 320px;
-    }
-    mat-form-field {
-      width: 100%;
-    }
-  `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SubscriptionPayDialog {
   private readonly formBuilder = inject(FormBuilder);
   readonly dialogRef = inject(MatDialogRef<SubscriptionPayDialog, SubscriptionPayDialogResult>);
   readonly data = inject<SubscriptionPayDialogData>(MAT_DIALOG_DATA);
+
+  protected readonly styles = subscriptionPayDialogStyles();
 
   protected readonly form = this.formBuilder.nonNullable.group({
     level: [this.data.plans[0]?.level ?? 1, Validators.required],
@@ -191,15 +170,15 @@ export class SubscriptionPayDialog {
   template: `
     <app-page-head title="Suscripción" subtitle="Gestiona el plan de tu escuela en DAMA." />
 
-    <mat-card class="status-card">
+    <mat-card [class]="styles.statusCard()">
       <mat-card-content>
         @if (effectiveIndex() > 0) {
-          <div class="status-head">
+          <div [class]="styles.statusHead()">
             <app-tag variant="primary" [dot]="true">Nivel {{ effectiveIndex() }}</app-tag>
             <span class="t-body">Vence el {{ expiresLabel() }}</span>
           </div>
         } @else {
-          <div class="status-head">
+          <div [class]="styles.statusHead()">
             <app-tag variant="neutral" [dot]="true">Sin suscripción vigente</app-tag>
             <span class="t-body">Compra un plan para habilitar los servicios de tu escuela.</span>
           </div>
@@ -222,7 +201,7 @@ export class SubscriptionPayDialog {
     </mat-card>
 
     @if (loading()) {
-      <div class="grid">
+      <div [class]="styles.grid()">
         <app-loading-skeleton [height]="160" />
         <app-loading-skeleton [height]="160" />
         <app-loading-skeleton [height]="160" />
@@ -230,56 +209,23 @@ export class SubscriptionPayDialog {
     } @else if (plans().length === 0) {
       <app-empty-state icon="receipt" message="No hay planes de suscripción disponibles." />
     } @else {
-      <div class="grid">
+      <div [class]="styles.grid()">
         @for (plan of plans(); track plan.level) {
           <mat-card class="plan-card">
             <mat-card-content>
-              <div class="plan-head">
+              <div [class]="styles.planHead()">
                 <span class="t-h2">Nivel {{ plan.level }}</span>
                 <app-tag variant="primary" [dot]="true">{{ planDuration(plan) }}</app-tag>
               </div>
-              <p class="plan-desc t-small">{{ levelLabel(plan.level) }}</p>
-              <div class="t-num-lg price tabular-nums">{{ plan.price | money }}</div>
+              <p [class]="styles.planDesc()">{{ levelLabel(plan.level) }}</p>
+              <div [class]="styles.price()">{{ plan.price | money }}</div>
             </mat-card-content>
           </mat-card>
         }
       </div>
     }
   `,
-  styles: `
-    :host {
-      display: block;
-    }
-    .status-card {
-      margin-bottom: var(--dama-space-4);
-    }
-    .status-head {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      flex-wrap: wrap;
-      margin-bottom: 12px;
-    }
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: var(--dama-space-4);
-    }
-    .plan-head {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-      margin-bottom: 8px;
-    }
-    .plan-desc {
-      color: var(--dama-text-muted);
-      margin: 0 0 12px;
-    }
-    .price {
-      color: var(--dama-text-strong);
-    }
-  `,
+  host: { class: 'block' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ClientSubscription {
@@ -289,6 +235,7 @@ export class ClientSubscription {
   private readonly dialogs = inject(DialogService);
   private readonly notifications = inject(NotificationService);
 
+  protected readonly styles = clientSubscriptionStyles();
   protected readonly plans = signal<SubscriptionPlan[]>([]);
   protected readonly loading = signal(true);
   protected readonly paying = signal(false);

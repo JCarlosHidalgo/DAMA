@@ -12,6 +12,8 @@ import { NotificationService } from '@core/services';
 import { PageHead } from '@shared/components';
 import { NoPasswordManager } from '@shared/directives';
 
+import { clientConfigurationStyles } from './configuration.variants';
+
 type AppKeyState =
   | { kind: 'loading' }
   | { kind: 'ready'; status: TodotixAppKeyStatus }
@@ -49,10 +51,10 @@ const APP_KEY_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-
   template: `
     <app-page-head title="Configuración" subtitle="Zona horaria y credenciales de cobro" />
 
-    <section class="config-card">
+    <section [class]="styles.card()">
       <h2 class="t-title-sm">Zona horaria</h2>
-      <p class="t-body-sm hint">Aplica a todas las fechas mostradas en tu cuenta.</p>
-      <mat-form-field appearance="outline" class="field">
+      <p [class]="styles.hint()">Aplica a todas las fechas mostradas en tu cuenta.</p>
+      <mat-form-field appearance="outline" [class]="styles.field()">
         <mat-label>Zona horaria</mat-label>
         <mat-select [value]="selectedTimezone()" (selectionChange)="onTimezoneChange($event.value)">
           @for (zone of timezoneOptions; track zone) {
@@ -63,9 +65,9 @@ const APP_KEY_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-
     </section>
 
     @if (canManageTodotix()) {
-      <section class="config-card">
+      <section [class]="styles.card()">
         <h2 class="t-title-sm">App-key de Todotix</h2>
-        <p class="t-body-sm hint">
+        <p [class]="styles.hint()">
           Clave de tu canal de cobro Todotix. Sin una credencial configurada y válida no podrás
           recibir pagos.
         </p>
@@ -75,19 +77,19 @@ const APP_KEY_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-
             <p class="t-body-sm">Cargando…</p>
           }
           @case ('error') {
-            <p class="t-body-sm error-text">No se pudo cargar la app-key.</p>
+            <p [class]="styles.errorText()">No se pudo cargar la app-key.</p>
           }
           @case ('ready') {
             @if (asReady(appKeyState()); as state) {
-              <div class="status-row">
+              <div [class]="styles.statusRow()">
                 <span class="t-label-up">Estado</span>
                 <span class="t-body-md">
                   {{ state.status.hasCustomKey ? 'Configurada' : 'No configurada' }}
                 </span>
               </div>
-              <div class="status-row">
+              <div [class]="styles.statusRow()">
                 <span class="t-label-up">App-key</span>
-                <span class="t-body-md key-value">
+                <span [class]="styles.keyValue()">
                   {{ revealedKey() ?? state.status.maskedAppKey ?? '—' }}
                 </span>
                 <button mat-stroked-button type="button" (click)="toggleReveal()">
@@ -95,7 +97,7 @@ const APP_KEY_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-
                 </button>
               </div>
               @if (state.status.hasCustomKey) {
-                <div class="status-row">
+                <div [class]="styles.statusRow()">
                   <button
                     mat-stroked-button
                     type="button"
@@ -108,8 +110,8 @@ const APP_KEY_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-
               }
             }
 
-            <form [formGroup]="form" (ngSubmit)="saveAppKey()" class="edit-form">
-              <mat-form-field appearance="outline" class="field">
+            <form [formGroup]="form" (ngSubmit)="saveAppKey()" [class]="styles.editForm()">
+              <mat-form-field appearance="outline" [class]="styles.field()">
                 <mat-label>Nueva app-key</mat-label>
                 <input
                   matInput
@@ -134,53 +136,15 @@ const APP_KEY_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-
         }
       </section>
     } @else {
-      <section class="config-card">
+      <section [class]="styles.card()">
         <h2 class="t-title-sm">App-key de Todotix</h2>
-        <p class="t-body-sm hint">
+        <p [class]="styles.hint()">
           Disponible al activar la gestión de pagos (suscripción nivel 3).
         </p>
       </section>
     }
   `,
-  styles: `
-    :host {
-      display: block;
-    }
-    .config-card {
-      margin-bottom: var(--dama-space-5);
-      padding: var(--dama-space-4) var(--dama-space-5);
-      background: var(--dama-surface);
-      border: 1px solid var(--dama-border);
-      border-radius: var(--dama-radius-md);
-      box-shadow: var(--dama-shadow-xs);
-    }
-    .hint {
-      color: var(--dama-text-muted);
-      margin: 4px 0 var(--dama-space-4);
-    }
-    .field {
-      min-width: 320px;
-    }
-    .status-row {
-      display: flex;
-      align-items: center;
-      gap: var(--dama-space-4);
-      margin-bottom: var(--dama-space-3);
-    }
-    .key-value {
-      font-variant-numeric: tabular-nums;
-    }
-    .error-text {
-      color: var(--dama-error, #b3261e);
-    }
-    .edit-form {
-      display: flex;
-      align-items: flex-start;
-      gap: var(--dama-space-4);
-      margin-top: var(--dama-space-4);
-      flex-wrap: wrap;
-    }
-  `,
+  host: { class: 'block' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ClientConfiguration {
@@ -189,6 +153,8 @@ export class ClientConfiguration {
   private readonly authService = inject(AuthService);
   private readonly notifications = inject(NotificationService);
   private readonly formBuilder = inject(FormBuilder);
+
+  protected readonly styles = clientConfigurationStyles();
 
   private readonly tenantId = this.authService.claims()?.tenantId ?? '';
 

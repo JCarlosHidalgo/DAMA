@@ -17,6 +17,8 @@ import { DialogService, NotificationService } from '@core/services';
 import { CourseColorChip, EmptyState, Icon, LoadingSkeleton, PageHead } from '@shared/components';
 import { NoPasswordManager } from '@shared/directives';
 
+import { courseDialogStyles, coursesStyles } from './courses.variants';
+
 const COURSES_QUERY_KEY = ['courses'] as const;
 
 interface CourseDialogData {
@@ -38,7 +40,7 @@ interface CourseDialogData {
     <h2 mat-dialog-title>{{ data.mode === 'create' ? 'Nuevo curso' : 'Editar curso' }}</h2>
     <mat-dialog-content>
       <form [formGroup]="form">
-        <mat-form-field appearance="outline">
+        <mat-form-field appearance="outline" [class]="styles.field()">
           <mat-label>Nombre</mat-label>
           <input matInput formControlName="name" autocomplete="off" />
           @if (form.controls.name.hasError('required')) {
@@ -65,18 +67,14 @@ interface CourseDialogData {
       </button>
     </mat-dialog-actions>
   `,
-  styles: `
-    mat-form-field {
-      width: 100%;
-      min-width: 320px;
-    }
-  `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CourseDialog {
   private readonly formBuilder = inject(FormBuilder);
   readonly dialogRef = inject(MatDialogRef<CourseDialog, string>);
   readonly data = inject<CourseDialogData>(MAT_DIALOG_DATA);
+
+  protected readonly styles = courseDialogStyles();
 
   readonly form = this.formBuilder.nonNullable.group({
     name: [
@@ -106,14 +104,14 @@ export class CourseDialog {
   template: `
     <app-page-head title="Cursos" [subtitle]="subtitle()">
       <button actions mat-flat-button color="primary" (click)="onCreate()">
-        <app-icon name="plus" /><span class="btn-label">Nuevo curso</span>
+        <app-icon name="plus" /><span [class]="styles.buttonLabel()">Nuevo curso</span>
       </button>
     </app-page-head>
 
-    <mat-card class="list-card">
-      <mat-card-content>
+    <mat-card [class]="styles.listCard()">
+      <mat-card-content [class]="styles.cardContent()">
         @if (coursesQuery.isPending()) {
-          <div class="skel-stack">
+          <div [class]="styles.skelStack()">
             <app-loading-skeleton [height]="40" />
             <app-loading-skeleton [height]="40" />
             <app-loading-skeleton [height]="40" />
@@ -121,8 +119,8 @@ export class CourseDialog {
         } @else if (courses().length === 0) {
           <app-empty-state icon="chalkboard" message="No hay cursos." />
         } @else {
-          <div class="table-wrap">
-            <table mat-table [dataSource]="courses()" class="full">
+          <div [class]="styles.tableWrap()">
+            <table mat-table [dataSource]="courses()" [class]="styles.table()">
               <ng-container matColumnDef="name">
                 <th mat-header-cell *matHeaderCellDef>Nombre</th>
                 <td mat-cell *matCellDef="let course">
@@ -138,7 +136,7 @@ export class CourseDialog {
                   <button
                     mat-icon-button
                     matTooltip="Eliminar"
-                    class="danger-btn"
+                    [class]="styles.dangerButton()"
                     (click)="onDelete(course)"
                   >
                     <app-icon name="trash" />
@@ -153,35 +151,7 @@ export class CourseDialog {
       </mat-card-content>
     </mat-card>
   `,
-  styles: `
-    :host {
-      display: block;
-    }
-    .list-card {
-      padding: 0;
-    }
-    .list-card mat-card-content {
-      padding: 0;
-    }
-    .skel-stack {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      padding: 20px;
-    }
-    .table-wrap {
-      overflow-x: auto;
-    }
-    .full {
-      width: 100%;
-    }
-    .danger-btn {
-      color: var(--dama-danger);
-    }
-    .btn-label {
-      margin-left: 6px;
-    }
-  `,
+  host: { class: 'block' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Courses {
@@ -190,6 +160,7 @@ export class Courses {
   private readonly notifications = inject(NotificationService);
   private readonly queryClient = inject(QueryClient);
 
+  protected readonly styles = coursesStyles();
   protected readonly columns = ['name', 'actions'];
 
   protected readonly coursesQuery = injectQuery(() => ({

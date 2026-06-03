@@ -1,11 +1,188 @@
 @layer theme, base, components, utilities;
 @import 'tailwindcss/theme.css' layer(theme);
 @import 'tailwindcss/utilities.css' layer(utilities);
-@import './app/shared/design/tokens.css';
-@import './app/shared/design/typography.css';
-@import './app/shared/design/resets.css';
 @import './app/shared/design/material-overrides.css';
 @import './app/shared/design/fullcalendar-overrides.css';
+
+:root {
+  --dama-bg: oklch(0.984 0.004 268);
+  --dama-bg-2: oklch(0.972 0.005 268);
+  --dama-surface: oklch(1 0 0);
+  --dama-surface-2: oklch(0.975 0.005 268);
+  --dama-surface-hover: oklch(0.96 0.006 268);
+  --dama-sidenav: oklch(0.99 0.003 268);
+
+  --dama-border: oklch(0.92 0.008 268);
+  --dama-border-strong: oklch(0.86 0.012 268);
+  --dama-divider: oklch(0.945 0.008 268);
+
+  --dama-text: oklch(0.2 0.016 268);
+  --dama-text-strong: oklch(0.14 0.018 268);
+  --dama-text-muted: oklch(0.5 0.014 268);
+  --dama-text-faint: oklch(0.65 0.012 268);
+
+  --dama-primary: oklch(0.5 0.176 282);
+  --dama-primary-hover: oklch(0.44 0.19 282);
+  --dama-primary-soft: oklch(0.955 0.035 282);
+  --dama-primary-border: oklch(0.88 0.06 282);
+  --dama-primary-fg: oklch(0.99 0.005 268);
+
+  --dama-success: oklch(0.62 0.14 155);
+  --dama-success-soft: oklch(0.95 0.04 155);
+  --dama-warning: oklch(0.72 0.16 75);
+  --dama-warning-soft: oklch(0.97 0.04 75);
+  --dama-danger: oklch(0.55 0.21 25);
+  --dama-danger-soft: oklch(0.96 0.04 25);
+
+  --dama-shadow-xs: 0 1px 2px rgba(15, 23, 42, 0.04);
+  --dama-shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.05), 0 1px 3px rgba(15, 23, 42, 0.05);
+  --dama-shadow: 0 1px 2px rgba(15, 23, 42, 0.05), 0 4px 10px rgba(15, 23, 42, 0.05);
+  --dama-shadow-md: 0 1px 2px rgba(15, 23, 42, 0.06), 0 8px 20px rgba(15, 23, 42, 0.06);
+  --dama-shadow-lg: 0 1px 2px rgba(15, 23, 42, 0.06), 0 16px 40px rgba(15, 23, 42, 0.1);
+
+  --dama-radius-xs: 4px;
+  --dama-radius-sm: 6px;
+  --dama-radius: 10px;
+  --dama-radius-md: 12px;
+  --dama-radius-lg: 16px;
+
+  --dama-space-1: 4px;
+  --dama-space-2: 8px;
+  --dama-space-3: 12px;
+  --dama-space-4: 16px;
+  --dama-space-5: 20px;
+  --dama-space-6: 24px;
+  --dama-space-8: 32px;
+  --dama-space-10: 40px;
+  --dama-space-12: 48px;
+  --dama-space-16: 64px;
+
+  --dama-z-toolbar: 30;
+  --dama-z-sidenav: 40;
+  --dama-z-dialog: 60;
+  --dama-z-snackbar: 70;
+
+  --dama-ring: 0 0 0 4px oklch(0.5 0.176 282 / 0.18);
+  --dama-easing: cubic-bezier(0.2, 0.7, 0.3, 1);
+
+  --dama-sidenav-w: 240px;
+  --dama-sidenav-w-collapsed: 72px;
+  --dama-toolbar-h: 60px;
+  --dama-content-pad-d: 24px;
+  --dama-content-pad-t: 20px;
+  --dama-content-pad-m: 16px;
+}
+
+html.dark {
+  --dama-bg: oklch(0.176 0.014 268);
+  --dama-bg-2: oklch(0.21 0.016 268);
+  --dama-surface: oklch(0.225 0.018 268);
+  --dama-surface-2: oklch(0.26 0.018 268);
+  --dama-surface-hover: oklch(0.29 0.018 268);
+  --dama-sidenav: oklch(0.2 0.018 268);
+
+  --dama-border: oklch(0.3 0.018 268);
+  --dama-border-strong: oklch(0.38 0.02 268);
+  --dama-divider: oklch(0.27 0.018 268);
+
+  --dama-text: oklch(0.97 0.005 268);
+  --dama-text-strong: oklch(1 0 0);
+  --dama-text-muted: oklch(0.72 0.013 268);
+  --dama-text-faint: oklch(0.56 0.014 268);
+
+  --dama-primary: oklch(0.74 0.16 282);
+  --dama-primary-hover: oklch(0.8 0.17 282);
+  --dama-primary-soft: oklch(0.32 0.1 282 / 0.6);
+  --dama-primary-border: oklch(0.45 0.12 282);
+  --dama-primary-fg: oklch(0.14 0.018 268);
+
+  --dama-success: oklch(0.74 0.14 155);
+  --dama-success-soft: oklch(0.3 0.1 155 / 0.5);
+  --dama-warning: oklch(0.8 0.16 75);
+  --dama-warning-soft: oklch(0.32 0.1 75 / 0.5);
+  --dama-danger: oklch(0.72 0.19 25);
+  --dama-danger-soft: oklch(0.34 0.1 25 / 0.5);
+
+  --dama-shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --dama-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4), 0 1px 3px rgba(0, 0, 0, 0.3);
+  --dama-shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 4px 10px rgba(0, 0, 0, 0.35);
+  --dama-shadow-md: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 20px rgba(0, 0, 0, 0.4);
+  --dama-shadow-lg: 0 1px 2px rgba(0, 0, 0, 0.4), 0 16px 40px rgba(0, 0, 0, 0.5);
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('/fonts/inter-latin.woff2') format('woff2');
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 100 800;
+  font-display: swap;
+  src: url('/fonts/jetbrains-mono-latin.woff2') format('woff2');
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+html,
+body {
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    Roboto,
+    system-ui,
+    sans-serif;
+  font-feature-settings: 'cv11', 'ss01', 'ss03';
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.dama-mono,
+.mat-mdc-table .mat-mdc-cell.dama-mono {
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-feature-settings: 'tnum';
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+img,
+svg,
+video {
+  max-width: 100%;
+  display: block;
+}
+button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+::selection {
+  background: var(--dama-primary-soft);
+  color: var(--dama-primary);
+}
+body {
+  touch-action: manipulation;
+  color: var(--dama-text);
+  background: var(--dama-bg);
+}
 
 @theme {
   --color-bg: var(--dama-bg);
@@ -132,6 +309,16 @@
   }
 }
 
+@keyframes badge-fade {
+  0%,
+  60% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
 app-camera-scanner zxing-scanner {
   display: block;
   width: 100%;
@@ -140,4 +327,13 @@ app-camera-scanner zxing-scanner {
 
 app-camera-scanner zxing-scanner video {
   height: 100% !important;
+}
+
+.cdk-drag-preview {
+  border-radius: 8px;
+  box-shadow: 0 5px 16px rgba(0, 0, 0, 0.3);
+}
+
+.cdk-drag-placeholder {
+  opacity: 0.4;
 }

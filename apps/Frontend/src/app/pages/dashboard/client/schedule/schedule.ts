@@ -22,6 +22,8 @@ import { Calendar } from '@shared/components/calendar';
 import { GroupSelect } from '@shared/components/group-select/group-select';
 import { NoPasswordManager } from '@shared/directives';
 
+import { scheduleClassTagStyles, scheduleDialogStyles, scheduleStyles } from './schedule.variants';
+
 type FormKind = 'scheduled' | 'unique';
 
 const DAY_OF_WEEK_OPTIONS = [
@@ -72,14 +74,14 @@ interface ClassDialogResult {
       {{ data.mode === 'create' ? 'Nueva clase' : 'Editar clase' }}
     </h2>
     <mat-dialog-content>
-      <form [formGroup]="form" class="form">
+      <form [formGroup]="form" [class]="styles.form()">
         @if (data.mode === 'create') {
           <mat-button-toggle-group formControlName="kind">
             <mat-button-toggle value="scheduled">Recurrente</mat-button-toggle>
             <mat-button-toggle value="unique">Única</mat-button-toggle>
           </mat-button-toggle-group>
 
-          <mat-form-field appearance="outline">
+          <mat-form-field appearance="outline" [class]="styles.field()">
             <mat-label>Curso</mat-label>
             <mat-select formControlName="courseId">
               @for (course of data.courses; track course.id) {
@@ -88,7 +90,7 @@ interface ClassDialogResult {
             </mat-select>
           </mat-form-field>
 
-          <mat-form-field appearance="outline">
+          <mat-form-field appearance="outline" [class]="styles.field()">
             <mat-label>Grupo</mat-label>
             <mat-select formControlName="groupId">
               @for (group of data.groups; track group.id) {
@@ -99,7 +101,7 @@ interface ClassDialogResult {
         }
 
         @if (form.controls.kind.value === 'scheduled') {
-          <mat-form-field appearance="outline">
+          <mat-form-field appearance="outline" [class]="styles.field()">
             <mat-label>Día de la semana</mat-label>
             <mat-select formControlName="dayOfWeekIndex">
               @for (day of dayOptions; track day.value) {
@@ -108,29 +110,29 @@ interface ClassDialogResult {
             </mat-select>
           </mat-form-field>
         } @else {
-          <mat-form-field appearance="outline">
+          <mat-form-field appearance="outline" [class]="styles.field()">
             <mat-label>Fecha</mat-label>
             <input matInput type="date" formControlName="date" />
           </mat-form-field>
         }
 
-        <mat-form-field appearance="outline">
+        <mat-form-field appearance="outline" [class]="styles.field()">
           <mat-label>Inicio</mat-label>
           <input matInput type="time" formControlName="startTime" />
         </mat-form-field>
 
-        <mat-form-field appearance="outline">
+        <mat-form-field appearance="outline" [class]="styles.field()">
           <mat-label>Fin</mat-label>
           <input matInput type="time" formControlName="endTime" />
         </mat-form-field>
 
-        <mat-form-field appearance="outline">
+        <mat-form-field appearance="outline" [class]="styles.field()">
           <mat-label>Límite de estudiantes</mat-label>
           <input matInput type="number" min="0" max="1000" formControlName="maxStudentLimit" />
           <mat-hint>0 = sin límite</mat-hint>
         </mat-form-field>
 
-        <mat-form-field appearance="outline">
+        <mat-form-field appearance="outline" [class]="styles.field()">
           <mat-label>Profesores</mat-label>
           <mat-select formControlName="teacherIds" multiple>
             @for (teacher of data.teachers; track teacher.id) {
@@ -147,17 +149,6 @@ interface ClassDialogResult {
       </button>
     </mat-dialog-actions>
   `,
-  styles: `
-    .form {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      min-width: 360px;
-    }
-    mat-form-field {
-      width: 100%;
-    }
-  `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ScheduleDialog {
@@ -165,6 +156,7 @@ export class ScheduleDialog {
   readonly dialogRef = inject(MatDialogRef<ScheduleDialog, ClassDialogResult>);
   readonly data = inject<ClassDialogData>(MAT_DIALOG_DATA);
 
+  protected readonly styles = scheduleDialogStyles();
   protected readonly dayOptions = DAY_OF_WEEK_OPTIONS;
 
   protected readonly form = this.formBuilder.nonNullable.group({
@@ -223,8 +215,8 @@ export class ScheduleDialog {
   template: `
     <app-page-head title="Horario" />
 
-    <mat-card class="controls-card">
-      <mat-card-content class="controls">
+    <mat-card [class]="styles().controlsCard()">
+      <mat-card-content [class]="styles().controls()">
         <app-group-select
           [editable]="true"
           [locked]="transferMode()"
@@ -235,7 +227,7 @@ export class ScheduleDialog {
         @if (groups().length >= 2) {
           <button mat-stroked-button (click)="toggleTransfer()">
             <app-icon name="transfer" />
-            <span class="btn-label">{{
+            <span [class]="styles().buttonLabel()">{{
               transferMode() ? 'Cerrar transferencia' : 'Transferir clases'
             }}</span>
           </button>
@@ -243,21 +235,25 @@ export class ScheduleDialog {
       </mat-card-content>
     </mat-card>
 
-    <div class="columns" [class.split]="transferMode()">
-      <mat-card class="col-card">
+    <div [class]="styles().columns()">
+      <mat-card [class]="styles().colCard()">
         <mat-card-content>
-          <div class="col-head">
-            <h3 class="col-title">{{ selectedGroup()?.name ?? 'Grupo' }}</h3>
-            <div class="col-head-actions">
+          <div [class]="styles().colHead()">
+            <h3 [class]="styles().colTitle()">{{ selectedGroup()?.name ?? 'Grupo' }}</h3>
+            <div [class]="styles().colHeadActions()">
               <button
                 mat-flat-button
                 color="primary"
                 (click)="onCreate()"
                 [disabled]="courses().length === 0 || groups().length === 0"
               >
-                <app-icon name="plus" /><span class="btn-label">Nueva clase</span>
+                <app-icon name="plus" /><span [class]="styles().buttonLabel()">Nueva clase</span>
               </button>
-              <mat-form-field appearance="outline" subscriptSizing="dynamic" class="day-select">
+              <mat-form-field
+                appearance="outline"
+                subscriptSizing="dynamic"
+                [class]="styles().daySelect()"
+              >
                 <mat-label>Día</mat-label>
                 <mat-select
                   [value]="selectedDayIndex()"
@@ -279,30 +275,25 @@ export class ScheduleDialog {
               [cdkDropListData]="selectedGroupId()"
               [cdkDropListConnectedTo]="transferMode() ? ['group-target-list'] : []"
               (cdkDropListDropped)="onDrop($event)"
-              class="class-list"
+              [class]="styles().classList()"
             >
               @for (entry of selectedGroupListEntries(); track entry.classId) {
                 <div
-                  class="class-item"
+                  [class]="styles().classItem()"
                   cdkDrag
                   [cdkDragData]="entry"
                   [cdkDragDisabled]="!transferMode()"
                 >
-                  <div class="class-main">
-                    <span class="class-course">
+                  <div [class]="styles().classMain()">
+                    <span [class]="styles().classCourse()">
                       {{ entry.courseName }}
-                      <span
-                        class="class-tag"
-                        [class.weekly]="entry.classKind === 'Scheduled'"
-                        [class.unique]="entry.classKind === 'Unique'"
-                        >{{ kindLabel(entry) }}</span
-                      >
+                      <span [class]="tagClass(entry)">{{ kindLabel(entry) }}</span>
                     </span>
-                    <span class="class-time">
+                    <span [class]="styles().classTime()">
                       <app-icon name="clock" />
                       {{ entry.startTime.slice(0, 5) }} – {{ entry.endTime.slice(0, 5) }}
                     </span>
-                    <span class="class-teachers t-small">{{ teacherNames(entry) }}</span>
+                    <span [class]="styles().classTeachers()">{{ teacherNames(entry) }}</span>
                   </div>
                   @if (!transferMode()) {
                     <div class="class-actions">
@@ -312,7 +303,7 @@ export class ScheduleDialog {
                       <button
                         mat-icon-button
                         matTooltip="Eliminar"
-                        class="danger-btn"
+                        [class]="styles().dangerButton()"
                         (click)="onDelete(entry)"
                       >
                         <app-icon name="trash" />
@@ -321,7 +312,7 @@ export class ScheduleDialog {
                   }
                 </div>
               } @empty {
-                <p class="empty t-small">No hay clases en este grupo.</p>
+                <p [class]="styles().empty()">No hay clases en este grupo.</p>
               }
             </div>
           }
@@ -329,10 +320,14 @@ export class ScheduleDialog {
       </mat-card>
 
       @if (transferMode()) {
-        <mat-card class="col-card">
+        <mat-card [class]="styles().colCard()">
           <mat-card-content>
-            <div class="col-head">
-              <mat-form-field appearance="outline" subscriptSizing="dynamic" class="group-select">
+            <div [class]="styles().colHead()">
+              <mat-form-field
+                appearance="outline"
+                subscriptSizing="dynamic"
+                [class]="styles().groupSelectField()"
+              >
                 <mat-label>Grupo candidato</mat-label>
                 <mat-select [value]="targetGroupId()" (valueChange)="targetGroupId.set($event)">
                   @for (group of candidateGroups(); track group.id) {
@@ -340,7 +335,11 @@ export class ScheduleDialog {
                   }
                 </mat-select>
               </mat-form-field>
-              <mat-form-field appearance="outline" subscriptSizing="dynamic" class="day-select">
+              <mat-form-field
+                appearance="outline"
+                subscriptSizing="dynamic"
+                [class]="styles().daySelect()"
+              >
                 <mat-label>Día</mat-label>
                 <mat-select [value]="targetDayIndex()" (valueChange)="targetDayIndex.set($event)">
                   @for (day of dayOptions; track day.value) {
@@ -355,29 +354,24 @@ export class ScheduleDialog {
               [cdkDropListData]="targetGroupId()"
               [cdkDropListConnectedTo]="['group-source-list']"
               (cdkDropListDropped)="onDrop($event)"
-              class="class-list"
+              [class]="styles().classList()"
             >
               @for (entry of targetGroupListEntries(); track entry.classId) {
-                <div class="class-item" cdkDrag [cdkDragData]="entry">
-                  <div class="class-main">
-                    <span class="class-course">
+                <div [class]="styles().classItem()" cdkDrag [cdkDragData]="entry">
+                  <div [class]="styles().classMain()">
+                    <span [class]="styles().classCourse()">
                       {{ entry.courseName }}
-                      <span
-                        class="class-tag"
-                        [class.weekly]="entry.classKind === 'Scheduled'"
-                        [class.unique]="entry.classKind === 'Unique'"
-                        >{{ kindLabel(entry) }}</span
-                      >
+                      <span [class]="tagClass(entry)">{{ kindLabel(entry) }}</span>
                     </span>
-                    <span class="class-time">
+                    <span [class]="styles().classTime()">
                       <app-icon name="clock" />
                       {{ entry.startTime.slice(0, 5) }} – {{ entry.endTime.slice(0, 5) }}
                     </span>
-                    <span class="class-teachers t-small">{{ teacherNames(entry) }}</span>
+                    <span [class]="styles().classTeachers()">{{ teacherNames(entry) }}</span>
                   </div>
                 </div>
               } @empty {
-                <p class="empty t-small">No hay clases en este grupo.</p>
+                <p [class]="styles().empty()">No hay clases en este grupo.</p>
               }
             </div>
           </mat-card-content>
@@ -385,8 +379,8 @@ export class ScheduleDialog {
       }
     </div>
 
-    <mat-card class="cal-card">
-      <mat-card-content>
+    <mat-card [class]="styles().calCard()">
+      <mat-card-content [class]="styles().calCardContent()">
         @if (loading()) {
           <app-loading-skeleton [height]="480" />
         } @else {
@@ -405,137 +399,7 @@ export class ScheduleDialog {
       </mat-card-content>
     </mat-card>
   `,
-  styles: `
-    :host {
-      display: block;
-    }
-    .controls-card {
-      margin-bottom: 12px;
-    }
-    .controls {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-    .columns {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 12px;
-      margin-bottom: 12px;
-    }
-    .columns.split {
-      grid-template-columns: 1fr 1fr;
-    }
-    @media (max-width: 768px) {
-      .columns.split {
-        grid-template-columns: 1fr;
-      }
-    }
-    .col-card {
-      padding: 0;
-    }
-    .col-head {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      flex-wrap: wrap;
-      margin: 4px 4px 12px;
-    }
-    .col-title {
-      margin: 0;
-      font-weight: 600;
-    }
-    .col-head-actions {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-    .day-select {
-      width: 140px;
-    }
-    .group-select {
-      flex: 1;
-      min-width: 160px;
-    }
-    .class-tag {
-      display: inline-block;
-      margin-left: 6px;
-      padding: 1px 8px;
-      border-radius: 999px;
-      font-size: 11px;
-      font-weight: 600;
-      vertical-align: middle;
-    }
-    .class-tag.weekly {
-      background: var(--mat-sys-secondary-container);
-      color: var(--mat-sys-on-secondary-container);
-    }
-    .class-tag.unique {
-      background: var(--mat-sys-tertiary-container);
-      color: var(--mat-sys-on-tertiary-container);
-    }
-    .class-list {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      min-height: 60px;
-    }
-    .class-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-      padding: 10px 12px;
-      border: 1px solid var(--mat-sys-outline-variant, rgba(0, 0, 0, 0.12));
-      border-radius: 8px;
-      background: var(--mat-sys-surface);
-      cursor: grab;
-    }
-    .class-main {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
-    .class-course {
-      font-weight: 600;
-    }
-    .class-time {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-variant-numeric: tabular-nums;
-    }
-    .class-teachers {
-      color: var(--dama-text-muted);
-    }
-    .empty {
-      color: var(--dama-text-muted);
-      text-align: center;
-      padding: 16px 0;
-    }
-    .danger-btn {
-      color: var(--dama-danger);
-    }
-    .cdk-drag-preview {
-      box-shadow: 0 5px 16px rgba(0, 0, 0, 0.3);
-      border-radius: 8px;
-    }
-    .cdk-drag-placeholder {
-      opacity: 0.4;
-    }
-    .cal-card {
-      padding: 0;
-    }
-    .cal-card mat-card-content {
-      padding: 12px;
-    }
-    .btn-label {
-      margin-left: 6px;
-    }
-  `,
+  host: { class: 'block' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Schedule {
@@ -545,6 +409,7 @@ export class Schedule {
   private readonly notifications = inject(NotificationService);
   private readonly classKindStrategies = inject(ClassKindStrategies);
 
+  protected readonly styles = computed(() => scheduleStyles({ split: this.transferMode() }));
   protected readonly courses = signal<Course[]>([]);
   protected readonly teachers = signal<UserListItem[]>([]);
   protected readonly entries = signal<CourseScheduleEntry[]>([]);
@@ -624,6 +489,10 @@ export class Schedule {
 
   protected kindLabel(entry: CourseScheduleEntry): string {
     return entry.classKind === 'Scheduled' ? 'Semanal' : 'Única';
+  }
+
+  protected tagClass(entry: CourseScheduleEntry): string {
+    return scheduleClassTagStyles({ kind: entry.classKind === 'Scheduled' ? 'weekly' : 'unique' });
   }
 
   protected teacherNames(entry: CourseScheduleEntry): string {

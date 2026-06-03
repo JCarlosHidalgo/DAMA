@@ -13,6 +13,7 @@ import { Calendar } from '@shared/components/calendar';
 import { GroupSelect } from '@shared/components/group-select/group-select';
 
 import { ConfirmAttendanceDialog, ConfirmAttendanceDialogData } from './confirm-attendance-dialog';
+import { studentScheduleStyles } from './schedule.variants';
 
 @Component({
   selector: 'app-student-schedule',
@@ -20,7 +21,7 @@ import { ConfirmAttendanceDialog, ConfirmAttendanceDialogData } from './confirm-
   template: `
     <app-page-head title="Horario" [subtitle]="scheduleSubtitle()" />
 
-    <mat-card class="controls-card">
+    <mat-card [class]="styles.controlsCard()">
       <mat-card-content>
         <app-group-select
           [selectedGroupId]="selectedGroupId()"
@@ -30,8 +31,8 @@ import { ConfirmAttendanceDialog, ConfirmAttendanceDialogData } from './confirm-
       </mat-card-content>
     </mat-card>
 
-    <mat-card class="cal-card">
-      <mat-card-content>
+    <mat-card [class]="styles.calCard()">
+      <mat-card-content [class]="styles.calCardContent()">
         @if (loading()) {
           <app-loading-skeleton [height]="480" />
         } @else {
@@ -49,20 +50,7 @@ import { ConfirmAttendanceDialog, ConfirmAttendanceDialogData } from './confirm-
       </mat-card-content>
     </mat-card>
   `,
-  styles: `
-    :host {
-      display: block;
-    }
-    .controls-card {
-      margin-bottom: 12px;
-    }
-    .cal-card {
-      padding: 0;
-    }
-    .cal-card mat-card-content {
-      padding: 12px;
-    }
-  `,
+  host: { class: 'block' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class StudentSchedule {
@@ -72,6 +60,7 @@ export class StudentSchedule {
   private readonly matDialog = inject(MatDialog);
   private readonly notifications = inject(NotificationService);
 
+  protected readonly styles = studentScheduleStyles();
   protected readonly entries = signal<CourseScheduleEntry[]>([]);
   protected readonly loading = signal(true);
   protected readonly selectedGroupId = signal<string>('');

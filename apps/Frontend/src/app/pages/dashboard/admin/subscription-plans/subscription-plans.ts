@@ -18,6 +18,8 @@ import { SubscriptionDurationUnit, SubscriptionPlan } from '@core/models';
 import { NotificationService } from '@core/services';
 import { LoadingSkeleton, PageHead } from '@shared/components';
 
+import { adminSubscriptionPlansStyles } from './subscription-plans.variants';
+
 interface PlanRow {
   level: number;
   form: FormGroup<{
@@ -48,29 +50,29 @@ const DURATION_UNITS: SubscriptionDurationUnit[] = ['Day', 'Week', 'Month'];
     />
 
     @if (loading()) {
-      <div class="grid">
+      <div [class]="styles.grid()">
         <app-loading-skeleton [height]="200" />
         <app-loading-skeleton [height]="200" />
         <app-loading-skeleton [height]="200" />
       </div>
     } @else {
-      <div class="grid">
+      <div [class]="styles.grid()">
         @for (row of rows(); track row.level) {
           <mat-card class="plan-card">
             <mat-card-content>
               <h2 class="t-h2">Nivel {{ row.level }}</h2>
-              <form [formGroup]="row.form" class="form">
-                <mat-form-field appearance="outline">
+              <form [formGroup]="row.form" [class]="styles.form()">
+                <mat-form-field appearance="outline" [class]="styles.field()">
                   <mat-label>Precio</mat-label>
                   <input matInput type="number" min="1" formControlName="price" />
                 </mat-form-field>
 
-                <mat-form-field appearance="outline">
+                <mat-form-field appearance="outline" [class]="styles.field()">
                   <mat-label>Duración</mat-label>
                   <input matInput type="number" min="1" formControlName="durationAmount" />
                 </mat-form-field>
 
-                <mat-form-field appearance="outline">
+                <mat-form-field appearance="outline" [class]="styles.field()">
                   <mat-label>Unidad</mat-label>
                   <mat-select formControlName="durationUnit">
                     @for (unit of durationUnits; track unit) {
@@ -95,24 +97,7 @@ const DURATION_UNITS: SubscriptionDurationUnit[] = ['Day', 'Week', 'Month'];
       </div>
     }
   `,
-  styles: `
-    :host {
-      display: block;
-    }
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: var(--dama-space-4);
-    }
-    .form {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    mat-form-field {
-      width: 100%;
-    }
-  `,
+  host: { class: 'block' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AdminSubscriptionPlans {
@@ -120,6 +105,7 @@ export class AdminSubscriptionPlans {
   private readonly formBuilder = inject(FormBuilder);
   private readonly notifications = inject(NotificationService);
 
+  protected readonly styles = adminSubscriptionPlansStyles();
   protected readonly durationUnits = DURATION_UNITS;
   protected readonly rows = signal<PlanRow[]>([]);
   protected readonly loading = signal(true);

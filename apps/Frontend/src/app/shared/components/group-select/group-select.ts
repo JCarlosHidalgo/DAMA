@@ -24,7 +24,7 @@ import { DialogService, NotificationService } from '@core/services';
 import { Icon } from '@shared/components/icon';
 import { NoPasswordManager } from '@shared/directives';
 
-import { groupSelectStyles } from './group-select.variants';
+import { groupNameDialogStyles, groupSelectStyles } from './group-select.variants';
 
 export const GROUPS_QUERY_KEY = ['class-groups'] as const;
 export const TEACHER_GROUPS_QUERY_KEY = ['teacher-class-groups'] as const;
@@ -50,7 +50,7 @@ interface GroupNameDialogData {
     <h2 mat-dialog-title>{{ data.mode === 'create' ? 'Nuevo grupo' : 'Renombrar grupo' }}</h2>
     <mat-dialog-content>
       <form [formGroup]="form">
-        <mat-form-field appearance="outline">
+        <mat-form-field appearance="outline" [class]="styles.field()">
           <mat-label>Nombre</mat-label>
           <input matInput formControlName="name" autocomplete="off" />
           @if (form.controls.name.hasError('required')) {
@@ -74,18 +74,14 @@ interface GroupNameDialogData {
       </button>
     </mat-dialog-actions>
   `,
-  styles: `
-    mat-form-field {
-      width: 100%;
-      min-width: 320px;
-    }
-  `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class GroupNameDialog {
   private readonly formBuilder = inject(FormBuilder);
   readonly dialogRef = inject(MatDialogRef<GroupNameDialog, string>);
   readonly data = inject<GroupNameDialogData>(MAT_DIALOG_DATA);
+
+  protected readonly styles = groupNameDialogStyles();
 
   readonly form = this.formBuilder.nonNullable.group({
     name: [this.data.name, [Validators.required, Validators.maxLength(128)]],
@@ -134,7 +130,7 @@ export class GroupNameDialog {
           <button
             mat-icon-button
             matTooltip="Eliminar grupo"
-            class="danger-btn"
+            [class]="styles.dangerButton()"
             [disabled]="locked() || !selectedGroup()"
             (click)="onDelete()"
           >
@@ -144,14 +140,7 @@ export class GroupNameDialog {
       }
     </div>
   `,
-  styles: `
-    :host {
-      display: block;
-    }
-    .danger-btn {
-      color: var(--dama-danger);
-    }
-  `,
+  host: { class: 'block' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class GroupSelect {
