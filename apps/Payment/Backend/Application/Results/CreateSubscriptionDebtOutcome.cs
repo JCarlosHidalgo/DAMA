@@ -10,7 +10,5 @@ public abstract record CreateSubscriptionDebtOutcome
 
     public sealed record PlanNotFound : CreateSubscriptionDebtOutcome;
 
-    public sealed record ActiveSubscriptionDebt : CreateSubscriptionDebtOutcome;
-
     public sealed record PaymentNotConfigured : CreateSubscriptionDebtOutcome;
 }

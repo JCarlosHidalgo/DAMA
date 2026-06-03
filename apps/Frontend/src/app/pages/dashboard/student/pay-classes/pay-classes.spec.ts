@@ -45,7 +45,9 @@ describe('PayClasses', () => {
     paymentApi = {
       listDebtTemplates: vi.fn(() => of([TEMPLATE])),
       getPaymentAvailability: vi.fn(() => of({ hasPaymentCredentials: true })),
-      createQrDebt: vi.fn(() => of({ identificadorDeuda: 'debt-1', status: 'Pending' })),
+      createQrDebt: vi.fn(() =>
+        of({ identificadorDeuda: 'debt-1', status: 'Pending', alreadyGenerated: false }),
+      ),
       getQrDebtStatus: vi.fn(() => of(pending())),
     };
     dialogs = { openForm: vi.fn() };
@@ -95,6 +97,25 @@ describe('PayClasses', () => {
         width: '400px',
       });
       expect(fixture.componentInstance['paying']()).toBeNull();
+    });
+
+    it('shows the info toast and opens the QR when the debt was already generated', async () => {
+      const fixture = await setUp();
+      dialogs.openForm.mockResolvedValue({ method: 'qr', email: null });
+      paymentApi.createQrDebt.mockReturnValue(
+        of({ identificadorDeuda: 'debt-1', status: 'Pending', alreadyGenerated: true }),
+      );
+      paymentApi.getQrDebtStatus.mockReturnValue(of(ready('http://qr/existing')));
+
+      await fixture.componentInstance.onPay(TEMPLATE);
+
+      expect(notifications.info).toHaveBeenCalledWith(
+        expect.stringContaining('Ya tenías una deuda pendiente'),
+      );
+      expect(matDialog.open).toHaveBeenCalledWith(QrImageDialog, {
+        data: { debtId: 'debt-1', qrUrl: 'http://qr/existing' },
+        width: '400px',
+      });
     });
 
     it('forwards a null email to createQrDebt when none is given', async () => {

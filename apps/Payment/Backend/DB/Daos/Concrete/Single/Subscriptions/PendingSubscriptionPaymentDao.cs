@@ -65,18 +65,19 @@ public sealed class PendingSubscriptionPaymentDao : IPendingSubscriptionPaymentD
         });
     }
 
-    public async Task<int> CountActiveForTenantAsync(Guid tenantId, DateTime nowUtc)
+    public async Task<Guid?> GetActiveForTenantAsync(Guid tenantId, DateTime nowUtc)
     {
         return await MySQLRetryPolicy.ExecuteAsync(_connection, async () =>
         {
-            const string sql = "SELECT COUNT(*) FROM PendingSubscriptionPayment " +
-                               "WHERE TenantId = @tenantId AND ExpiresAt > @nowUtc;";
+            const string sql = "SELECT Id FROM PendingSubscriptionPayment " +
+                               "WHERE TenantId = @tenantId AND ExpiresAt > @nowUtc " +
+                               "ORDER BY ExpiresAt DESC LIMIT 1;";
             MySqlCommand selectCommand = new MySqlCommand(sql, _connection);
             selectCommand.Parameters.AddWithValue("@tenantId", tenantId.ToString());
             selectCommand.Parameters.AddWithValue("@nowUtc", nowUtc);
 
-            object? countResult = await selectCommand.ExecuteScalarAsync();
-            return Convert.ToInt32(countResult ?? 0);
+            object? idResult = await selectCommand.ExecuteScalarAsync();
+            return idResult is null or DBNull ? (Guid?)null : Guid.Parse((string)idResult);
         });
     }
 

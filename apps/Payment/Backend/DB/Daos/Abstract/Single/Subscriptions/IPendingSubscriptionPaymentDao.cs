@@ -12,7 +12,7 @@ public interface IPendingSubscriptionPaymentDao
 
     Task<PendingSubscriptionPayment?> GetByIdForTenantAsync(Guid tenantId, Guid paymentId);
 
-    Task<int> CountActiveForTenantAsync(Guid tenantId, DateTime nowUtc);
+    Task<Guid?> GetActiveForTenantAsync(Guid tenantId, DateTime nowUtc);
 
     Task UpdateQrImageUrlAsync(Guid paymentId, string qrImageUrl);
 

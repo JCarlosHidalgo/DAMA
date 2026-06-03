@@ -290,6 +290,9 @@ export class PayClasses {
     this.paying.set(template.id);
     try {
       const queued = await firstValueFrom(this.paymentApi.createQrDebt(template.id, result.email));
+      if (queued.alreadyGenerated) {
+        this.notifications.info('Ya tenías una deuda pendiente; aquí está tu QR.');
+      }
       const finalStatus = await this.pollUntilSettled(queued.identificadorDeuda);
 
       if (finalStatus.status === 'Ready' && finalStatus.qrSimpleUrl) {

@@ -51,7 +51,6 @@ public class QrPaymentController : ControllerBase
         {
             CreateQrDebtOutcome.Success successOutcome => Accepted(successOutcome.Created),
             CreateQrDebtOutcome.TemplateNotFound => NotFound("Template no existe para este tenant."),
-            CreateQrDebtOutcome.ActiveDebtForTemplate => Conflict("Ya tienes una deuda vigente para esta plantilla."),
             CreateQrDebtOutcome.PaymentNotConfigured => Conflict("El tenant no tiene una credencial de cobro configurada."),
             _ => throw new UnreachableException()
         };

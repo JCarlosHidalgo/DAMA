@@ -41,7 +41,6 @@ public class SubscriptionPaymentController : ControllerBase
         {
             CreateSubscriptionDebtOutcome.Success success => Accepted(success.Created),
             CreateSubscriptionDebtOutcome.PlanNotFound => NotFound("No existe un plan para ese nivel."),
-            CreateSubscriptionDebtOutcome.ActiveSubscriptionDebt => Conflict("Ya tienes una deuda de suscripción vigente."),
             CreateSubscriptionDebtOutcome.PaymentNotConfigured => Conflict("El cobro de suscripciones no está configurado."),
             _ => throw new UnreachableException()
         };

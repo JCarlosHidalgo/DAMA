@@ -13,5 +13,5 @@ public interface ISubscriptionCreationBuilder
 
     TodotixOutboxEvent BuildOutboxEvent(Guid debtIdentifier, Guid tenantId, RegisterDebtRequest todotixRequest);
 
-    QrDebtPendingDto BuildPendingDebtDto(Guid debtIdentifier);
+    QrDebtPendingDto BuildPendingDebtDto(Guid debtIdentifier, bool alreadyGenerated = false);
 }

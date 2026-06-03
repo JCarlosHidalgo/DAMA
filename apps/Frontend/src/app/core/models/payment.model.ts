@@ -59,6 +59,7 @@ export interface FailedQrPayment {
 export interface QrDebtPending {
   identificadorDeuda: string;
   status: 'Pending';
+  alreadyGenerated: boolean;
 }
 
 export type QrDebtStatusValue = 'Pending' | 'Ready' | 'Failed';

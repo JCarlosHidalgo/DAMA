@@ -18,7 +18,7 @@ public interface IPendingQrPaymentDao : ISingleDao<PendingQrPayment>
 
     Task<int> CountByStudentForTenantAsync(Guid tenantId, Guid studentId);
 
-    Task<int> CountActiveForTemplateAsync(Guid tenantId, Guid studentId, Guid templateId, DateTime nowUtc);
+    Task<Guid?> GetActiveForTemplateAsync(Guid tenantId, Guid studentId, Guid templateId, DateTime nowUtc);
 
     Task<PendingQrPayment?> GetByIdForTenantAsync(Guid tenantId, Guid paymentId);
 

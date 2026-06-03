@@ -152,21 +152,22 @@ public sealed class PendingQrPaymentDao : MySQLSingleDao<PendingQrPayment>, IPen
         });
     }
 
-    public async Task<int> CountActiveForTemplateAsync(Guid tenantId, Guid studentId, Guid templateId, DateTime nowUtc)
+    public async Task<Guid?> GetActiveForTemplateAsync(Guid tenantId, Guid studentId, Guid templateId, DateTime nowUtc)
     {
         return await MySQLRetryPolicy.ExecuteAsync(_connection, async () =>
         {
-            const string sql = "SELECT COUNT(*) FROM PendingQrPayment " +
+            const string sql = "SELECT Id FROM PendingQrPayment " +
                                "WHERE TenantId = @tenantId AND StudentId = @studentId " +
-                               "AND TemplateId = @templateId AND ExpiresAt > @nowUtc;";
+                               "AND TemplateId = @templateId AND ExpiresAt > @nowUtc " +
+                               "ORDER BY ExpiresAt DESC LIMIT 1;";
             MySqlCommand selectCommand = new MySqlCommand(sql, _connection);
             selectCommand.Parameters.AddWithValue("@tenantId", tenantId.ToString());
             selectCommand.Parameters.AddWithValue("@studentId", studentId.ToString());
             selectCommand.Parameters.AddWithValue("@templateId", templateId.ToString());
             selectCommand.Parameters.AddWithValue("@nowUtc", nowUtc);
 
-            object? countResult = await selectCommand.ExecuteScalarAsync();
-            return Convert.ToInt32(countResult ?? 0);
+            object? idResult = await selectCommand.ExecuteScalarAsync();
+            return idResult is null or DBNull ? (Guid?)null : Guid.Parse((string)idResult);
         });
     }
 

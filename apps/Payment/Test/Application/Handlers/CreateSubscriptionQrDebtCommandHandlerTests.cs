@@ -76,14 +76,23 @@ public class CreateSubscriptionQrDebtCommandHandlerTests
     }
 
     [Test]
-    public async Task Handle_WhenActiveSubscriptionDebtExists_ReturnsActiveSubscriptionDebt()
+    public async Task Handle_WhenActiveSubscriptionDebtExists_ReturnsSuccessWithAlreadyGenerated()
     {
+        var existingDebtId = Guid.NewGuid();
         planDao.Setup(d => d.GetByLevelAsync(2)).ReturnsAsync(new SubscriptionPlan { Level = 2, Price = 180 });
-        pendingDao.Setup(d => d.CountActiveForTenantAsync(tenantId, It.IsAny<DateTime>())).ReturnsAsync(1);
+        pendingDao.Setup(d => d.GetActiveForTenantAsync(tenantId, It.IsAny<DateTime>())).ReturnsAsync(existingDebtId);
+        creationBuilder.Setup(b => b.BuildPendingDebtDto(existingDebtId, true))
+            .Returns(new QrDebtPendingDto { IdentificadorDeuda = existingDebtId, Status = "Pending", AlreadyGenerated = true });
 
         CreateSubscriptionDebtOutcome outcome = await sut.Handle(new CreateSubscriptionQrDebtCommand(2, "a@b.com"));
 
-        Assert.That(outcome, Is.TypeOf<CreateSubscriptionDebtOutcome.ActiveSubscriptionDebt>());
+        Assert.That(outcome, Is.TypeOf<CreateSubscriptionDebtOutcome.Success>());
+        var success = (CreateSubscriptionDebtOutcome.Success)outcome;
+        Assert.Multiple(() =>
+        {
+            Assert.That(success.Created.AlreadyGenerated, Is.True);
+            Assert.That(success.Created.IdentificadorDeuda, Is.EqualTo(existingDebtId));
+        });
     }
 
     [Test]
@@ -91,7 +100,7 @@ public class CreateSubscriptionQrDebtCommandHandlerTests
     {
         sut = BuildSut(string.Empty);
         planDao.Setup(d => d.GetByLevelAsync(2)).ReturnsAsync(new SubscriptionPlan { Level = 2, Price = 180 });
-        pendingDao.Setup(d => d.CountActiveForTenantAsync(tenantId, It.IsAny<DateTime>())).ReturnsAsync(0);
+        pendingDao.Setup(d => d.GetActiveForTenantAsync(tenantId, It.IsAny<DateTime>())).ReturnsAsync((Guid?)null);
 
         CreateSubscriptionDebtOutcome outcome = await sut.Handle(new CreateSubscriptionQrDebtCommand(2, "a@b.com"));
 
@@ -103,7 +112,7 @@ public class CreateSubscriptionQrDebtCommandHandlerTests
     {
         SubscriptionPlan plan = new() { Level = 2, Price = 180, DurationAmount = 1, DurationUnit = "Month" };
         planDao.Setup(d => d.GetByLevelAsync(2)).ReturnsAsync(plan);
-        pendingDao.Setup(d => d.CountActiveForTenantAsync(tenantId, It.IsAny<DateTime>())).ReturnsAsync(0);
+        pendingDao.Setup(d => d.GetActiveForTenantAsync(tenantId, It.IsAny<DateTime>())).ReturnsAsync((Guid?)null);
 
         PendingSubscriptionPayment pending = new() { Id = Guid.NewGuid(), TenantId = tenantId, Level = 2, Cost = 180 };
         RegisterDebtRequest todotixRequest = new();
@@ -113,7 +122,7 @@ public class CreateSubscriptionQrDebtCommandHandlerTests
         creationBuilder.Setup(b => b.BuildPendingPayment(It.IsAny<Guid>(), tenantId, plan, It.IsAny<DateTime>())).Returns(pending);
         creationBuilder.Setup(b => b.BuildTodotixRequest(It.IsAny<Guid>(), "a@b.com", plan, "America/La_Paz", It.IsAny<string>(), It.IsAny<DateTime>(), "platform-key")).Returns(todotixRequest);
         creationBuilder.Setup(b => b.BuildOutboxEvent(It.IsAny<Guid>(), tenantId, todotixRequest)).Returns(outboxEvent);
-        creationBuilder.Setup(b => b.BuildPendingDebtDto(It.IsAny<Guid>())).Returns(pendingDto);
+        creationBuilder.Setup(b => b.BuildPendingDebtDto(It.IsAny<Guid>(), false)).Returns(pendingDto);
         pendingDao.Setup(d => d.CreateAsync(pending, transactionScope.Object)).Returns(Task.CompletedTask);
         todotixOutboxDao.Setup(d => d.InsertAsync(outboxEvent, transactionScope.Object)).Returns(Task.CompletedTask);
 

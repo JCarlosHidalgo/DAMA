@@ -58,9 +58,11 @@ public sealed class CreateSubscriptionQrDebtCommandHandler
             return new CreateSubscriptionDebtOutcome.PlanNotFound();
         }
 
-        if (await _pendingSubscriptionPaymentDao.CountActiveForTenantAsync(tenantId, DateTime.UtcNow) > 0)
+        Guid? existingDebtId = await _pendingSubscriptionPaymentDao.GetActiveForTenantAsync(tenantId, DateTime.UtcNow);
+        if (existingDebtId is not null)
         {
-            return new CreateSubscriptionDebtOutcome.ActiveSubscriptionDebt();
+            return new CreateSubscriptionDebtOutcome.Success(
+                _creationBuilder.BuildPendingDebtDto(existingDebtId.Value, alreadyGenerated: true));
         }
 
         string platformAppKey = _todotixOptions.Value.PlatformAppKey;

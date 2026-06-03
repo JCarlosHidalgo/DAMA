@@ -17,5 +17,5 @@ public interface IQrPaymentCreationBuilder
 
     ExpirationOutboxEvent BuildExpirationOutboxEvent(Guid debtIdentifier, Guid tenantId, Guid studentId, DateTime availableAtUtc);
 
-    QrDebtPendingDto BuildPendingDebtDto(Guid debtIdentifier);
+    QrDebtPendingDto BuildPendingDebtDto(Guid debtIdentifier, bool alreadyGenerated = false);
 }

@@ -80,12 +80,13 @@ public class SubscriptionCreationBuilder : ISubscriptionCreationBuilder
         };
     }
 
-    public QrDebtPendingDto BuildPendingDebtDto(Guid debtIdentifier)
+    public QrDebtPendingDto BuildPendingDebtDto(Guid debtIdentifier, bool alreadyGenerated = false)
     {
         return new QrDebtPendingDto
         {
             IdentificadorDeuda = debtIdentifier,
-            Status = "Pending"
+            Status = "Pending",
+            AlreadyGenerated = alreadyGenerated
         };
     }
 

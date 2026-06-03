@@ -299,6 +299,9 @@ export class ClientSubscription {
     this.paying.set(true);
     try {
       const queued = await firstValueFrom(this.paymentApi.createSubscriptionQr(result.level));
+      if (queued.alreadyGenerated) {
+        this.notifications.info('Ya tenías una deuda pendiente; aquí está tu QR.');
+      }
       const finalStatus = await this.pollUntilSettled(queued.identificadorDeuda);
 
       if (finalStatus.status === 'Ready' && finalStatus.qrSimpleUrl) {

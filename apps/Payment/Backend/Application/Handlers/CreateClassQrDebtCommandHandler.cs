@@ -68,9 +68,12 @@ public sealed class CreateClassQrDebtCommandHandler
             return new CreateQrDebtOutcome.TemplateNotFound();
         }
 
-        if (await HasActiveDebtForTemplateAsync(tenantId, studentId, command.TemplateId))
+        Guid? existingDebtId = await _pendingQrPaymentDao.GetActiveForTemplateAsync(
+            tenantId, studentId, command.TemplateId, DateTime.UtcNow);
+        if (existingDebtId is not null)
         {
-            return new CreateQrDebtOutcome.ActiveDebtForTemplate();
+            return new CreateQrDebtOutcome.Success(
+                _creationBuilder.BuildPendingDebtDto(existingDebtId.Value, alreadyGenerated: true));
         }
 
         string? appKey = await _appKeyResolver.ResolveAsync(tenantId);
@@ -97,12 +100,5 @@ public sealed class CreateClassQrDebtCommandHandler
         await scope.CommitAsync();
 
         return new CreateQrDebtOutcome.Success(_creationBuilder.BuildPendingDebtDto(debtIdentifier));
-    }
-
-    private async Task<bool> HasActiveDebtForTemplateAsync(Guid tenantId, Guid studentId, Guid templateId)
-    {
-        int activeDebtCount = await _pendingQrPaymentDao.CountActiveForTemplateAsync(
-            tenantId, studentId, templateId, DateTime.UtcNow);
-        return activeDebtCount > 0;
     }
 }
