@@ -110,24 +110,17 @@ public sealed class UniqueClassAttendanceDao : AttendanceDaoBase<UniqueClassAtte
         ITransactionContext transaction)
     {
         MySqlTransaction sqlTransaction = MySqlTransactionContextAccessor.Unwrap(transaction);
-        const string sql = "SELECT StudentId FROM UniqueClassAttendance " +
+        const string sql = "SELECT COUNT(DISTINCT CASE WHEN StudentId <> @excludeStudentId THEN StudentId END) " +
+                           "FROM UniqueClassAttendance " +
                            "WHERE TenantId = @tenantId AND ClassId = @classId " +
                            "FOR UPDATE;";
         MySqlCommand command = new MySqlCommand(sql, _connection, sqlTransaction);
         command.Parameters.AddWithValue("@tenantId", tenantId.ToString());
         command.Parameters.AddWithValue("@classId", classId.ToString());
+        command.Parameters.AddWithValue("@excludeStudentId", excludeStudentId.ToString());
 
-        HashSet<Guid> distinctOtherStudents = new HashSet<Guid>();
-        using MySqlDataReader reader = (MySqlDataReader)await command.ExecuteReaderAsync();
-        while (await reader.ReadAsync())
-        {
-            Guid studentId = reader.GetGuid("StudentId");
-            if (studentId != excludeStudentId)
-            {
-                distinctOtherStudents.Add(studentId);
-            }
-        }
-        return distinctOtherStudents.Count;
+        object? otherStudentCount = await command.ExecuteScalarAsync();
+        return Convert.ToInt32(otherStudentCount);
     }
 
     public async Task<bool> TryMarkAttendanceAsync(UniqueClassAttendance attendance, ITransactionContext transaction)
