@@ -18,6 +18,12 @@ import { EmptyState, Icon, LoadingSkeleton, PageHead, Tag } from '@shared/compon
 import { NoPasswordManager } from '@shared/directives';
 import { MoneyPipe } from '@shared/pipes';
 
+import {
+  deleteTemplateConfirmMessage,
+  debtTemplatesSubtitle,
+  resolveTemplateSubmit,
+  TemplateDialogResult,
+} from './debt-templates.logic';
 import { debtTemplateDialogStyles, debtTemplatesStyles } from './debt-templates.variants';
 
 const DEBT_TEMPLATES_QUERY_KEY = ['debt-templates'] as const;
@@ -25,12 +31,6 @@ const DEBT_TEMPLATES_QUERY_KEY = ['debt-templates'] as const;
 interface TemplateDialogData {
   mode: 'create' | 'edit';
   initial?: Partial<TemplateDialogResult>;
-}
-
-interface TemplateDialogResult {
-  description: string;
-  classQuantity: number;
-  cost: number;
 }
 
 @Component({
@@ -191,7 +191,7 @@ export class DebtTemplates {
   }));
 
   protected readonly templates = computed<DebtTemplate[]>(() => this.templatesQuery.data() ?? []);
-  protected readonly subtitle = computed(() => `${this.templates().length} plantilla(s)`);
+  protected readonly subtitle = computed(() => debtTemplatesSubtitle(this.templates().length));
 
   private readonly createTemplate = injectMutation(() => ({
     mutationFn: (payload: CreateDebtTemplatePayload) =>
@@ -233,14 +233,11 @@ export class DebtTemplates {
 
   async onCreate(): Promise<void> {
     const result = await this.openTemplateDialog({ mode: 'create' });
-    if (!result) {
+    const outcome = resolveTemplateSubmit(result);
+    if (outcome.kind === 'skip') {
       return;
     }
-    this.createTemplate.mutate({
-      description: result.description,
-      classQuantity: result.classQuantity,
-      cost: result.cost,
-    });
+    this.createTemplate.mutate(outcome.payload);
   }
 
   async onEdit(template: DebtTemplate): Promise<void> {
@@ -252,23 +249,17 @@ export class DebtTemplates {
         cost: template.cost,
       },
     });
-    if (!result) {
+    const outcome = resolveTemplateSubmit(result);
+    if (outcome.kind === 'skip') {
       return;
     }
-    this.updateTemplate.mutate({
-      id: template.id,
-      payload: {
-        description: result.description,
-        classQuantity: result.classQuantity,
-        cost: result.cost,
-      },
-    });
+    this.updateTemplate.mutate({ id: template.id, payload: outcome.payload });
   }
 
   async onDelete(template: DebtTemplate): Promise<void> {
     const confirmed = await this.dialogs.confirm({
       title: 'Eliminar plantilla',
-      message: `¿Eliminar plantilla "${template.description}"?`,
+      message: deleteTemplateConfirmMessage(template.description),
       destructive: true,
       confirmLabel: 'Eliminar',
     });
