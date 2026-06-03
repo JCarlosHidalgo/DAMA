@@ -18,6 +18,13 @@ import { SubscriptionDurationUnit, SubscriptionPlan } from '@core/models';
 import { NotificationService } from '@core/services';
 import { LoadingSkeleton, PageHead } from '@shared/components';
 
+import {
+  DURATION_UNITS,
+  planUpdatedMessage,
+  sortPlansByLevel,
+  subscriptionPlanUpdatePayload,
+  subscriptionUnitLabel,
+} from './subscription-plans.logic';
 import { adminSubscriptionPlansStyles } from './subscription-plans.variants';
 
 interface PlanRow {
@@ -28,8 +35,6 @@ interface PlanRow {
     durationUnit: FormControl<string>;
   }>;
 }
-
-const DURATION_UNITS: SubscriptionDurationUnit[] = ['Day', 'Week', 'Month'];
 
 @Component({
   selector: 'app-admin-subscription-plans',
@@ -116,15 +121,14 @@ export class AdminSubscriptionPlans {
   }
 
   protected unitLabel(unit: SubscriptionDurationUnit): string {
-    return { Day: 'Días', Week: 'Semanas', Month: 'Meses' }[unit];
+    return subscriptionUnitLabel(unit);
   }
 
   private async load(): Promise<void> {
     this.loading.set(true);
     try {
       const plans = await firstValueFrom(this.paymentApi.listSubscriptionPlans());
-      const sorted = [...(plans ?? [])].sort((first, second) => first.level - second.level);
-      this.rows.set(sorted.map((plan) => this.toRow(plan)));
+      this.rows.set(sortPlansByLevel(plans).map((plan) => this.toRow(plan)));
     } catch {
       this.notifications.error('Error al cargar los planes.');
     } finally {
@@ -151,13 +155,9 @@ export class AdminSubscriptionPlans {
     try {
       const value = row.form.getRawValue();
       await firstValueFrom(
-        this.paymentApi.updateSubscriptionPlan(row.level, {
-          price: Number(value.price),
-          durationAmount: Number(value.durationAmount),
-          durationUnit: value.durationUnit as SubscriptionDurationUnit,
-        }),
+        this.paymentApi.updateSubscriptionPlan(row.level, subscriptionPlanUpdatePayload(value)),
       );
-      this.notifications.success(`Plan nivel ${row.level} actualizado.`);
+      this.notifications.success(planUpdatedMessage(row.level));
     } catch {
       this.notifications.error('Error al guardar el plan. Revisa los límites (1 día a 1 año).');
     } finally {
