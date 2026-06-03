@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
-import { AbstractControl, FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
@@ -28,6 +28,8 @@ import { NoPasswordManager } from '@shared/directives';
 import { FieldError } from '@shared/forms';
 
 import { courseDialogStyles, coursesStyles } from './courses.variants';
+import { noDotValidator } from './courses.validators';
+import { coursesSubtitle, resolveCourseCreate, resolveCourseEdit } from './courses.logic';
 
 const COURSES_QUERY_KEY = ['courses'] as const;
 
@@ -80,14 +82,7 @@ export class CourseDialog {
   protected readonly styles = courseDialogStyles();
 
   readonly form = this.formBuilder.nonNullable.group({
-    name: [
-      this.data.name,
-      [
-        Validators.required,
-        Validators.maxLength(128),
-        (control: AbstractControl) => (control.value?.includes('.') ? { hasDot: true } : null),
-      ],
-    ],
+    name: [this.data.name, [Validators.required, Validators.maxLength(128), noDotValidator]],
   });
 }
 
@@ -171,7 +166,7 @@ export class Courses {
   }));
 
   protected readonly courses = computed<Course[]>(() => this.coursesQuery.data() ?? []);
-  protected readonly subtitle = computed(() => `${this.courses().length} curso(s)`);
+  protected readonly subtitle = computed(() => coursesSubtitle(this.courses().length));
 
   private readonly createCourse = injectMutation(() => ({
     mutationFn: (input: { name: string }) => firstValueFrom(this.courseApi.createCourse(input)),
@@ -203,18 +198,20 @@ export class Courses {
 
   async onCreate(): Promise<void> {
     const name = await this.openCourseDialog({ mode: 'create', name: '' });
-    if (!name) {
+    const outcome = resolveCourseCreate(name);
+    if (outcome.kind === 'skip') {
       return;
     }
-    this.createCourse.mutate({ name });
+    this.createCourse.mutate({ name: outcome.name });
   }
 
   async onEdit(course: Course): Promise<void> {
     const name = await this.openCourseDialog({ mode: 'edit', name: course.name });
-    if (!name || name === course.name) {
+    const outcome = resolveCourseEdit(course.name, name);
+    if (outcome.kind === 'skip') {
       return;
     }
-    this.updateCourse.mutate({ id: course.id, name });
+    this.updateCourse.mutate({ id: course.id, name: outcome.name });
   }
 
   async onDelete(course: Course): Promise<void> {
