@@ -1,8 +1,8 @@
-import { tv } from 'tailwind-variants';
+import { tv } from '@shared/design';
 
 export const debtTemplateDialogStyles = tv({
   slots: {
-    form: 'flex flex-col gap-3 min-w-[320px]',
+    form: 'flex flex-col gap-form min-w-dialog',
     field: 'w-full',
   },
 });

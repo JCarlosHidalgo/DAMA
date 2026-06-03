@@ -220,6 +220,21 @@ body {
   --breakpoint-md: 960px;
   --breakpoint-lg: 1280px;
   --breakpoint-xl: 1600px;
+
+  --spacing-snug: var(--dama-space-2);
+  --spacing-form: var(--dama-space-3);
+  --spacing-grid: var(--dama-space-4);
+  --spacing-card: var(--dama-space-5);
+  --spacing-card-sm: var(--dama-space-3);
+  --spacing-dialog: 320px;
+  --spacing-dialog-sm: 280px;
+
+  --radius-card: var(--dama-radius-md);
+  --radius-control: var(--dama-radius);
+  --radius-callout: var(--dama-radius-sm);
+
+  --shadow-card: var(--dama-shadow-xs);
+  --shadow-pop: var(--dama-shadow-lg);
 }
 
 @utility t-display {
