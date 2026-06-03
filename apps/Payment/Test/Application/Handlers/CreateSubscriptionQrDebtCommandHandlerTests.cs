@@ -24,53 +24,53 @@ namespace Test.Application.Handlers;
 [TestFixture]
 public class CreateSubscriptionQrDebtCommandHandlerTests
 {
-    private Mock<ISubscriptionPlanDao> planDao = null!;
-    private Mock<IPendingSubscriptionPaymentDao> pendingDao = null!;
-    private Mock<ITodotixOutboxDao> todotixOutboxDao = null!;
-    private Mock<IUnitOfWork> unitOfWork = null!;
-    private Mock<ITransactionScope> transactionScope = null!;
-    private Mock<IClaimContext> claimContext = null!;
-    private Mock<ISubscriptionCreationBuilder> creationBuilder = null!;
-    private CreateSubscriptionQrDebtCommandHandler sut = null!;
-    private Guid tenantId;
+    private Mock<ISubscriptionPlanDao> _planDao = null!;
+    private Mock<IPendingSubscriptionPaymentDao> _pendingDao = null!;
+    private Mock<ITodotixOutboxDao> _todotixOutboxDao = null!;
+    private Mock<IUnitOfWork> _unitOfWork = null!;
+    private Mock<ITransactionScope> _transactionScope = null!;
+    private Mock<IClaimContext> _claimContext = null!;
+    private Mock<ISubscriptionCreationBuilder> _creationBuilder = null!;
+    private CreateSubscriptionQrDebtCommandHandler _sut = null!;
+    private Guid _tenantId;
 
     [SetUp]
     public void Setup()
     {
-        planDao = new Mock<ISubscriptionPlanDao>(MockBehavior.Strict);
-        pendingDao = new Mock<IPendingSubscriptionPaymentDao>(MockBehavior.Strict);
-        todotixOutboxDao = new Mock<ITodotixOutboxDao>(MockBehavior.Strict);
-        (unitOfWork, transactionScope) = UnitOfWorkMockHelper.BuildCommittingMocks();
-        claimContext = new Mock<IClaimContext>(MockBehavior.Strict);
-        creationBuilder = new Mock<ISubscriptionCreationBuilder>(MockBehavior.Strict);
+        _planDao = new Mock<ISubscriptionPlanDao>(MockBehavior.Strict);
+        _pendingDao = new Mock<IPendingSubscriptionPaymentDao>(MockBehavior.Strict);
+        _todotixOutboxDao = new Mock<ITodotixOutboxDao>(MockBehavior.Strict);
+        (_unitOfWork, _transactionScope) = UnitOfWorkMockHelper.BuildCommittingMocks();
+        _claimContext = new Mock<IClaimContext>(MockBehavior.Strict);
+        _creationBuilder = new Mock<ISubscriptionCreationBuilder>(MockBehavior.Strict);
 
-        tenantId = Guid.NewGuid();
-        claimContext.Setup(c => c.TenantId).Returns(tenantId);
-        claimContext.Setup(c => c.TenantTimezone).Returns("America/La_Paz");
-        claimContext.Setup(c => c.TenantName).Returns("Acme");
+        _tenantId = Guid.NewGuid();
+        _claimContext.Setup(c => c.TenantId).Returns(_tenantId);
+        _claimContext.Setup(c => c.TenantTimezone).Returns("America/La_Paz");
+        _claimContext.Setup(c => c.TenantName).Returns("Acme");
 
-        sut = BuildSut("platform-key");
+        _sut = BuildSut("platform-key");
     }
 
     private CreateSubscriptionQrDebtCommandHandler BuildSut(string platformAppKey)
     {
         IOptions<TodotixOptions> options = Options.Create(new TodotixOptions { PlatformAppKey = platformAppKey });
         return new CreateSubscriptionQrDebtCommandHandler(
-            planDao.Object,
-            pendingDao.Object,
-            todotixOutboxDao.Object,
-            unitOfWork.Object,
-            claimContext.Object,
-            creationBuilder.Object,
+            _planDao.Object,
+            _pendingDao.Object,
+            _todotixOutboxDao.Object,
+            _unitOfWork.Object,
+            _claimContext.Object,
+            _creationBuilder.Object,
             options);
     }
 
     [Test]
     public async Task Handle_WhenPlanMissing_ReturnsPlanNotFound()
     {
-        planDao.Setup(d => d.GetByLevelAsync(2)).ReturnsAsync((SubscriptionPlan?)null);
+        _planDao.Setup(d => d.GetByLevelAsync(2)).ReturnsAsync((SubscriptionPlan?)null);
 
-        CreateSubscriptionDebtOutcome outcome = await sut.Handle(new CreateSubscriptionQrDebtCommand(2, "a@b.com"));
+        CreateSubscriptionDebtOutcome outcome = await _sut.Handle(new CreateSubscriptionQrDebtCommand(2, "a@b.com"));
 
         Assert.That(outcome, Is.TypeOf<CreateSubscriptionDebtOutcome.PlanNotFound>());
     }
@@ -79,12 +79,12 @@ public class CreateSubscriptionQrDebtCommandHandlerTests
     public async Task Handle_WhenActiveSubscriptionDebtExists_ReturnsSuccessWithAlreadyGenerated()
     {
         var existingDebtId = Guid.NewGuid();
-        planDao.Setup(d => d.GetByLevelAsync(2)).ReturnsAsync(new SubscriptionPlan { Level = 2, Price = 180 });
-        pendingDao.Setup(d => d.GetActiveForTenantAsync(tenantId, It.IsAny<DateTime>())).ReturnsAsync(existingDebtId);
-        creationBuilder.Setup(b => b.BuildPendingDebtDto(existingDebtId, true))
+        _planDao.Setup(d => d.GetByLevelAsync(2)).ReturnsAsync(new SubscriptionPlan { Level = 2, Price = 180 });
+        _pendingDao.Setup(d => d.GetActiveForTenantAsync(_tenantId, It.IsAny<DateTime>())).ReturnsAsync(existingDebtId);
+        _creationBuilder.Setup(b => b.BuildPendingDebtDto(existingDebtId, true))
             .Returns(new QrDebtPendingDto { IdentificadorDeuda = existingDebtId, Status = "Pending", AlreadyGenerated = true });
 
-        CreateSubscriptionDebtOutcome outcome = await sut.Handle(new CreateSubscriptionQrDebtCommand(2, "a@b.com"));
+        CreateSubscriptionDebtOutcome outcome = await _sut.Handle(new CreateSubscriptionQrDebtCommand(2, "a@b.com"));
 
         Assert.That(outcome, Is.TypeOf<CreateSubscriptionDebtOutcome.Success>());
         var success = (CreateSubscriptionDebtOutcome.Success)outcome;
@@ -98,11 +98,11 @@ public class CreateSubscriptionQrDebtCommandHandlerTests
     [Test]
     public async Task Handle_WhenPlatformAppKeyMissing_ReturnsPaymentNotConfigured()
     {
-        sut = BuildSut(string.Empty);
-        planDao.Setup(d => d.GetByLevelAsync(2)).ReturnsAsync(new SubscriptionPlan { Level = 2, Price = 180 });
-        pendingDao.Setup(d => d.GetActiveForTenantAsync(tenantId, It.IsAny<DateTime>())).ReturnsAsync((Guid?)null);
+        _sut = BuildSut(string.Empty);
+        _planDao.Setup(d => d.GetByLevelAsync(2)).ReturnsAsync(new SubscriptionPlan { Level = 2, Price = 180 });
+        _pendingDao.Setup(d => d.GetActiveForTenantAsync(_tenantId, It.IsAny<DateTime>())).ReturnsAsync((Guid?)null);
 
-        CreateSubscriptionDebtOutcome outcome = await sut.Handle(new CreateSubscriptionQrDebtCommand(2, "a@b.com"));
+        CreateSubscriptionDebtOutcome outcome = await _sut.Handle(new CreateSubscriptionQrDebtCommand(2, "a@b.com"));
 
         Assert.That(outcome, Is.TypeOf<CreateSubscriptionDebtOutcome.PaymentNotConfigured>());
     }
@@ -111,24 +111,24 @@ public class CreateSubscriptionQrDebtCommandHandlerTests
     public async Task Handle_HappyPath_PersistsPendingAndOutboxAndReturnsSuccess()
     {
         SubscriptionPlan plan = new() { Level = 2, Price = 180, DurationAmount = 1, DurationUnit = "Month" };
-        planDao.Setup(d => d.GetByLevelAsync(2)).ReturnsAsync(plan);
-        pendingDao.Setup(d => d.GetActiveForTenantAsync(tenantId, It.IsAny<DateTime>())).ReturnsAsync((Guid?)null);
+        _planDao.Setup(d => d.GetByLevelAsync(2)).ReturnsAsync(plan);
+        _pendingDao.Setup(d => d.GetActiveForTenantAsync(_tenantId, It.IsAny<DateTime>())).ReturnsAsync((Guid?)null);
 
-        PendingSubscriptionPayment pending = new() { Id = Guid.NewGuid(), TenantId = tenantId, Level = 2, Cost = 180 };
+        PendingSubscriptionPayment pending = new() { Id = Guid.NewGuid(), TenantId = _tenantId, Level = 2, Cost = 180 };
         RegisterDebtRequest todotixRequest = new();
-        TodotixOutboxEvent outboxEvent = new() { Id = pending.Id, PendingId = pending.Id, TenantId = tenantId };
+        TodotixOutboxEvent outboxEvent = new() { Id = pending.Id, PendingId = pending.Id, TenantId = _tenantId };
         QrDebtPendingDto pendingDto = new() { IdentificadorDeuda = pending.Id, Status = "Pending" };
 
-        creationBuilder.Setup(b => b.BuildPendingPayment(It.IsAny<Guid>(), tenantId, plan, It.IsAny<DateTime>())).Returns(pending);
-        creationBuilder.Setup(b => b.BuildTodotixRequest(It.IsAny<Guid>(), "a@b.com", plan, "America/La_Paz", It.IsAny<string>(), It.IsAny<DateTime>(), "platform-key")).Returns(todotixRequest);
-        creationBuilder.Setup(b => b.BuildOutboxEvent(It.IsAny<Guid>(), tenantId, todotixRequest)).Returns(outboxEvent);
-        creationBuilder.Setup(b => b.BuildPendingDebtDto(It.IsAny<Guid>(), false)).Returns(pendingDto);
-        pendingDao.Setup(d => d.CreateAsync(pending, transactionScope.Object)).Returns(Task.CompletedTask);
-        todotixOutboxDao.Setup(d => d.InsertAsync(outboxEvent, transactionScope.Object)).Returns(Task.CompletedTask);
+        _creationBuilder.Setup(b => b.BuildPendingPayment(It.IsAny<Guid>(), _tenantId, plan, It.IsAny<DateTime>())).Returns(pending);
+        _creationBuilder.Setup(b => b.BuildTodotixRequest(It.IsAny<Guid>(), "a@b.com", plan, "America/La_Paz", It.IsAny<string>(), It.IsAny<DateTime>(), "platform-key")).Returns(todotixRequest);
+        _creationBuilder.Setup(b => b.BuildOutboxEvent(It.IsAny<Guid>(), _tenantId, todotixRequest)).Returns(outboxEvent);
+        _creationBuilder.Setup(b => b.BuildPendingDebtDto(It.IsAny<Guid>(), false)).Returns(pendingDto);
+        _pendingDao.Setup(d => d.CreateAsync(pending, _transactionScope.Object)).Returns(Task.CompletedTask);
+        _todotixOutboxDao.Setup(d => d.InsertAsync(outboxEvent, _transactionScope.Object)).Returns(Task.CompletedTask);
 
-        CreateSubscriptionDebtOutcome outcome = await sut.Handle(new CreateSubscriptionQrDebtCommand(2, "a@b.com"));
+        CreateSubscriptionDebtOutcome outcome = await _sut.Handle(new CreateSubscriptionQrDebtCommand(2, "a@b.com"));
 
         Assert.That(outcome, Is.TypeOf<CreateSubscriptionDebtOutcome.Success>());
-        transactionScope.Verify(s => s.CommitAsync(), Times.Once);
+        _transactionScope.Verify(s => s.CommitAsync(), Times.Once);
     }
 }

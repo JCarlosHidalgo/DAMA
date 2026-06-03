@@ -14,33 +14,33 @@ public class RemainClassWriterTests
 {
     private static readonly Guid CallerTenantId = Guid.Parse("11111111-1111-1111-1111-111111111111");
 
-    private Mock<IStudentRemainClassesDao> remainClassesDao = null!;
-    private Mock<IRemainRequestDao> remainRequestDao = null!;
-    private Mock<IUnitOfWork> unitOfWork = null!;
-    private Mock<IClaimContext> claimContext = null!;
-    private Mock<ITransactionScope> transactionScope = null!;
+    private Mock<IStudentRemainClassesDao> _remainClassesDao = null!;
+    private Mock<IRemainRequestDao> _remainRequestDao = null!;
+    private Mock<IUnitOfWork> _unitOfWork = null!;
+    private Mock<IClaimContext> _claimContext = null!;
+    private Mock<ITransactionScope> _transactionScope = null!;
 
-    private RemainClassWriter sut = null!;
+    private RemainClassWriter _sut = null!;
 
     [SetUp]
     public void SetUp()
     {
-        remainClassesDao = new Mock<IStudentRemainClassesDao>(MockBehavior.Strict);
-        remainRequestDao = new Mock<IRemainRequestDao>(MockBehavior.Strict);
-        unitOfWork = new Mock<IUnitOfWork>(MockBehavior.Strict);
-        claimContext = new Mock<IClaimContext>(MockBehavior.Strict);
-        transactionScope = new Mock<ITransactionScope>(MockBehavior.Strict);
+        _remainClassesDao = new Mock<IStudentRemainClassesDao>(MockBehavior.Strict);
+        _remainRequestDao = new Mock<IRemainRequestDao>(MockBehavior.Strict);
+        _unitOfWork = new Mock<IUnitOfWork>(MockBehavior.Strict);
+        _claimContext = new Mock<IClaimContext>(MockBehavior.Strict);
+        _transactionScope = new Mock<ITransactionScope>(MockBehavior.Strict);
 
-        transactionScope.Setup(scope => scope.DisposeAsync()).Returns(ValueTask.CompletedTask);
-        transactionScope.Setup(scope => scope.CommitAsync()).Returns(Task.CompletedTask);
-        unitOfWork.Setup(target => target.BeginAsync()).ReturnsAsync(transactionScope.Object);
-        claimContext.Setup(target => target.TenantId).Returns(CallerTenantId);
+        _transactionScope.Setup(scope => scope.DisposeAsync()).Returns(ValueTask.CompletedTask);
+        _transactionScope.Setup(scope => scope.CommitAsync()).Returns(Task.CompletedTask);
+        _unitOfWork.Setup(target => target.BeginAsync()).ReturnsAsync(_transactionScope.Object);
+        _claimContext.Setup(target => target.TenantId).Returns(CallerTenantId);
 
-        sut = new RemainClassWriter(
-            remainClassesDao.Object,
-            remainRequestDao.Object,
-            unitOfWork.Object,
-            claimContext.Object);
+        _sut = new RemainClassWriter(
+            _remainClassesDao.Object,
+            _remainRequestDao.Object,
+            _unitOfWork.Object,
+            _claimContext.Object);
     }
 
     [Test]
@@ -48,21 +48,21 @@ public class RemainClassWriterTests
     {
         var requestId = Guid.NewGuid();
         var studentId = Guid.NewGuid();
-        remainRequestDao
-            .Setup(target => target.TryMarkProcessedAsync(requestId, transactionScope.Object))
+        _remainRequestDao
+            .Setup(target => target.TryMarkProcessedAsync(requestId, _transactionScope.Object))
             .ReturnsAsync(true);
-        remainClassesDao
-            .Setup(target => target.IncrementAsync(CallerTenantId, studentId, 5, "Student", transactionScope.Object))
+        _remainClassesDao
+            .Setup(target => target.IncrementAsync(CallerTenantId, studentId, 5, "Student", _transactionScope.Object))
             .Returns(Task.CompletedTask);
 
         IncrementStudentRemainOutcome outcome =
-            await sut.IncrementForStudentByClientAsync(requestId, studentId, 5, "Student");
+            await _sut.IncrementForStudentByClientAsync(requestId, studentId, 5, "Student");
 
         Assert.That(outcome, Is.InstanceOf<IncrementStudentRemainOutcome.Applied>());
-        remainClassesDao.Verify(
-            target => target.IncrementAsync(CallerTenantId, studentId, 5, "Student", transactionScope.Object),
+        _remainClassesDao.Verify(
+            target => target.IncrementAsync(CallerTenantId, studentId, 5, "Student", _transactionScope.Object),
             Times.Once);
-        transactionScope.Verify(scope => scope.CommitAsync(), Times.Once);
+        _transactionScope.Verify(scope => scope.CommitAsync(), Times.Once);
     }
 
     [Test]
@@ -70,53 +70,53 @@ public class RemainClassWriterTests
     {
         var requestId = Guid.NewGuid();
         var studentId = Guid.NewGuid();
-        remainRequestDao
-            .Setup(target => target.TryMarkProcessedAsync(requestId, transactionScope.Object))
+        _remainRequestDao
+            .Setup(target => target.TryMarkProcessedAsync(requestId, _transactionScope.Object))
             .ReturnsAsync(false);
 
         IncrementStudentRemainOutcome outcome =
-            await sut.IncrementForStudentByClientAsync(requestId, studentId, 5, "Student");
+            await _sut.IncrementForStudentByClientAsync(requestId, studentId, 5, "Student");
 
         Assert.That(outcome, Is.InstanceOf<IncrementStudentRemainOutcome.AlreadyApplied>());
-        remainClassesDao.Verify(
+        _remainClassesDao.Verify(
             target => target.IncrementAsync(
                 It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<string?>(), It.IsAny<ITransactionContext>()),
             Times.Never);
-        transactionScope.Verify(scope => scope.CommitAsync(), Times.Once);
+        _transactionScope.Verify(scope => scope.CommitAsync(), Times.Once);
     }
 
     [Test]
     public async Task IncrementAllInTenantByClientAsync_FirstRequest_ReturnsAffectedRowCount()
     {
         var requestId = Guid.NewGuid();
-        remainRequestDao
-            .Setup(target => target.TryMarkProcessedAsync(requestId, transactionScope.Object))
+        _remainRequestDao
+            .Setup(target => target.TryMarkProcessedAsync(requestId, _transactionScope.Object))
             .ReturnsAsync(true);
-        remainClassesDao
-            .Setup(target => target.IncrementAllInTenantAsync(CallerTenantId, 3, transactionScope.Object))
+        _remainClassesDao
+            .Setup(target => target.IncrementAllInTenantAsync(CallerTenantId, 3, _transactionScope.Object))
             .ReturnsAsync(42);
 
-        IncrementTenantRemainOutcome outcome = await sut.IncrementAllInTenantByClientAsync(requestId, 3);
+        IncrementTenantRemainOutcome outcome = await _sut.IncrementAllInTenantByClientAsync(requestId, 3);
 
         Assert.That(outcome, Is.InstanceOf<IncrementTenantRemainOutcome.Applied>());
         Assert.That(((IncrementTenantRemainOutcome.Applied)outcome).Affected, Is.EqualTo(42));
-        transactionScope.Verify(scope => scope.CommitAsync(), Times.Once);
+        _transactionScope.Verify(scope => scope.CommitAsync(), Times.Once);
     }
 
     [Test]
     public async Task IncrementAllInTenantByClientAsync_DuplicateRequest_SkipsIncrement()
     {
         var requestId = Guid.NewGuid();
-        remainRequestDao
-            .Setup(target => target.TryMarkProcessedAsync(requestId, transactionScope.Object))
+        _remainRequestDao
+            .Setup(target => target.TryMarkProcessedAsync(requestId, _transactionScope.Object))
             .ReturnsAsync(false);
 
-        IncrementTenantRemainOutcome outcome = await sut.IncrementAllInTenantByClientAsync(requestId, 3);
+        IncrementTenantRemainOutcome outcome = await _sut.IncrementAllInTenantByClientAsync(requestId, 3);
 
         Assert.That(outcome, Is.InstanceOf<IncrementTenantRemainOutcome.AlreadyApplied>());
-        remainClassesDao.Verify(
+        _remainClassesDao.Verify(
             target => target.IncrementAllInTenantAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<ITransactionContext>()),
             Times.Never);
-        transactionScope.Verify(scope => scope.CommitAsync(), Times.Once);
+        _transactionScope.Verify(scope => scope.CommitAsync(), Times.Once);
     }
 }

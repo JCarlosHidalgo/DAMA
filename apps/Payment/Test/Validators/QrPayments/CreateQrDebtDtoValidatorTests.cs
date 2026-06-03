@@ -6,15 +6,15 @@ namespace Test.Validators.QrPayments;
 [TestFixture]
 public class CreateQrDebtDtoValidatorTests
 {
-    private CreateQrDebtDtoValidator sut = null!;
+    private CreateQrDebtDtoValidator _sut = null!;
 
     [SetUp]
-    public void Setup() => sut = new CreateQrDebtDtoValidator();
+    public void Setup() => _sut = new CreateQrDebtDtoValidator();
 
     [Test]
     public async Task Validate_EmptyDto_Passes()
     {
-        FluentValidation.Results.ValidationResult result = await sut.ValidateAsync(new CreateQrDebtDto());
+        FluentValidation.Results.ValidationResult result = await _sut.ValidateAsync(new CreateQrDebtDto());
 
         Assert.That(result.IsValid, Is.True);
     }
@@ -22,7 +22,7 @@ public class CreateQrDebtDtoValidatorTests
     [Test]
     public async Task Validate_InvalidEmail_Fails()
     {
-        FluentValidation.Results.ValidationResult result = await sut.ValidateAsync(new CreateQrDebtDto { Email = "not-an-email" });
+        FluentValidation.Results.ValidationResult result = await _sut.ValidateAsync(new CreateQrDebtDto { Email = "not-an-email" });
 
         Assert.That(result.IsValid, Is.False);
     }
@@ -30,7 +30,7 @@ public class CreateQrDebtDtoValidatorTests
     [Test]
     public async Task Validate_ValidEmail_Passes()
     {
-        FluentValidation.Results.ValidationResult result = await sut.ValidateAsync(new CreateQrDebtDto { Email = "a@b.com" });
+        FluentValidation.Results.ValidationResult result = await _sut.ValidateAsync(new CreateQrDebtDto { Email = "a@b.com" });
 
         Assert.That(result.IsValid, Is.True);
     }
@@ -38,7 +38,7 @@ public class CreateQrDebtDtoValidatorTests
     [Test]
     public async Task Validate_ExternalReferenceTooLong_Fails()
     {
-        FluentValidation.Results.ValidationResult result = await sut.ValidateAsync(new CreateQrDebtDto { ExternalReference = new string('x', 129) });
+        FluentValidation.Results.ValidationResult result = await _sut.ValidateAsync(new CreateQrDebtDto { ExternalReference = new string('x', 129) });
 
         Assert.That(result.IsValid, Is.False);
     }

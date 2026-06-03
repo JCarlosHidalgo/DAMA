@@ -17,10 +17,10 @@ public class CreateScheduledClassDtoValidatorTests
     private const string EmptyTeachersMessage = "Teachers debe contener al menos un docente";
     private const string DuplicateTeacherMessage = "Teachers contiene TeacherId duplicados";
 
-    private CreateScheduledClassDtoValidator validator = null!;
+    private CreateScheduledClassDtoValidator _validator = null!;
 
     [SetUp]
-    public void SetUp() => validator = new CreateScheduledClassDtoValidator();
+    public void SetUp() => _validator = new CreateScheduledClassDtoValidator();
 
     private static CreateScheduledClassDto ValidPayload() => new()
     {
@@ -40,7 +40,7 @@ public class CreateScheduledClassDtoValidatorTests
     [Test]
     public async Task Validate_WithValidPayload_IsValid()
     {
-        ValidationResult result = await validator.ValidateAsync(ValidPayload());
+        ValidationResult result = await _validator.ValidateAsync(ValidPayload());
 
         Assert.That(result.IsValid, Is.True);
     }
@@ -52,7 +52,7 @@ public class CreateScheduledClassDtoValidatorTests
         CreateScheduledClassDto request = ValidPayload();
         request.DayOfWeekIndex = dayOfWeekIndex;
 
-        ValidationResult result = await validator.ValidateAsync(request);
+        ValidationResult result = await _validator.ValidateAsync(request);
 
         Assert.Multiple(() =>
         {
@@ -68,7 +68,7 @@ public class CreateScheduledClassDtoValidatorTests
         CreateScheduledClassDto request = ValidPayload();
         request.MaxStudentLimit = maxStudentLimit;
 
-        ValidationResult result = await validator.ValidateAsync(request);
+        ValidationResult result = await _validator.ValidateAsync(request);
 
         Assert.Multiple(() =>
         {
@@ -84,7 +84,7 @@ public class CreateScheduledClassDtoValidatorTests
         CreateScheduledClassDto request = ValidPayload();
         request.MaxStudentLimit = maxStudentLimit;
 
-        ValidationResult result = await validator.ValidateAsync(request);
+        ValidationResult result = await _validator.ValidateAsync(request);
 
         Assert.That(result.IsValid, Is.True);
     }
@@ -96,7 +96,7 @@ public class CreateScheduledClassDtoValidatorTests
         CreateScheduledClassDto request = ValidPayload();
         request.DayOfWeekIndex = dayOfWeekIndex;
 
-        ValidationResult result = await validator.ValidateAsync(request);
+        ValidationResult result = await _validator.ValidateAsync(request);
 
         Assert.That(result.IsValid, Is.True);
     }
@@ -108,7 +108,7 @@ public class CreateScheduledClassDtoValidatorTests
         request.StartTime = new TimeOnly(10, 0);
         request.EndTime = new TimeOnly(10, 0);
 
-        ValidationResult result = await validator.ValidateAsync(request);
+        ValidationResult result = await _validator.ValidateAsync(request);
 
         Assert.Multiple(() =>
         {
@@ -124,7 +124,7 @@ public class CreateScheduledClassDtoValidatorTests
         request.StartTime = new TimeOnly(0, 30);
         request.EndTime = new TimeOnly(2, 0);
 
-        ValidationResult result = await validator.ValidateAsync(request);
+        ValidationResult result = await _validator.ValidateAsync(request);
 
         Assert.Multiple(() =>
         {
@@ -140,7 +140,7 @@ public class CreateScheduledClassDtoValidatorTests
         request.StartTime = new TimeOnly(22, 0);
         request.EndTime = new TimeOnly(23, 30);
 
-        ValidationResult result = await validator.ValidateAsync(request);
+        ValidationResult result = await _validator.ValidateAsync(request);
 
         Assert.Multiple(() =>
         {
@@ -156,7 +156,7 @@ public class CreateScheduledClassDtoValidatorTests
         request.StartTime = new TimeOnly(1, 0);
         request.EndTime = new TimeOnly(23, 0);
 
-        ValidationResult result = await validator.ValidateAsync(request);
+        ValidationResult result = await _validator.ValidateAsync(request);
 
         Assert.That(result.IsValid, Is.True);
     }
@@ -167,7 +167,7 @@ public class CreateScheduledClassDtoValidatorTests
         CreateScheduledClassDto request = ValidPayload();
         request.CourseId = Guid.Empty;
 
-        ValidationResult result = await validator.ValidateAsync(request);
+        ValidationResult result = await _validator.ValidateAsync(request);
 
         Assert.Multiple(() =>
         {
@@ -182,7 +182,7 @@ public class CreateScheduledClassDtoValidatorTests
         CreateScheduledClassDto request = ValidPayload();
         request.GroupId = Guid.Empty;
 
-        ValidationResult result = await validator.ValidateAsync(request);
+        ValidationResult result = await _validator.ValidateAsync(request);
 
         Assert.Multiple(() =>
         {
@@ -197,7 +197,7 @@ public class CreateScheduledClassDtoValidatorTests
         CreateScheduledClassDto request = ValidPayload();
         request.Teachers = null!;
 
-        ValidationResult result = await validator.ValidateAsync(request);
+        ValidationResult result = await _validator.ValidateAsync(request);
 
         Assert.Multiple(() =>
         {
@@ -212,7 +212,7 @@ public class CreateScheduledClassDtoValidatorTests
         CreateScheduledClassDto request = ValidPayload();
         request.Teachers = [];
 
-        ValidationResult result = await validator.ValidateAsync(request);
+        ValidationResult result = await _validator.ValidateAsync(request);
 
         Assert.Multiple(() =>
         {
@@ -232,7 +232,7 @@ public class CreateScheduledClassDtoValidatorTests
             new ClassTeacherDto { TeacherId = teacherId, TeacherName = "B" }
         ];
 
-        ValidationResult result = await validator.ValidateAsync(request);
+        ValidationResult result = await _validator.ValidateAsync(request);
 
         Assert.Multiple(() =>
         {
@@ -250,7 +250,7 @@ public class CreateScheduledClassDtoValidatorTests
             new ClassTeacherDto { TeacherId = Guid.Empty, TeacherName = "Sin Id" }
         ];
 
-        ValidationResult result = await validator.ValidateAsync(request);
+        ValidationResult result = await _validator.ValidateAsync(request);
 
         Assert.Multiple(() =>
         {
@@ -265,7 +265,7 @@ public class CreateScheduledClassDtoValidatorTests
         CreateScheduledClassDto request = ValidPayload();
         request.ExternalReference = null;
 
-        ValidationResult result = await validator.ValidateAsync(request);
+        ValidationResult result = await _validator.ValidateAsync(request);
 
         Assert.That(result.IsValid, Is.True);
     }
@@ -276,7 +276,7 @@ public class CreateScheduledClassDtoValidatorTests
         CreateScheduledClassDto request = ValidPayload();
         request.ExternalReference = new string('x', 129);
 
-        ValidationResult result = await validator.ValidateAsync(request);
+        ValidationResult result = await _validator.ValidateAsync(request);
 
         Assert.Multiple(() =>
         {

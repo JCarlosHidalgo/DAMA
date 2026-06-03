@@ -9,10 +9,10 @@ public class HubClaimContextTests
 {
     private static readonly Guid SampleTenantId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
 
-    private HubClaimContext sut = null!;
+    private HubClaimContext _sut = null!;
 
     [SetUp]
-    public void SetUp() => sut = new HubClaimContext();
+    public void SetUp() => _sut = new HubClaimContext();
 
     private static ClaimsPrincipal PrincipalWith(params Claim[] claims)
     {
@@ -24,7 +24,7 @@ public class HubClaimContextTests
     {
         ClaimsPrincipal user = PrincipalWith(new Claim("tenant_id", SampleTenantId.ToString()));
 
-        Assert.That(sut.GetTenantId(user), Is.EqualTo(SampleTenantId));
+        Assert.That(_sut.GetTenantId(user), Is.EqualTo(SampleTenantId));
     }
 
     [Test]
@@ -32,7 +32,7 @@ public class HubClaimContextTests
     {
         ClaimsPrincipal user = PrincipalWith(new Claim("user_id", Guid.NewGuid().ToString()));
 
-        MissingClaimException exception = Assert.Throws<MissingClaimException>(() => sut.GetTenantId(user));
+        MissingClaimException exception = Assert.Throws<MissingClaimException>(() => _sut.GetTenantId(user));
         Assert.That(exception.ClaimName, Is.EqualTo("tenant_id"));
     }
 
@@ -41,12 +41,12 @@ public class HubClaimContextTests
     {
         ClaimsPrincipal user = PrincipalWith(new Claim("tenant_id", "not-a-guid"));
 
-        Assert.Throws<MissingClaimException>(() => sut.GetTenantId(user));
+        Assert.Throws<MissingClaimException>(() => _sut.GetTenantId(user));
     }
 
     [Test]
     public void GetTenantId_WhenPrincipalNull_ThrowsMissingClaim()
     {
-        Assert.Throws<MissingClaimException>(() => sut.GetTenantId(null));
+        Assert.Throws<MissingClaimException>(() => _sut.GetTenantId(null));
     }
 }

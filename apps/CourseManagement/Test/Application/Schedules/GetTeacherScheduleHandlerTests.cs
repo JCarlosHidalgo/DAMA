@@ -18,22 +18,22 @@ public class GetTeacherScheduleHandlerTests
     private static readonly Guid TeacherId = Guid.Parse("33333333-3333-3333-3333-333333333333");
     private static readonly DateOnly ClassDatePointer = new(2025, 6, 1);
 
-    private Mock<IScheduledClassDao> scheduledClassDao = null!;
-    private Mock<IUniqueClassDao> uniqueClassDao = null!;
-    private Mock<IScheduleAssembler> scheduleAssembler = null!;
-    private Mock<IClaimContext> claimContext = null!;
-    private GetTeacherScheduleHandler handler = null!;
+    private Mock<IScheduledClassDao> _scheduledClassDao = null!;
+    private Mock<IUniqueClassDao> _uniqueClassDao = null!;
+    private Mock<IScheduleAssembler> _scheduleAssembler = null!;
+    private Mock<IClaimContext> _claimContext = null!;
+    private GetTeacherScheduleHandler _handler = null!;
 
     [SetUp]
     public void SetUp()
     {
-        scheduledClassDao = new Mock<IScheduledClassDao>(MockBehavior.Strict);
-        uniqueClassDao = new Mock<IUniqueClassDao>(MockBehavior.Strict);
-        scheduleAssembler = new Mock<IScheduleAssembler>(MockBehavior.Strict);
-        claimContext = new Mock<IClaimContext>(MockBehavior.Strict);
-        claimContext.SetupGet(context => context.TenantId).Returns(TenantId);
-        claimContext.SetupGet(context => context.UserId).Returns(TeacherId);
-        handler = new GetTeacherScheduleHandler(scheduledClassDao.Object, uniqueClassDao.Object, scheduleAssembler.Object, claimContext.Object);
+        _scheduledClassDao = new Mock<IScheduledClassDao>(MockBehavior.Strict);
+        _uniqueClassDao = new Mock<IUniqueClassDao>(MockBehavior.Strict);
+        _scheduleAssembler = new Mock<IScheduleAssembler>(MockBehavior.Strict);
+        _claimContext = new Mock<IClaimContext>(MockBehavior.Strict);
+        _claimContext.SetupGet(context => context.TenantId).Returns(TenantId);
+        _claimContext.SetupGet(context => context.UserId).Returns(TeacherId);
+        _handler = new GetTeacherScheduleHandler(_scheduledClassDao.Object, _uniqueClassDao.Object, _scheduleAssembler.Object, _claimContext.Object);
     }
 
     [Test]
@@ -47,9 +47,9 @@ public class GetTeacherScheduleHandlerTests
             UniqueClasses = []
         };
 
-        scheduledClassDao.Setup(dao => dao.GetByTeacherForTenantAsync(TenantId, TeacherId)).ReturnsAsync(scheduledClasses);
-        uniqueClassDao.Setup(dao => dao.GetByTeacherOnWeekForTenantAsync(TenantId, TeacherId, ClassDatePointer)).ReturnsAsync(uniqueClasses);
-        scheduleAssembler
+        _scheduledClassDao.Setup(dao => dao.GetByTeacherForTenantAsync(TenantId, TeacherId)).ReturnsAsync(scheduledClasses);
+        _uniqueClassDao.Setup(dao => dao.GetByTeacherOnWeekForTenantAsync(TenantId, TeacherId, ClassDatePointer)).ReturnsAsync(uniqueClasses);
+        _scheduleAssembler
             .Setup(assembler => assembler.AssembleAsync(
                 It.IsAny<Func<Task<List<ScheduledClass>>>>(),
                 It.IsAny<Func<Task<List<UniqueClass>>>>()))
@@ -65,7 +65,7 @@ public class GetTeacherScheduleHandlerTests
                 return schedule;
             });
 
-        GetTeacherScheduleResult result = await handler.Handle(new GetTeacherScheduleQuery(ClassDatePointer));
+        GetTeacherScheduleResult result = await _handler.Handle(new GetTeacherScheduleQuery(ClassDatePointer));
 
         Assert.Multiple(() =>
         {

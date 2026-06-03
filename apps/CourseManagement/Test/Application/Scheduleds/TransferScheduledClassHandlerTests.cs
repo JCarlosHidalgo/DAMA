@@ -19,31 +19,31 @@ public class TransferScheduledClassHandlerTests
     private static readonly Guid CurrentGroupId = Guid.Parse("33333333-3333-3333-3333-333333333333");
     private static readonly Guid TargetGroupId = Guid.Parse("44444444-4444-4444-4444-444444444444");
 
-    private Mock<IScheduledClassDao> scheduledClassDao = null!;
-    private Mock<IClassGroupDao> classGroupDao = null!;
-    private Mock<IUnitOfWork> unitOfWork = null!;
-    private Mock<ITransactionScope> transactionScope = null!;
-    private Mock<IClaimContext> claimContext = null!;
-    private TransferScheduledClassHandler handler = null!;
+    private Mock<IScheduledClassDao> _scheduledClassDao = null!;
+    private Mock<IClassGroupDao> _classGroupDao = null!;
+    private Mock<IUnitOfWork> _unitOfWork = null!;
+    private Mock<ITransactionScope> _transactionScope = null!;
+    private Mock<IClaimContext> _claimContext = null!;
+    private TransferScheduledClassHandler _handler = null!;
 
     [SetUp]
     public void SetUp()
     {
-        scheduledClassDao = new Mock<IScheduledClassDao>(MockBehavior.Strict);
-        classGroupDao = new Mock<IClassGroupDao>(MockBehavior.Strict);
-        unitOfWork = new Mock<IUnitOfWork>(MockBehavior.Strict);
-        transactionScope = new Mock<ITransactionScope>(MockBehavior.Strict);
-        claimContext = new Mock<IClaimContext>(MockBehavior.Strict);
+        _scheduledClassDao = new Mock<IScheduledClassDao>(MockBehavior.Strict);
+        _classGroupDao = new Mock<IClassGroupDao>(MockBehavior.Strict);
+        _unitOfWork = new Mock<IUnitOfWork>(MockBehavior.Strict);
+        _transactionScope = new Mock<ITransactionScope>(MockBehavior.Strict);
+        _claimContext = new Mock<IClaimContext>(MockBehavior.Strict);
 
-        transactionScope.Setup(scope => scope.DisposeAsync()).Returns(ValueTask.CompletedTask);
-        unitOfWork.Setup(work => work.BeginAsync()).ReturnsAsync(transactionScope.Object);
-        claimContext.SetupGet(context => context.TenantId).Returns(TenantId);
+        _transactionScope.Setup(scope => scope.DisposeAsync()).Returns(ValueTask.CompletedTask);
+        _unitOfWork.Setup(work => work.BeginAsync()).ReturnsAsync(_transactionScope.Object);
+        _claimContext.SetupGet(context => context.TenantId).Returns(TenantId);
 
-        handler = new TransferScheduledClassHandler(
-            scheduledClassDao.Object,
-            classGroupDao.Object,
-            unitOfWork.Object,
-            claimContext.Object);
+        _handler = new TransferScheduledClassHandler(
+            _scheduledClassDao.Object,
+            _classGroupDao.Object,
+            _unitOfWork.Object,
+            _claimContext.Object);
     }
 
     private static ScheduledClass Existing() => new()
@@ -59,59 +59,59 @@ public class TransferScheduledClassHandlerTests
     [Test]
     public async Task Handle_WhenClassNotFound_ReturnsNotFound()
     {
-        scheduledClassDao.Setup(dao => dao.GetByIdForTenantAsync(TenantId, ScheduledClassId)).ReturnsAsync((ScheduledClass?)null);
+        _scheduledClassDao.Setup(dao => dao.GetByIdForTenantAsync(TenantId, ScheduledClassId)).ReturnsAsync((ScheduledClass?)null);
 
-        TransferScheduledClassResult result = await handler.Handle(new TransferScheduledClassCommand(ScheduledClassId, TargetGroupId));
+        TransferScheduledClassResult result = await _handler.Handle(new TransferScheduledClassCommand(ScheduledClassId, TargetGroupId));
 
         Assert.That(result, Is.InstanceOf<TransferScheduledClassResult.NotFound>());
-        unitOfWork.Verify(work => work.BeginAsync(), Times.Never);
+        _unitOfWork.Verify(work => work.BeginAsync(), Times.Never);
     }
 
     [Test]
     public async Task Handle_WhenTargetGroupDoesNotExist_ReturnsGroupNotFound()
     {
-        scheduledClassDao.Setup(dao => dao.GetByIdForTenantAsync(TenantId, ScheduledClassId)).ReturnsAsync(Existing());
-        classGroupDao.Setup(dao => dao.ExistsForTenantAsync(TenantId, TargetGroupId)).ReturnsAsync(false);
+        _scheduledClassDao.Setup(dao => dao.GetByIdForTenantAsync(TenantId, ScheduledClassId)).ReturnsAsync(Existing());
+        _classGroupDao.Setup(dao => dao.ExistsForTenantAsync(TenantId, TargetGroupId)).ReturnsAsync(false);
 
-        TransferScheduledClassResult result = await handler.Handle(new TransferScheduledClassCommand(ScheduledClassId, TargetGroupId));
+        TransferScheduledClassResult result = await _handler.Handle(new TransferScheduledClassCommand(ScheduledClassId, TargetGroupId));
 
         Assert.That(result, Is.InstanceOf<TransferScheduledClassResult.GroupNotFound>());
-        unitOfWork.Verify(work => work.BeginAsync(), Times.Never);
+        _unitOfWork.Verify(work => work.BeginAsync(), Times.Never);
     }
 
     [Test]
     public async Task Handle_WhenOverlapInTargetGroup_ReturnsGroupOverlapConflict()
     {
         ScheduledClass existing = Existing();
-        scheduledClassDao.Setup(dao => dao.GetByIdForTenantAsync(TenantId, ScheduledClassId)).ReturnsAsync(existing);
-        classGroupDao.Setup(dao => dao.ExistsForTenantAsync(TenantId, TargetGroupId)).ReturnsAsync(true);
-        scheduledClassDao
+        _scheduledClassDao.Setup(dao => dao.GetByIdForTenantAsync(TenantId, ScheduledClassId)).ReturnsAsync(existing);
+        _classGroupDao.Setup(dao => dao.ExistsForTenantAsync(TenantId, TargetGroupId)).ReturnsAsync(true);
+        _scheduledClassDao
             .Setup(dao => dao.HasGroupOverlapAsync(TenantId, TargetGroupId, existing.DayOfWeekIndex, existing.StartTime, existing.EndTime, ScheduledClassId))
             .ReturnsAsync(true);
 
-        TransferScheduledClassResult result = await handler.Handle(new TransferScheduledClassCommand(ScheduledClassId, TargetGroupId));
+        TransferScheduledClassResult result = await _handler.Handle(new TransferScheduledClassCommand(ScheduledClassId, TargetGroupId));
 
         Assert.That(result, Is.InstanceOf<TransferScheduledClassResult.GroupOverlapConflict>());
-        unitOfWork.Verify(work => work.BeginAsync(), Times.Never);
+        _unitOfWork.Verify(work => work.BeginAsync(), Times.Never);
     }
 
     [Test]
     public async Task Handle_WhenValid_TransfersCommitsAndReturnsTransferred()
     {
         ScheduledClass existing = Existing();
-        scheduledClassDao.Setup(dao => dao.GetByIdForTenantAsync(TenantId, ScheduledClassId)).ReturnsAsync(existing);
-        classGroupDao.Setup(dao => dao.ExistsForTenantAsync(TenantId, TargetGroupId)).ReturnsAsync(true);
-        scheduledClassDao
+        _scheduledClassDao.Setup(dao => dao.GetByIdForTenantAsync(TenantId, ScheduledClassId)).ReturnsAsync(existing);
+        _classGroupDao.Setup(dao => dao.ExistsForTenantAsync(TenantId, TargetGroupId)).ReturnsAsync(true);
+        _scheduledClassDao
             .Setup(dao => dao.HasGroupOverlapAsync(TenantId, TargetGroupId, existing.DayOfWeekIndex, existing.StartTime, existing.EndTime, ScheduledClassId))
             .ReturnsAsync(false);
-        scheduledClassDao
-            .Setup(dao => dao.TransferToGroupAsync(TenantId, ScheduledClassId, TargetGroupId, transactionScope.Object))
+        _scheduledClassDao
+            .Setup(dao => dao.TransferToGroupAsync(TenantId, ScheduledClassId, TargetGroupId, _transactionScope.Object))
             .ReturnsAsync(true);
-        transactionScope.Setup(scope => scope.CommitAsync()).Returns(Task.CompletedTask);
+        _transactionScope.Setup(scope => scope.CommitAsync()).Returns(Task.CompletedTask);
 
-        TransferScheduledClassResult result = await handler.Handle(new TransferScheduledClassCommand(ScheduledClassId, TargetGroupId));
+        TransferScheduledClassResult result = await _handler.Handle(new TransferScheduledClassCommand(ScheduledClassId, TargetGroupId));
 
         Assert.That(result, Is.InstanceOf<TransferScheduledClassResult.Transferred>());
-        transactionScope.Verify(scope => scope.CommitAsync(), Times.Once);
+        _transactionScope.Verify(scope => scope.CommitAsync(), Times.Once);
     }
 }

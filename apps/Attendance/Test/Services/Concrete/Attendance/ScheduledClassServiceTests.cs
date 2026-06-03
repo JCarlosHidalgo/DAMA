@@ -30,35 +30,35 @@ public class ScheduledClassServiceTests
     private static readonly Guid CallerTenantId = Guid.Parse("11111111-1111-1111-1111-111111111111");
     private static readonly Guid CallerStudentId = Guid.Parse("22222222-2222-2222-2222-222222222222");
 
-    private Mock<IScheduledClassAttendanceDao> scheduledClassAttendanceDao = null!;
-    private Mock<ICourseManagementClient> courseManagementClient = null!;
-    private Mock<IAttendanceMarker> attendanceMarker = null!;
-    private Mock<IClaimContext> claimContext = null!;
-    private Mock<IAttendanceClassBuilder> attendanceClassBuilder = null!;
-    private Mock<IMapper> mapper = null!;
+    private Mock<IScheduledClassAttendanceDao> _scheduledClassAttendanceDao = null!;
+    private Mock<ICourseManagementClient> _courseManagementClient = null!;
+    private Mock<IAttendanceMarker> _attendanceMarker = null!;
+    private Mock<IClaimContext> _claimContext = null!;
+    private Mock<IAttendanceClassBuilder> _attendanceClassBuilder = null!;
+    private Mock<IMapper> _mapper = null!;
 
-    private ScheduledClassService sut = null!;
+    private ScheduledClassService _sut = null!;
 
     [SetUp]
     public void SetUp()
     {
-        scheduledClassAttendanceDao = new Mock<IScheduledClassAttendanceDao>(MockBehavior.Strict);
-        courseManagementClient = new Mock<ICourseManagementClient>(MockBehavior.Strict);
-        attendanceMarker = new Mock<IAttendanceMarker>(MockBehavior.Strict);
-        claimContext = new Mock<IClaimContext>(MockBehavior.Strict);
-        attendanceClassBuilder = new Mock<IAttendanceClassBuilder>(MockBehavior.Strict);
-        mapper = new Mock<IMapper>(MockBehavior.Strict);
+        _scheduledClassAttendanceDao = new Mock<IScheduledClassAttendanceDao>(MockBehavior.Strict);
+        _courseManagementClient = new Mock<ICourseManagementClient>(MockBehavior.Strict);
+        _attendanceMarker = new Mock<IAttendanceMarker>(MockBehavior.Strict);
+        _claimContext = new Mock<IClaimContext>(MockBehavior.Strict);
+        _attendanceClassBuilder = new Mock<IAttendanceClassBuilder>(MockBehavior.Strict);
+        _mapper = new Mock<IMapper>(MockBehavior.Strict);
 
-        claimContext.Setup(target => target.TenantId).Returns(CallerTenantId);
+        _claimContext.Setup(target => target.TenantId).Returns(CallerTenantId);
 
-        sut = new ScheduledClassService(
-            scheduledClassAttendanceDao.Object,
-            courseManagementClient.Object,
-            attendanceMarker.Object,
-            claimContext.Object,
+        _sut = new ScheduledClassService(
+            _scheduledClassAttendanceDao.Object,
+            _courseManagementClient.Object,
+            _attendanceMarker.Object,
+            _claimContext.Object,
             Options.Create(new AttendanceOptions { PageSize = 10 }),
-            attendanceClassBuilder.Object,
-            mapper.Object,
+            _attendanceClassBuilder.Object,
+            _mapper.Object,
             NullLogger<ScheduledClassService>.Instance);
     }
 
@@ -70,12 +70,12 @@ public class ScheduledClassServiceTests
         List<ScheduledClassAttendance> attendances = [new ScheduledClassAttendance()];
         List<ScheduledAttendanceResponse> mapped = [new ScheduledAttendanceResponse()];
 
-        scheduledClassAttendanceDao
+        _scheduledClassAttendanceDao
             .Setup(target => target.GetScheduledAttendanceAsync(CallerTenantId, classId, classDate))
             .ReturnsAsync(attendances);
-        mapper.Setup(target => target.Map<List<ScheduledAttendanceResponse>>(attendances)).Returns(mapped);
+        _mapper.Setup(target => target.Map<List<ScheduledAttendanceResponse>>(attendances)).Returns(mapped);
 
-        List<ScheduledAttendanceResponse> result = await sut.GetScheduledAttendance(classId, classDate);
+        List<ScheduledAttendanceResponse> result = await _sut.GetScheduledAttendance(classId, classDate);
 
         Assert.That(result, Is.SameAs(mapped));
     }
@@ -84,10 +84,10 @@ public class ScheduledClassServiceTests
     public async Task GetScheduledAttendanceByStudentId_WhenStudentAccessingOther_ReturnsForbidden()
     {
         var studentId = Guid.NewGuid();
-        claimContext.Setup(target => target.Role).Returns(UserRoles.Student);
-        claimContext.Setup(target => target.UserId).Returns(CallerStudentId);
+        _claimContext.Setup(target => target.Role).Returns(UserRoles.Student);
+        _claimContext.Setup(target => target.UserId).Returns(CallerStudentId);
 
-        GetScheduledByStudentOutcome result = await sut.GetScheduledAttendanceByStudentId(studentId);
+        GetScheduledByStudentOutcome result = await _sut.GetScheduledAttendanceByStudentId(studentId);
 
         Assert.That(result, Is.InstanceOf<GetScheduledByStudentOutcome.Forbidden>());
     }
@@ -99,13 +99,13 @@ public class ScheduledClassServiceTests
         List<ScheduledClassAttendance> attendances = [new ScheduledClassAttendance()];
         List<ScheduledAttendanceResponse> mapped = [new ScheduledAttendanceResponse()];
 
-        claimContext.Setup(target => target.Role).Returns(UserRoles.Client);
-        scheduledClassAttendanceDao
+        _claimContext.Setup(target => target.Role).Returns(UserRoles.Client);
+        _scheduledClassAttendanceDao
             .Setup(target => target.GetScheduledAttendanceByStudentIdAsync(CallerTenantId, studentId))
             .ReturnsAsync(attendances);
-        mapper.Setup(target => target.Map<List<ScheduledAttendanceResponse>>(attendances)).Returns(mapped);
+        _mapper.Setup(target => target.Map<List<ScheduledAttendanceResponse>>(attendances)).Returns(mapped);
 
-        GetScheduledByStudentOutcome result = await sut.GetScheduledAttendanceByStudentId(studentId);
+        GetScheduledByStudentOutcome result = await _sut.GetScheduledAttendanceByStudentId(studentId);
 
         Assert.That(result, Is.InstanceOf<GetScheduledByStudentOutcome.Found>());
         var found = (GetScheduledByStudentOutcome.Found)result;
@@ -125,19 +125,19 @@ public class ScheduledClassServiceTests
             Items = mapped
         };
 
-        claimContext.Setup(target => target.UserId).Returns(CallerStudentId);
-        scheduledClassAttendanceDao
+        _claimContext.Setup(target => target.UserId).Returns(CallerStudentId);
+        _scheduledClassAttendanceDao
             .Setup(target => target.CountByStudentForTenantAsync(CallerTenantId, CallerStudentId))
             .ReturnsAsync(1);
-        scheduledClassAttendanceDao
+        _scheduledClassAttendanceDao
             .Setup(target => target.GetPageByStudentForTenantAsync(CallerTenantId, CallerStudentId, 0, 10))
             .ReturnsAsync(attendances);
-        mapper.Setup(target => target.Map<List<ScheduledAttendanceResponse>>(attendances)).Returns(mapped);
-        attendanceClassBuilder
+        _mapper.Setup(target => target.Map<List<ScheduledAttendanceResponse>>(attendances)).Returns(mapped);
+        _attendanceClassBuilder
             .Setup(target => target.BuildPage(pageIndex, 0, mapped))
             .Returns(expectedPage);
 
-        PageDto<ScheduledAttendanceResponse> result = await sut.ListMyScheduledAttendanceAsync(pageIndex);
+        PageDto<ScheduledAttendanceResponse> result = await _sut.ListMyScheduledAttendanceAsync(pageIndex);
 
         Assert.That(result, Is.SameAs(expectedPage));
     }
@@ -147,7 +147,7 @@ public class ScheduledClassServiceTests
     {
         ScheduledAttendanceDto request = new() { ClassId = Guid.NewGuid(), CourseName = "Course" };
 
-        attendanceMarker
+        _attendanceMarker
             .Setup(target => target.MarkAsync<ScheduledClassAttendance, ScheduledAttendanceResponse>(
                 It.IsAny<Func<AttendanceMarkContext, Task<AttendanceBuildResult<ScheduledClassAttendance>?>>>(),
                 It.IsAny<Func<ScheduledClassAttendance, ITransactionContext, Task<int>>>(),
@@ -155,7 +155,7 @@ public class ScheduledClassServiceTests
                 It.IsAny<Func<ScheduledClassAttendance, string>>()))
             .ReturnsAsync(new MarkAttendanceOutcome.Marked());
 
-        MarkAttendanceOutcome result = await sut.MarkScheduledAttendance(request);
+        MarkAttendanceOutcome result = await _sut.MarkScheduledAttendance(request);
 
         Assert.That(result, Is.InstanceOf<MarkAttendanceOutcome.Marked>());
     }
@@ -168,10 +168,10 @@ public class ScheduledClassServiceTests
         ScheduledClassAttendance builtAttendance = new();
         AttendanceMarkContext markContext = new(CallerTenantId, CallerStudentId, "Pedro", "America/La_Paz");
 
-        courseManagementClient
+        _courseManagementClient
             .Setup(target => target.FindScheduledClassAsync(request.ClassId, It.IsAny<DateOnly>()))
             .ReturnsAsync(classMetadata);
-        attendanceClassBuilder
+        _attendanceClassBuilder
             .Setup(target => target.BuildScheduledAttendance(
                 CallerTenantId, CallerStudentId, "Pedro", It.IsAny<DateOnly>(), request, classMetadata))
             .Returns(builtAttendance);
@@ -179,10 +179,10 @@ public class ScheduledClassServiceTests
         ScheduledClassAttendance? capturedAttendance = await InvokeMarkLambdaAsync(request, markContext);
 
         Assert.That(capturedAttendance, Is.SameAs(builtAttendance));
-        courseManagementClient.Verify(
+        _courseManagementClient.Verify(
             target => target.FindScheduledClassAsync(request.ClassId, It.IsAny<DateOnly>()),
             Times.Once);
-        attendanceClassBuilder.Verify(
+        _attendanceClassBuilder.Verify(
             target => target.BuildScheduledAttendance(
                 CallerTenantId, CallerStudentId, "Pedro", It.IsAny<DateOnly>(), request, classMetadata),
             Times.Once);
@@ -194,14 +194,14 @@ public class ScheduledClassServiceTests
         ScheduledAttendanceDto request = new() { ClassId = Guid.NewGuid(), CourseName = "Course" };
         AttendanceMarkContext markContext = new(CallerTenantId, CallerStudentId, "Pedro", "America/La_Paz");
 
-        courseManagementClient
+        _courseManagementClient
             .Setup(target => target.FindScheduledClassAsync(request.ClassId, It.IsAny<DateOnly>()))
             .ReturnsAsync((ClassExistenceMeta?)null);
 
         ScheduledClassAttendance? capturedAttendance = await InvokeMarkLambdaAsync(request, markContext);
 
         Assert.That(capturedAttendance, Is.Null);
-        attendanceClassBuilder.VerifyNoOtherCalls();
+        _attendanceClassBuilder.VerifyNoOtherCalls();
     }
 
     [Test]
@@ -212,17 +212,17 @@ public class ScheduledClassServiceTests
         var utcDateToday = DateOnly.FromDateTime(DateTime.UtcNow);
         AttendanceMarkContext markContext = new(CallerTenantId, CallerStudentId, "Pedro", "Continent/NonExistent");
 
-        courseManagementClient
+        _courseManagementClient
             .Setup(target => target.FindScheduledClassAsync(request.ClassId, utcDateToday))
             .ReturnsAsync(classMetadata);
-        attendanceClassBuilder
+        _attendanceClassBuilder
             .Setup(target => target.BuildScheduledAttendance(
                 CallerTenantId, CallerStudentId, "Pedro", utcDateToday, request, classMetadata))
             .Returns(new ScheduledClassAttendance());
 
         await InvokeMarkLambdaAsync(request, markContext);
 
-        courseManagementClient.Verify(
+        _courseManagementClient.Verify(
             target => target.FindScheduledClassAsync(request.ClassId, utcDateToday),
             Times.Once);
     }
@@ -239,22 +239,22 @@ public class ScheduledClassServiceTests
             Items = emptyMapped
         };
 
-        claimContext.Setup(target => target.UserId).Returns(CallerStudentId);
-        scheduledClassAttendanceDao
+        _claimContext.Setup(target => target.UserId).Returns(CallerStudentId);
+        _scheduledClassAttendanceDao
             .Setup(target => target.CountByStudentForTenantAsync(CallerTenantId, CallerStudentId))
             .ReturnsAsync(1);
-        mapper
+        _mapper
             .Setup(target => target.Map<List<ScheduledAttendanceResponse>>(
                 It.Is<List<ScheduledClassAttendance>>(list => list.Count == 0)))
             .Returns(emptyMapped);
-        attendanceClassBuilder
+        _attendanceClassBuilder
             .Setup(target => target.BuildPage(pageIndexBeyondMax, 0, emptyMapped))
             .Returns(expectedPage);
 
-        PageDto<ScheduledAttendanceResponse> result = await sut.ListMyScheduledAttendanceAsync(pageIndexBeyondMax);
+        PageDto<ScheduledAttendanceResponse> result = await _sut.ListMyScheduledAttendanceAsync(pageIndexBeyondMax);
 
         Assert.That(result, Is.SameAs(expectedPage));
-        scheduledClassAttendanceDao.Verify(
+        _scheduledClassAttendanceDao.Verify(
             target => target.GetPageByStudentForTenantAsync(
                 It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<int>()),
             Times.Never);
@@ -265,7 +265,7 @@ public class ScheduledClassServiceTests
         AttendanceMarkContext markContext)
     {
         ScheduledClassAttendance? capturedAttendance = null;
-        attendanceMarker
+        _attendanceMarker
             .Setup(target => target.MarkAsync<ScheduledClassAttendance, ScheduledAttendanceResponse>(
                 It.IsAny<Func<AttendanceMarkContext, Task<AttendanceBuildResult<ScheduledClassAttendance>?>>>(),
                 It.IsAny<Func<ScheduledClassAttendance, ITransactionContext, Task<int>>>(),
@@ -281,7 +281,7 @@ public class ScheduledClassServiceTests
                 capturedAttendance = buildResult?.Attendance;
                 if (capturedAttendance is not null)
                 {
-                    scheduledClassAttendanceDao
+                    _scheduledClassAttendanceDao
                         .Setup(target => target.TryMarkAttendanceAsync(capturedAttendance, It.IsAny<ITransactionContext>()))
                         .ReturnsAsync(true);
                     await tryMark(capturedAttendance, Mock.Of<ITransactionContext>());
@@ -292,7 +292,7 @@ public class ScheduledClassServiceTests
                     : new MarkAttendanceOutcome.Marked();
             });
 
-        await sut.MarkScheduledAttendance(request);
+        await _sut.MarkScheduledAttendance(request);
         return capturedAttendance;
     }
 }

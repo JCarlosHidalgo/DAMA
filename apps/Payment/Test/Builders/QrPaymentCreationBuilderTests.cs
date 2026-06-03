@@ -19,19 +19,19 @@ namespace Test.Builders;
 [TestFixture]
 public class QrPaymentCreationBuilderTests
 {
-    private Mock<ICallbackSignature> callbackSignature = null!;
-    private TodotixOptions todotixOptions = null!;
-    private QrPaymentCreationBuilder sut = null!;
+    private Mock<ICallbackSignature> _callbackSignature = null!;
+    private TodotixOptions _todotixOptions = null!;
+    private QrPaymentCreationBuilder _sut = null!;
 
     [SetUp]
     public void Setup()
     {
-        callbackSignature = new Mock<ICallbackSignature>(MockBehavior.Strict);
-        todotixOptions = new TodotixOptions
+        _callbackSignature = new Mock<ICallbackSignature>(MockBehavior.Strict);
+        _todotixOptions = new TodotixOptions
         {
             CallbackUrl = "https://payment.example.com/api/payment/qr/callback"
         };
-        sut = new QrPaymentCreationBuilder(callbackSignature.Object, Options.Create(todotixOptions));
+        _sut = new QrPaymentCreationBuilder(_callbackSignature.Object, Options.Create(_todotixOptions));
     }
 
     [Test]
@@ -44,7 +44,7 @@ public class QrPaymentCreationBuilderTests
         var template = new DebtTemplate { Id = templateId, TenantId = tenantId, Description = "d", ClassQuantity = 10, Cost = 99 };
         DateTime expiresAt = DateTime.UtcNow.AddDays(3);
 
-        Backend.Entities.QrPayments.PendingQrPayment pending = sut.BuildPendingPayment(debtId, tenantId, studentId, templateId, template, expiresAt);
+        Backend.Entities.QrPayments.PendingQrPayment pending = _sut.BuildPendingPayment(debtId, tenantId, studentId, templateId, template, expiresAt);
 
         Assert.Multiple(() =>
         {
@@ -65,9 +65,9 @@ public class QrPaymentCreationBuilderTests
         var debtId = Guid.NewGuid();
         var template = new DebtTemplate { Id = Guid.NewGuid(), TenantId = Guid.NewGuid(), Description = "Cuota", ClassQuantity = 4, Cost = 200 };
         var expiresAt = new DateTime(2025, 11, 30, 18, 30, 0, DateTimeKind.Utc);
-        callbackSignature.Setup(s => s.Sign(debtId.ToString("D"))).Returns("sig123");
+        _callbackSignature.Setup(s => s.Sign(debtId.ToString("D"))).Returns("sig123");
 
-        RegisterDebtRequest request = sut.BuildTodotixRequest(debtId, "student@example.com", template, "America/La_Paz", "Pago", expiresAt, "appkey-xyz");
+        RegisterDebtRequest request = _sut.BuildTodotixRequest(debtId, "student@example.com", template, "America/La_Paz", "Pago", expiresAt, "appkey-xyz");
 
         Assert.Multiple(() =>
         {
@@ -92,9 +92,9 @@ public class QrPaymentCreationBuilderTests
     {
         var debtId = Guid.NewGuid();
         var template = new DebtTemplate { Id = Guid.NewGuid(), TenantId = Guid.NewGuid(), Description = "C", ClassQuantity = 1, Cost = 10 };
-        callbackSignature.Setup(s => s.Sign(It.IsAny<string>())).Returns("sig");
+        _callbackSignature.Setup(s => s.Sign(It.IsAny<string>())).Returns("sig");
 
-        RegisterDebtRequest request = sut.BuildTodotixRequest(debtId, string.Empty, template, "America/La_Paz", "desc", DateTime.UtcNow.AddDays(1), "appkey-xyz");
+        RegisterDebtRequest request = _sut.BuildTodotixRequest(debtId, string.Empty, template, "America/La_Paz", "desc", DateTime.UtcNow.AddDays(1), "appkey-xyz");
 
         Assert.That(request.EmailCliente, Is.Null);
     }
@@ -102,13 +102,13 @@ public class QrPaymentCreationBuilderTests
     [Test]
     public void BuildTodotixRequest_WithExistingCallbackQuery_AppendsSignature()
     {
-        todotixOptions.CallbackUrl = "https://payment.example.com/api/payment/qr/callback?source=todotix";
-        sut = new QrPaymentCreationBuilder(callbackSignature.Object, Options.Create(todotixOptions));
+        _todotixOptions.CallbackUrl = "https://payment.example.com/api/payment/qr/callback?source=todotix";
+        _sut = new QrPaymentCreationBuilder(_callbackSignature.Object, Options.Create(_todotixOptions));
         var debtId = Guid.NewGuid();
         var template = new DebtTemplate { Id = Guid.NewGuid(), TenantId = Guid.NewGuid(), Description = "C", ClassQuantity = 1, Cost = 10 };
-        callbackSignature.Setup(s => s.Sign(It.IsAny<string>())).Returns("sigZ");
+        _callbackSignature.Setup(s => s.Sign(It.IsAny<string>())).Returns("sigZ");
 
-        RegisterDebtRequest request = sut.BuildTodotixRequest(debtId, "a@b.com", template, "America/La_Paz", "desc", DateTime.UtcNow.AddDays(1), "appkey-xyz");
+        RegisterDebtRequest request = _sut.BuildTodotixRequest(debtId, "a@b.com", template, "America/La_Paz", "desc", DateTime.UtcNow.AddDays(1), "appkey-xyz");
 
         Assert.That(request.CallbackUrl, Does.Contain("source=todotix"));
         Assert.That(request.CallbackUrl, Does.Contain("sig=sigZ"));
@@ -121,7 +121,7 @@ public class QrPaymentCreationBuilderTests
         var tenantId = Guid.NewGuid();
         var request = new RegisterDebtRequest { Appkey = "k", IdentificadorDeuda = debtId.ToString(), Descripcion = "d" };
 
-        TodotixOutboxEvent outboxEvent = sut.BuildOutboxEvent(debtId, tenantId, request);
+        TodotixOutboxEvent outboxEvent = _sut.BuildOutboxEvent(debtId, tenantId, request);
 
         Assert.Multiple(() =>
         {
@@ -141,7 +141,7 @@ public class QrPaymentCreationBuilderTests
         var studentId = Guid.NewGuid();
         DateTime availableAt = DateTime.UtcNow.AddMinutes(10);
 
-        ExpirationOutboxEvent outboxEvent = sut.BuildExpirationOutboxEvent(debtId, tenantId, studentId, availableAt);
+        ExpirationOutboxEvent outboxEvent = _sut.BuildExpirationOutboxEvent(debtId, tenantId, studentId, availableAt);
 
         Assert.That(outboxEvent.Id, Is.Not.EqualTo(Guid.Empty));
         Assert.Multiple(() =>
@@ -169,7 +169,7 @@ public class QrPaymentCreationBuilderTests
     {
         var debtId = Guid.NewGuid();
 
-        QrDebtPendingDto pendingDebt = sut.BuildPendingDebtDto(debtId);
+        QrDebtPendingDto pendingDebt = _sut.BuildPendingDebtDto(debtId);
 
         Assert.Multiple(() =>
         {

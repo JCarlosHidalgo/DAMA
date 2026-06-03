@@ -8,15 +8,15 @@ namespace Test.Validators;
 [TestFixture]
 public class PaginationParamsDtoValidatorTests
 {
-    private PaginationParamsDtoValidator sut = null!;
+    private PaginationParamsDtoValidator _sut = null!;
 
     [SetUp]
-    public void SetUp() => sut = new PaginationParamsDtoValidator();
+    public void SetUp() => _sut = new PaginationParamsDtoValidator();
 
     [Test]
     public async Task Validate_WithZeroIndex_IsValid()
     {
-        ValidationResult result = await sut.ValidateAsync(new PaginationParamsDto { Index = 0 });
+        ValidationResult result = await _sut.ValidateAsync(new PaginationParamsDto { Index = 0 });
 
         Assert.That(result.IsValid, Is.True);
     }
@@ -24,7 +24,7 @@ public class PaginationParamsDtoValidatorTests
     [Test]
     public async Task Validate_WithPositiveIndex_IsValid()
     {
-        ValidationResult result = await sut.ValidateAsync(new PaginationParamsDto { Index = 47 });
+        ValidationResult result = await _sut.ValidateAsync(new PaginationParamsDto { Index = 47 });
 
         Assert.That(result.IsValid, Is.True);
     }
@@ -32,7 +32,7 @@ public class PaginationParamsDtoValidatorTests
     [Test]
     public async Task Validate_WithNegativeIndex_FailsWithMessage()
     {
-        ValidationResult result = await sut.ValidateAsync(new PaginationParamsDto { Index = -1 });
+        ValidationResult result = await _sut.ValidateAsync(new PaginationParamsDto { Index = -1 });
 
         Assert.Multiple(() =>
         {

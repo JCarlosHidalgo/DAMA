@@ -14,14 +14,14 @@ namespace Test.Security;
 [TestFixture]
 public class JwtAccessTokenGeneratorTests
 {
-    private TestRsaKeyPair rsaKeyPair = null!;
-    private JwtTokenSigner tokenSigner = null!;
+    private TestRsaKeyPair _rsaKeyPair = null!;
+    private JwtTokenSigner _tokenSigner = null!;
 
     [SetUp]
-    public void SetUp() => rsaKeyPair = TestRsaKeyPair.Generate();
+    public void SetUp() => _rsaKeyPair = TestRsaKeyPair.Generate();
 
     [TearDown]
-    public void TearDown() => tokenSigner?.Dispose();
+    public void TearDown() => _tokenSigner?.Dispose();
 
     private JwtAccessTokenGenerator CreateSut(string audiences, TimeSpan lifetime)
     {
@@ -30,12 +30,12 @@ public class JwtAccessTokenGeneratorTests
             Issuer = "AuthIssuer",
             Audience = "Auth",
             Audiences = audiences,
-            PublicKey = rsaKeyPair.PublicKeyBase64,
-            PrivateKey = rsaKeyPair.PrivateKeyBase64,
+            PublicKey = _rsaKeyPair.PublicKeyBase64,
+            PrivateKey = _rsaKeyPair.PrivateKeyBase64,
             Lifetime = lifetime
         };
-        tokenSigner = new JwtTokenSigner(Options.Create(options));
-        return new JwtAccessTokenGenerator(Options.Create(options), tokenSigner);
+        _tokenSigner = new JwtTokenSigner(Options.Create(options));
+        return new JwtAccessTokenGenerator(Options.Create(options), _tokenSigner);
     }
 
     private static JwtSecurityToken ParseToken(string accessToken) =>

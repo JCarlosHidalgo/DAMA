@@ -22,40 +22,40 @@ namespace Test.Services.Concrete.Users;
 [TestFixture]
 public class AuthenticationServiceTests
 {
-    private Mock<IUserAuthenticationDao> userAuthenticationDao = null!;
-    private Mock<ITenantAllowedServicesDao> tenantAllowedServicesDao = null!;
-    private Mock<IPasswordHasher<User>> passwordHasher = null!;
-    private Mock<IAccessTokenGenerator> accessTokenGenerator = null!;
-    private Mock<IRefreshTokenGenerator> refreshTokenGenerator = null!;
-    private Mock<IRefreshTokenWriteDao> refreshTokenWriteDao = null!;
-    private Mock<IUnitOfWork> unitOfWork = null!;
-    private Mock<ITransactionScope> transactionScope = null!;
+    private Mock<IUserAuthenticationDao> _userAuthenticationDao = null!;
+    private Mock<ITenantAllowedServicesDao> _tenantAllowedServicesDao = null!;
+    private Mock<IPasswordHasher<User>> _passwordHasher = null!;
+    private Mock<IAccessTokenGenerator> _accessTokenGenerator = null!;
+    private Mock<IRefreshTokenGenerator> _refreshTokenGenerator = null!;
+    private Mock<IRefreshTokenWriteDao> _refreshTokenWriteDao = null!;
+    private Mock<IUnitOfWork> _unitOfWork = null!;
+    private Mock<ITransactionScope> _transactionScope = null!;
 
-    private AuthenticationService sut = null!;
+    private AuthenticationService _sut = null!;
 
     [SetUp]
     public void SetUp()
     {
-        userAuthenticationDao = new Mock<IUserAuthenticationDao>(MockBehavior.Strict);
-        tenantAllowedServicesDao = new Mock<ITenantAllowedServicesDao>(MockBehavior.Strict);
-        passwordHasher = new Mock<IPasswordHasher<User>>(MockBehavior.Strict);
-        accessTokenGenerator = new Mock<IAccessTokenGenerator>(MockBehavior.Strict);
-        refreshTokenGenerator = new Mock<IRefreshTokenGenerator>(MockBehavior.Strict);
-        refreshTokenWriteDao = new Mock<IRefreshTokenWriteDao>(MockBehavior.Strict);
-        unitOfWork = new Mock<IUnitOfWork>(MockBehavior.Strict);
-        transactionScope = new Mock<ITransactionScope>(MockBehavior.Strict);
+        _userAuthenticationDao = new Mock<IUserAuthenticationDao>(MockBehavior.Strict);
+        _tenantAllowedServicesDao = new Mock<ITenantAllowedServicesDao>(MockBehavior.Strict);
+        _passwordHasher = new Mock<IPasswordHasher<User>>(MockBehavior.Strict);
+        _accessTokenGenerator = new Mock<IAccessTokenGenerator>(MockBehavior.Strict);
+        _refreshTokenGenerator = new Mock<IRefreshTokenGenerator>(MockBehavior.Strict);
+        _refreshTokenWriteDao = new Mock<IRefreshTokenWriteDao>(MockBehavior.Strict);
+        _unitOfWork = new Mock<IUnitOfWork>(MockBehavior.Strict);
+        _transactionScope = new Mock<ITransactionScope>(MockBehavior.Strict);
 
-        transactionScope.Setup(scope => scope.DisposeAsync()).Returns(ValueTask.CompletedTask);
-        unitOfWork.Setup(unit => unit.BeginAsync()).ReturnsAsync(transactionScope.Object);
+        _transactionScope.Setup(scope => scope.DisposeAsync()).Returns(ValueTask.CompletedTask);
+        _unitOfWork.Setup(unit => unit.BeginAsync()).ReturnsAsync(_transactionScope.Object);
 
-        sut = new AuthenticationService(
-            userAuthenticationDao.Object,
-            tenantAllowedServicesDao.Object,
-            passwordHasher.Object,
-            accessTokenGenerator.Object,
-            refreshTokenGenerator.Object,
-            refreshTokenWriteDao.Object,
-            unitOfWork.Object,
+        _sut = new AuthenticationService(
+            _userAuthenticationDao.Object,
+            _tenantAllowedServicesDao.Object,
+            _passwordHasher.Object,
+            _accessTokenGenerator.Object,
+            _refreshTokenGenerator.Object,
+            _refreshTokenWriteDao.Object,
+            _unitOfWork.Object,
             NullLogger<AuthenticationService>.Instance);
     }
 
@@ -63,17 +63,17 @@ public class AuthenticationServiceTests
     public async Task LoginAsync_WhenUserNotFound_ReturnsNull()
     {
         LoginCredentialsDto request = new() { Username = "missing_user", Password = "any_pass" };
-        userAuthenticationDao
+        _userAuthenticationDao
             .Setup(dao => dao.ReadUserWithTenantByUserNameAsync(request.Username))
             .ReturnsAsync((UserWithTenant?)null);
 
-        TokenResponseDto? token = await sut.LoginAsync(request);
+        TokenResponseDto? token = await _sut.LoginAsync(request);
 
         Assert.That(token, Is.Null);
-        passwordHasher.Verify(
+        _passwordHasher.Verify(
             hasher => hasher.VerifyHashedPassword(It.IsAny<User>(), It.IsAny<string>(), It.IsAny<string>()),
             Times.Never);
-        accessTokenGenerator.Verify(
+        _accessTokenGenerator.Verify(
             generator => generator.Issue(
                 It.IsAny<User>(), It.IsAny<Tenant>(), It.IsAny<TenantAllowedServices?>()),
             Times.Never);
@@ -93,17 +93,17 @@ public class AuthenticationServiceTests
         Tenant tenant = new() { Id = Guid.NewGuid(), Name = "TenantOne", Timezone = "America/La_Paz" };
         UserWithTenant userWithTenant = new(user, tenant);
 
-        userAuthenticationDao
+        _userAuthenticationDao
             .Setup(dao => dao.ReadUserWithTenantByUserNameAsync(request.Username))
             .ReturnsAsync(userWithTenant);
-        passwordHasher
+        _passwordHasher
             .Setup(hasher => hasher.VerifyHashedPassword(user, user.PasswordHash, request.Password))
             .Returns(PasswordVerificationResult.Failed);
 
-        TokenResponseDto? token = await sut.LoginAsync(request);
+        TokenResponseDto? token = await _sut.LoginAsync(request);
 
         Assert.That(token, Is.Null);
-        accessTokenGenerator.Verify(
+        _accessTokenGenerator.Verify(
             generator => generator.Issue(
                 It.IsAny<User>(), It.IsAny<Tenant>(), It.IsAny<TenantAllowedServices?>()),
             Times.Never);
@@ -125,27 +125,27 @@ public class AuthenticationServiceTests
         RefreshToken refreshEntity = new() { Id = Guid.NewGuid(), UserId = user.Id, TokenHash = "hash" };
         IssuedRefreshToken issued = new("raw.refresh.token", refreshEntity);
 
-        userAuthenticationDao
+        _userAuthenticationDao
             .Setup(dao => dao.ReadUserWithTenantByUserNameAsync(request.Username))
             .ReturnsAsync(userWithTenant);
-        passwordHasher
+        _passwordHasher
             .Setup(hasher => hasher.VerifyHashedPassword(user, user.PasswordHash, request.Password))
             .Returns(PasswordVerificationResult.Success);
-        tenantAllowedServicesDao
+        _tenantAllowedServicesDao
             .Setup(dao => dao.ReadByTenantIdAsync(tenant.Id))
             .ReturnsAsync((TenantAllowedServices?)null);
-        accessTokenGenerator
+        _accessTokenGenerator
             .Setup(generator => generator.Issue(user, tenant, It.IsAny<TenantAllowedServices?>()))
             .Returns("issued.jwt.token");
-        refreshTokenGenerator
+        _refreshTokenGenerator
             .Setup(generator => generator.Issue(user.Id))
             .Returns(issued);
-        refreshTokenWriteDao
-            .Setup(dao => dao.CreateAsync(refreshEntity, transactionScope.Object))
+        _refreshTokenWriteDao
+            .Setup(dao => dao.CreateAsync(refreshEntity, _transactionScope.Object))
             .Returns(Task.CompletedTask);
-        transactionScope.Setup(scope => scope.CommitAsync()).Returns(Task.CompletedTask);
+        _transactionScope.Setup(scope => scope.CommitAsync()).Returns(Task.CompletedTask);
 
-        TokenResponseDto? token = await sut.LoginAsync(request);
+        TokenResponseDto? token = await _sut.LoginAsync(request);
 
         Assert.That(token, Is.Not.Null);
         Assert.Multiple(() =>
@@ -153,9 +153,9 @@ public class AuthenticationServiceTests
             Assert.That(token!.AccessToken, Is.EqualTo("issued.jwt.token"));
             Assert.That(token.RefreshToken, Is.EqualTo("raw.refresh.token"));
         });
-        refreshTokenWriteDao.Verify(dao => dao.CreateAsync(refreshEntity, transactionScope.Object), Times.Once);
-        transactionScope.Verify(scope => scope.CommitAsync(), Times.Once);
-        transactionScope.Verify(scope => scope.DisposeAsync(), Times.Once);
+        _refreshTokenWriteDao.Verify(dao => dao.CreateAsync(refreshEntity, _transactionScope.Object), Times.Once);
+        _transactionScope.Verify(scope => scope.CommitAsync(), Times.Once);
+        _transactionScope.Verify(scope => scope.DisposeAsync(), Times.Once);
     }
 
     [Test]
@@ -167,27 +167,27 @@ public class AuthenticationServiceTests
         RefreshToken refreshEntity = new() { Id = Guid.NewGuid(), UserId = user.Id, TokenHash = "hash" };
         IssuedRefreshToken issued = new("raw.refresh.token", refreshEntity);
 
-        userAuthenticationDao
+        _userAuthenticationDao
             .Setup(dao => dao.ReadUserWithTenantByUserNameAsync(request.Username))
             .ReturnsAsync(new UserWithTenant(user, tenant));
-        passwordHasher
+        _passwordHasher
             .Setup(hasher => hasher.VerifyHashedPassword(user, user.PasswordHash, request.Password))
             .Returns(PasswordVerificationResult.SuccessRehashNeeded);
-        tenantAllowedServicesDao
+        _tenantAllowedServicesDao
             .Setup(dao => dao.ReadByTenantIdAsync(tenant.Id))
             .ReturnsAsync((TenantAllowedServices?)null);
-        accessTokenGenerator
+        _accessTokenGenerator
             .Setup(generator => generator.Issue(user, tenant, It.IsAny<TenantAllowedServices?>()))
             .Returns("issued.jwt.token");
-        refreshTokenGenerator
+        _refreshTokenGenerator
             .Setup(generator => generator.Issue(user.Id))
             .Returns(issued);
-        refreshTokenWriteDao
-            .Setup(dao => dao.CreateAsync(refreshEntity, transactionScope.Object))
+        _refreshTokenWriteDao
+            .Setup(dao => dao.CreateAsync(refreshEntity, _transactionScope.Object))
             .Returns(Task.CompletedTask);
-        transactionScope.Setup(scope => scope.CommitAsync()).Returns(Task.CompletedTask);
+        _transactionScope.Setup(scope => scope.CommitAsync()).Returns(Task.CompletedTask);
 
-        TokenResponseDto? token = await sut.LoginAsync(request);
+        TokenResponseDto? token = await _sut.LoginAsync(request);
 
         Assert.That(token, Is.Not.Null);
         Assert.That(token!.RefreshToken, Is.EqualTo("raw.refresh.token"));

@@ -11,27 +11,27 @@ namespace Test.Security;
 [TestFixture]
 public class JwtTokenSignerTests
 {
-    private TestRsaKeyPair rsaKeyPair = null!;
-    private JwtOptions options = null!;
+    private TestRsaKeyPair _rsaKeyPair = null!;
+    private JwtOptions _options = null!;
 
     [SetUp]
     public void SetUp()
     {
-        rsaKeyPair = TestRsaKeyPair.Generate();
-        options = new JwtOptions
+        _rsaKeyPair = TestRsaKeyPair.Generate();
+        _options = new JwtOptions
         {
             Issuer = "Auth",
             Audience = "Auth",
             Audiences = "Auth",
-            PublicKey = rsaKeyPair.PublicKeyBase64,
-            PrivateKey = rsaKeyPair.PrivateKeyBase64
+            PublicKey = _rsaKeyPair.PublicKeyBase64,
+            PrivateKey = _rsaKeyPair.PrivateKeyBase64
         };
     }
 
     [Test]
     public void Credentials_AfterConstruction_UsesRsaSha256Algorithm()
     {
-        using JwtTokenSigner sut = new(Options.Create(options));
+        using JwtTokenSigner sut = new(Options.Create(_options));
 
         Assert.That(sut.Credentials.Algorithm, Is.EqualTo(SecurityAlgorithms.RsaSha256));
     }
@@ -39,7 +39,7 @@ public class JwtTokenSignerTests
     [Test]
     public void Credentials_AfterConstruction_ExposesRsaSecurityKey()
     {
-        using JwtTokenSigner sut = new(Options.Create(options));
+        using JwtTokenSigner sut = new(Options.Create(_options));
 
         Assert.That(sut.Credentials.Key, Is.InstanceOf<RsaSecurityKey>());
     }
@@ -52,7 +52,7 @@ public class JwtTokenSignerTests
             Issuer = "Auth",
             Audience = "Auth",
             Audiences = "Auth",
-            PublicKey = rsaKeyPair.PublicKeyBase64,
+            PublicKey = _rsaKeyPair.PublicKeyBase64,
             PrivateKey = "not-base64!!!"
         };
 
@@ -64,7 +64,7 @@ public class JwtTokenSignerTests
     [Test]
     public void Dispose_DoesNotThrow()
     {
-        JwtTokenSigner sut = new(Options.Create(options));
+        JwtTokenSigner sut = new(Options.Create(_options));
 
         Assert.That(() => sut.Dispose(), Throws.Nothing);
     }

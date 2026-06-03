@@ -19,35 +19,35 @@ namespace Test.Services.Concrete.Todotix;
 [TestFixture]
 public class TodotixCredentialServiceTests
 {
-    private Mock<ITenantPaymentCredentialReader> credentialReader = null!;
-    private Mock<ITenantPaymentCredentialWriter> credentialWriter = null!;
-    private Mock<IAppKeyCipher> appKeyCipher = null!;
-    private Mock<IClaimContext> claimContext = null!;
-    private Mock<ITodotixClient> todotixClient = null!;
-    private Mock<ITodotixCredentialTestBuilder> testBuilder = null!;
-    private TodotixCredentialService sut = null!;
-    private Guid tenantId;
+    private Mock<ITenantPaymentCredentialReader> _credentialReader = null!;
+    private Mock<ITenantPaymentCredentialWriter> _credentialWriter = null!;
+    private Mock<IAppKeyCipher> _appKeyCipher = null!;
+    private Mock<IClaimContext> _claimContext = null!;
+    private Mock<ITodotixClient> _todotixClient = null!;
+    private Mock<ITodotixCredentialTestBuilder> _testBuilder = null!;
+    private TodotixCredentialService _sut = null!;
+    private Guid _tenantId;
 
     [SetUp]
     public void Setup()
     {
-        credentialReader = new Mock<ITenantPaymentCredentialReader>(MockBehavior.Strict);
-        credentialWriter = new Mock<ITenantPaymentCredentialWriter>(MockBehavior.Strict);
-        appKeyCipher = new Mock<IAppKeyCipher>(MockBehavior.Strict);
-        claimContext = new Mock<IClaimContext>(MockBehavior.Strict);
-        todotixClient = new Mock<ITodotixClient>(MockBehavior.Strict);
-        testBuilder = new Mock<ITodotixCredentialTestBuilder>(MockBehavior.Strict);
-        tenantId = Guid.NewGuid();
-        claimContext.Setup(c => c.TenantId).Returns(tenantId);
+        _credentialReader = new Mock<ITenantPaymentCredentialReader>(MockBehavior.Strict);
+        _credentialWriter = new Mock<ITenantPaymentCredentialWriter>(MockBehavior.Strict);
+        _appKeyCipher = new Mock<IAppKeyCipher>(MockBehavior.Strict);
+        _claimContext = new Mock<IClaimContext>(MockBehavior.Strict);
+        _todotixClient = new Mock<ITodotixClient>(MockBehavior.Strict);
+        _testBuilder = new Mock<ITodotixCredentialTestBuilder>(MockBehavior.Strict);
+        _tenantId = Guid.NewGuid();
+        _claimContext.Setup(c => c.TenantId).Returns(_tenantId);
 
-        sut = new TodotixCredentialService(
-            credentialReader.Object,
-            credentialWriter.Object,
-            appKeyCipher.Object,
-            claimContext.Object,
+        _sut = new TodotixCredentialService(
+            _credentialReader.Object,
+            _credentialWriter.Object,
+            _appKeyCipher.Object,
+            _claimContext.Object,
             new TodotixCredentialViewBuilder(),
-            todotixClient.Object,
-            testBuilder.Object,
+            _todotixClient.Object,
+            _testBuilder.Object,
             NullLogger<TodotixCredentialService>.Instance);
     }
 
@@ -56,13 +56,13 @@ public class TodotixCredentialServiceTests
     {
         var credential = new TenantPaymentCredential
         {
-            Id = tenantId,
+            Id = _tenantId,
             TodotixAppKey = "cipher"
         };
-        credentialReader.Setup(r => r.GetByTenantAsync(tenantId)).ReturnsAsync(credential);
-        appKeyCipher.Setup(c => c.Decrypt("cipher")).Returns("51599bd3-eed3-2826-45a4-a16c2fcc2724");
+        _credentialReader.Setup(r => r.GetByTenantAsync(_tenantId)).ReturnsAsync(credential);
+        _appKeyCipher.Setup(c => c.Decrypt("cipher")).Returns("51599bd3-eed3-2826-45a4-a16c2fcc2724");
 
-        TodotixAppKeyStatusDto status = await sut.GetStatusAsync();
+        TodotixAppKeyStatusDto status = await _sut.GetStatusAsync();
 
         Assert.Multiple(() =>
         {
@@ -75,9 +75,9 @@ public class TodotixCredentialServiceTests
     [Test]
     public async Task GetStatusAsync_WhenNoCustomKey_ReportsNotConfiguredWithoutMaskedKey()
     {
-        credentialReader.Setup(r => r.GetByTenantAsync(tenantId)).ReturnsAsync((TenantPaymentCredential?)null);
+        _credentialReader.Setup(r => r.GetByTenantAsync(_tenantId)).ReturnsAsync((TenantPaymentCredential?)null);
 
-        TodotixAppKeyStatusDto status = await sut.GetStatusAsync();
+        TodotixAppKeyStatusDto status = await _sut.GetStatusAsync();
 
         Assert.Multiple(() =>
         {
@@ -91,12 +91,12 @@ public class TodotixCredentialServiceTests
     {
         var credential = new TenantPaymentCredential
         {
-            Id = tenantId,
+            Id = _tenantId,
             TodotixAppKey = "cipher"
         };
-        credentialReader.Setup(r => r.GetByTenantAsync(tenantId)).ReturnsAsync(credential);
+        _credentialReader.Setup(r => r.GetByTenantAsync(_tenantId)).ReturnsAsync(credential);
 
-        PaymentAvailabilityDto availability = await sut.GetAvailabilityAsync();
+        PaymentAvailabilityDto availability = await _sut.GetAvailabilityAsync();
 
         Assert.That(availability.HasPaymentCredentials, Is.True);
     }
@@ -104,9 +104,9 @@ public class TodotixCredentialServiceTests
     [Test]
     public async Task GetAvailabilityAsync_WhenNoCredential_ReportsUnavailable()
     {
-        credentialReader.Setup(r => r.GetByTenantAsync(tenantId)).ReturnsAsync((TenantPaymentCredential?)null);
+        _credentialReader.Setup(r => r.GetByTenantAsync(_tenantId)).ReturnsAsync((TenantPaymentCredential?)null);
 
-        PaymentAvailabilityDto availability = await sut.GetAvailabilityAsync();
+        PaymentAvailabilityDto availability = await _sut.GetAvailabilityAsync();
 
         Assert.That(availability.HasPaymentCredentials, Is.False);
     }
@@ -116,13 +116,13 @@ public class TodotixCredentialServiceTests
     {
         var credential = new TenantPaymentCredential
         {
-            Id = tenantId,
+            Id = _tenantId,
             TodotixAppKey = "cipher"
         };
-        credentialReader.Setup(r => r.GetByTenantAsync(tenantId)).ReturnsAsync(credential);
-        appKeyCipher.Setup(c => c.Decrypt("cipher")).Returns("51599bd3-eed3-2826-45a4-a16c2fcc2724");
+        _credentialReader.Setup(r => r.GetByTenantAsync(_tenantId)).ReturnsAsync(credential);
+        _appKeyCipher.Setup(c => c.Decrypt("cipher")).Returns("51599bd3-eed3-2826-45a4-a16c2fcc2724");
 
-        TodotixAppKeyRevealDto reveal = await sut.RevealAsync();
+        TodotixAppKeyRevealDto reveal = await _sut.RevealAsync();
 
         Assert.That(reveal.AppKey, Is.EqualTo("51599bd3-eed3-2826-45a4-a16c2fcc2724"));
     }
@@ -130,9 +130,9 @@ public class TodotixCredentialServiceTests
     [Test]
     public async Task RevealAsync_WhenNotConfigured_ReturnsEmpty()
     {
-        credentialReader.Setup(r => r.GetByTenantAsync(tenantId)).ReturnsAsync((TenantPaymentCredential?)null);
+        _credentialReader.Setup(r => r.GetByTenantAsync(_tenantId)).ReturnsAsync((TenantPaymentCredential?)null);
 
-        TodotixAppKeyRevealDto reveal = await sut.RevealAsync();
+        TodotixAppKeyRevealDto reveal = await _sut.RevealAsync();
 
         Assert.That(reveal.AppKey, Is.Empty);
     }
@@ -140,22 +140,22 @@ public class TodotixCredentialServiceTests
     [Test]
     public async Task UpdateAsync_EncryptsAndUpsertsForTenant()
     {
-        appKeyCipher.Setup(c => c.Encrypt("51599bd3-eed3-2826-45a4-a16c2fcc2724")).Returns("cipher");
-        credentialWriter.Setup(w => w.UpsertAsync(tenantId, "cipher")).Returns(Task.CompletedTask);
+        _appKeyCipher.Setup(c => c.Encrypt("51599bd3-eed3-2826-45a4-a16c2fcc2724")).Returns("cipher");
+        _credentialWriter.Setup(w => w.UpsertAsync(_tenantId, "cipher")).Returns(Task.CompletedTask);
 
-        UpdateTodotixAppKeyOutcome outcome = await sut.UpdateAsync(
+        UpdateTodotixAppKeyOutcome outcome = await _sut.UpdateAsync(
             new UpdateTodotixAppKeyDto { AppKey = "51599bd3-eed3-2826-45a4-a16c2fcc2724" });
 
         Assert.That(outcome, Is.TypeOf<UpdateTodotixAppKeyOutcome.Updated>());
-        credentialWriter.Verify(w => w.UpsertAsync(tenantId, "cipher"), Times.Once);
+        _credentialWriter.Verify(w => w.UpsertAsync(_tenantId, "cipher"), Times.Once);
     }
 
     [Test]
     public async Task TestAsync_WhenNoCredentialConfigured_ReportsNotConfigured()
     {
-        credentialReader.Setup(r => r.GetByTenantAsync(tenantId)).ReturnsAsync((TenantPaymentCredential?)null);
+        _credentialReader.Setup(r => r.GetByTenantAsync(_tenantId)).ReturnsAsync((TenantPaymentCredential?)null);
 
-        TestTodotixCredentialOutcome outcome = await sut.TestAsync();
+        TestTodotixCredentialOutcome outcome = await _sut.TestAsync();
 
         Assert.That(outcome, Is.TypeOf<TestTodotixCredentialOutcome.NotConfigured>());
     }
@@ -164,11 +164,11 @@ public class TodotixCredentialServiceTests
     public async Task TestAsync_WhenTodotixRegistersDebt_ReportsWorks()
     {
         ArrangeConfiguredCredential();
-        todotixClient
+        _todotixClient
             .Setup(c => c.RegisterDebtAsync(It.IsAny<RegisterDebtRequest>()))
             .ReturnsAsync(new RegisterDebtResponse { Error = 0, QrSimpleUrl = "https://qr" });
 
-        TestTodotixCredentialOutcome outcome = await sut.TestAsync();
+        TestTodotixCredentialOutcome outcome = await _sut.TestAsync();
 
         Assert.That(outcome, Is.TypeOf<TestTodotixCredentialOutcome.Works>());
     }
@@ -177,11 +177,11 @@ public class TodotixCredentialServiceTests
     public async Task TestAsync_WhenTodotixReturnsError_ReportsFailed()
     {
         ArrangeConfiguredCredential();
-        todotixClient
+        _todotixClient
             .Setup(c => c.RegisterDebtAsync(It.IsAny<RegisterDebtRequest>()))
             .ReturnsAsync(new RegisterDebtResponse { Error = 1, QrSimpleUrl = null });
 
-        TestTodotixCredentialOutcome outcome = await sut.TestAsync();
+        TestTodotixCredentialOutcome outcome = await _sut.TestAsync();
 
         Assert.That(outcome, Is.TypeOf<TestTodotixCredentialOutcome.Failed>());
     }
@@ -190,11 +190,11 @@ public class TodotixCredentialServiceTests
     public async Task TestAsync_WhenDebtRegistersWithoutQrUrl_ReportsWorks()
     {
         ArrangeConfiguredCredential();
-        todotixClient
+        _todotixClient
             .Setup(c => c.RegisterDebtAsync(It.IsAny<RegisterDebtRequest>()))
             .ReturnsAsync(new RegisterDebtResponse { Error = 0, QrSimpleUrl = null });
 
-        TestTodotixCredentialOutcome outcome = await sut.TestAsync();
+        TestTodotixCredentialOutcome outcome = await _sut.TestAsync();
 
         Assert.That(outcome, Is.TypeOf<TestTodotixCredentialOutcome.Works>());
     }
@@ -203,11 +203,11 @@ public class TodotixCredentialServiceTests
     public async Task TestAsync_WhenTodotixCallThrows_ReportsFailed()
     {
         ArrangeConfiguredCredential();
-        todotixClient
+        _todotixClient
             .Setup(c => c.RegisterDebtAsync(It.IsAny<RegisterDebtRequest>()))
             .ThrowsAsync(new HttpRequestException("unauthorized"));
 
-        TestTodotixCredentialOutcome outcome = await sut.TestAsync();
+        TestTodotixCredentialOutcome outcome = await _sut.TestAsync();
 
         Assert.That(outcome, Is.TypeOf<TestTodotixCredentialOutcome.Failed>());
     }
@@ -216,13 +216,13 @@ public class TodotixCredentialServiceTests
     {
         var credential = new TenantPaymentCredential
         {
-            Id = tenantId,
+            Id = _tenantId,
             TodotixAppKey = "cipher"
         };
-        credentialReader.Setup(r => r.GetByTenantAsync(tenantId)).ReturnsAsync(credential);
-        appKeyCipher.Setup(c => c.Decrypt("cipher")).Returns("51599bd3-eed3-2826-45a4-a16c2fcc2724");
-        claimContext.Setup(c => c.TenantTimezone).Returns("America/La_Paz");
-        testBuilder
+        _credentialReader.Setup(r => r.GetByTenantAsync(_tenantId)).ReturnsAsync(credential);
+        _appKeyCipher.Setup(c => c.Decrypt("cipher")).Returns("51599bd3-eed3-2826-45a4-a16c2fcc2724");
+        _claimContext.Setup(c => c.TenantTimezone).Returns("America/La_Paz");
+        _testBuilder
             .Setup(b => b.BuildCredentialTestRequest("51599bd3-eed3-2826-45a4-a16c2fcc2724", "America/La_Paz"))
             .Returns(new RegisterDebtRequest());
     }

@@ -69,6 +69,9 @@ public class RefreshTokenGeneratorTests
     {
         RefreshTokenGenerator sut = CreateSut(TimeSpan.FromDays(30));
 
-        Assert.That(sut.ComputeHash("same-token"), Is.EqualTo(sut.ComputeHash("same-token")));
+        string firstHash = sut.ComputeHash("same-token");
+        string secondHash = sut.ComputeHash("same-token");
+
+        Assert.That(secondHash, Is.EqualTo(firstHash));
     }
 }

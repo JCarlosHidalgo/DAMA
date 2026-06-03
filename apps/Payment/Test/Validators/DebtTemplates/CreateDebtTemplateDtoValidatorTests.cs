@@ -8,17 +8,17 @@ namespace Test.Validators.DebtTemplates;
 [TestFixture]
 public class CreateDebtTemplateDtoValidatorTests
 {
-    private CreateDebtTemplateDtoValidator sut = null!;
+    private CreateDebtTemplateDtoValidator _sut = null!;
 
     [SetUp]
-    public void Setup() => sut = new CreateDebtTemplateDtoValidator();
+    public void Setup() => _sut = new CreateDebtTemplateDtoValidator();
 
     private static CreateDebtTemplateDto ValidDto() => new CreateDebtTemplateDto { Description = "cuota", ClassQuantity = 1, Cost = 1 };
 
     [Test]
     public async Task Validate_HappyPath_NoErrors()
     {
-        ValidationResult result = await sut.ValidateAsync(ValidDto());
+        ValidationResult result = await _sut.ValidateAsync(ValidDto());
 
         Assert.That(result.IsValid, Is.True);
     }
@@ -29,7 +29,7 @@ public class CreateDebtTemplateDtoValidatorTests
         CreateDebtTemplateDto request = ValidDto();
         request.Description = string.Empty;
 
-        ValidationResult result = await sut.ValidateAsync(request);
+        ValidationResult result = await _sut.ValidateAsync(request);
 
         Assert.That(result.IsValid, Is.False);
     }
@@ -40,7 +40,7 @@ public class CreateDebtTemplateDtoValidatorTests
         CreateDebtTemplateDto request = ValidDto();
         request.Description = new string('x', 257);
 
-        ValidationResult result = await sut.ValidateAsync(request);
+        ValidationResult result = await _sut.ValidateAsync(request);
 
         Assert.That(result.IsValid, Is.False);
     }
@@ -51,7 +51,7 @@ public class CreateDebtTemplateDtoValidatorTests
         CreateDebtTemplateDto request = ValidDto();
         request.ClassQuantity = 0;
 
-        ValidationResult result = await sut.ValidateAsync(request);
+        ValidationResult result = await _sut.ValidateAsync(request);
 
         Assert.That(result.IsValid, Is.False);
     }
@@ -62,7 +62,7 @@ public class CreateDebtTemplateDtoValidatorTests
         CreateDebtTemplateDto request = ValidDto();
         request.Cost = 0;
 
-        ValidationResult result = await sut.ValidateAsync(request);
+        ValidationResult result = await _sut.ValidateAsync(request);
 
         Assert.That(result.IsValid, Is.False);
     }
@@ -73,7 +73,7 @@ public class CreateDebtTemplateDtoValidatorTests
         CreateDebtTemplateDto request = ValidDto();
         request.ExternalReference = new string('x', 129);
 
-        ValidationResult result = await sut.ValidateAsync(request);
+        ValidationResult result = await _sut.ValidateAsync(request);
 
         Assert.That(result.IsValid, Is.False);
     }
@@ -84,7 +84,7 @@ public class CreateDebtTemplateDtoValidatorTests
         CreateDebtTemplateDto request = ValidDto();
         request.ExternalReference = null;
 
-        ValidationResult result = await sut.ValidateAsync(request);
+        ValidationResult result = await _sut.ValidateAsync(request);
 
         Assert.That(result.IsValid, Is.True);
     }

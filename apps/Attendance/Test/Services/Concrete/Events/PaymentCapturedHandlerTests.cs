@@ -15,30 +15,30 @@ namespace Test.Services.Concrete.Events;
 [TestFixture]
 public class PaymentCapturedHandlerTests
 {
-    private Mock<IUnitOfWork> unitOfWork = null!;
-    private Mock<IProcessedEventDao> processedEventDao = null!;
-    private Mock<IStudentRemainClassesDao> remainClassesDao = null!;
-    private Mock<IPaymentCreditLedgerDao> paymentCreditLedgerDao = null!;
-    private Mock<ITransactionScope> transactionScope = null!;
+    private Mock<IUnitOfWork> _unitOfWork = null!;
+    private Mock<IProcessedEventDao> _processedEventDao = null!;
+    private Mock<IStudentRemainClassesDao> _remainClassesDao = null!;
+    private Mock<IPaymentCreditLedgerDao> _paymentCreditLedgerDao = null!;
+    private Mock<ITransactionScope> _transactionScope = null!;
 
-    private PaymentCapturedHandler sut = null!;
+    private PaymentCapturedHandler _sut = null!;
 
     [SetUp]
     public void SetUp()
     {
-        unitOfWork = new Mock<IUnitOfWork>(MockBehavior.Strict);
-        processedEventDao = new Mock<IProcessedEventDao>(MockBehavior.Strict);
-        remainClassesDao = new Mock<IStudentRemainClassesDao>(MockBehavior.Strict);
-        paymentCreditLedgerDao = new Mock<IPaymentCreditLedgerDao>(MockBehavior.Strict);
-        transactionScope = new Mock<ITransactionScope>(MockBehavior.Strict);
+        _unitOfWork = new Mock<IUnitOfWork>(MockBehavior.Strict);
+        _processedEventDao = new Mock<IProcessedEventDao>(MockBehavior.Strict);
+        _remainClassesDao = new Mock<IStudentRemainClassesDao>(MockBehavior.Strict);
+        _paymentCreditLedgerDao = new Mock<IPaymentCreditLedgerDao>(MockBehavior.Strict);
+        _transactionScope = new Mock<ITransactionScope>(MockBehavior.Strict);
 
-        transactionScope.Setup(scope => scope.DisposeAsync()).Returns(ValueTask.CompletedTask);
+        _transactionScope.Setup(scope => scope.DisposeAsync()).Returns(ValueTask.CompletedTask);
 
-        sut = new PaymentCapturedHandler(
-            unitOfWork.Object,
-            processedEventDao.Object,
-            remainClassesDao.Object,
-            paymentCreditLedgerDao.Object,
+        _sut = new PaymentCapturedHandler(
+            _unitOfWork.Object,
+            _processedEventDao.Object,
+            _remainClassesDao.Object,
+            _paymentCreditLedgerDao.Object,
             NullLogger<PaymentCapturedHandler>.Instance);
     }
 
@@ -61,19 +61,19 @@ public class PaymentCapturedHandlerTests
     {
         PaymentCapturedEvent paymentEvent = BuildEvent();
 
-        unitOfWork.Setup(target => target.BeginAsync()).ReturnsAsync(transactionScope.Object);
-        processedEventDao
-            .Setup(target => target.TryMarkProcessedAsync(paymentEvent.EventId, transactionScope.Object))
+        _unitOfWork.Setup(target => target.BeginAsync()).ReturnsAsync(_transactionScope.Object);
+        _processedEventDao
+            .Setup(target => target.TryMarkProcessedAsync(paymentEvent.EventId, _transactionScope.Object))
             .ReturnsAsync(true);
-        remainClassesDao
+        _remainClassesDao
             .Setup(target => target.IncrementAsync(
                 paymentEvent.Data.TenantId,
                 paymentEvent.Data.StudentId,
                 paymentEvent.Data.Quantity,
                 null,
-                transactionScope.Object))
+                _transactionScope.Object))
             .Returns(Task.CompletedTask);
-        paymentCreditLedgerDao
+        _paymentCreditLedgerDao
             .Setup(target => target.RecordAsync(
                 paymentEvent.EventId,
                 paymentEvent.Data.TenantId,
@@ -81,11 +81,11 @@ public class PaymentCapturedHandlerTests
                 paymentEvent.Data.Quantity,
                 paymentEvent.Data.ExternalReference,
                 paymentEvent.OccurredAt,
-                transactionScope.Object))
+                _transactionScope.Object))
             .Returns(Task.CompletedTask);
-        transactionScope.Setup(scope => scope.CommitAsync()).Returns(Task.CompletedTask);
+        _transactionScope.Setup(scope => scope.CommitAsync()).Returns(Task.CompletedTask);
 
-        PaymentCapturedOutcome result = await sut.HandleAsync(paymentEvent, CancellationToken.None);
+        PaymentCapturedOutcome result = await _sut.HandleAsync(paymentEvent, CancellationToken.None);
 
         Assert.That(result, Is.InstanceOf<PaymentCapturedOutcome.RemainCredited>());
     }
@@ -95,19 +95,19 @@ public class PaymentCapturedHandlerTests
     {
         PaymentCapturedEvent paymentEvent = BuildEvent();
 
-        unitOfWork.Setup(target => target.BeginAsync()).ReturnsAsync(transactionScope.Object);
-        processedEventDao
-            .Setup(target => target.TryMarkProcessedAsync(paymentEvent.EventId, transactionScope.Object))
+        _unitOfWork.Setup(target => target.BeginAsync()).ReturnsAsync(_transactionScope.Object);
+        _processedEventDao
+            .Setup(target => target.TryMarkProcessedAsync(paymentEvent.EventId, _transactionScope.Object))
             .ReturnsAsync(false);
-        transactionScope.Setup(scope => scope.CommitAsync()).Returns(Task.CompletedTask);
+        _transactionScope.Setup(scope => scope.CommitAsync()).Returns(Task.CompletedTask);
 
-        PaymentCapturedOutcome result = await sut.HandleAsync(paymentEvent, CancellationToken.None);
+        PaymentCapturedOutcome result = await _sut.HandleAsync(paymentEvent, CancellationToken.None);
 
         Assert.That(result, Is.InstanceOf<PaymentCapturedOutcome.AlreadyProcessed>());
-        remainClassesDao.Verify(
+        _remainClassesDao.Verify(
             target => target.IncrementAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<string?>(), It.IsAny<ITransactionContext>()),
             Times.Never);
-        paymentCreditLedgerDao.Verify(
+        _paymentCreditLedgerDao.Verify(
             target => target.RecordAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<DateTime>(), It.IsAny<ITransactionContext>()),
             Times.Never);
     }
@@ -116,9 +116,9 @@ public class PaymentCapturedHandlerTests
     public async Task HandleAsync_WhenExceptionThrown_ReturnsFailed()
     {
         PaymentCapturedEvent paymentEvent = BuildEvent();
-        unitOfWork.Setup(target => target.BeginAsync()).ThrowsAsync(new InvalidOperationException("boom"));
+        _unitOfWork.Setup(target => target.BeginAsync()).ThrowsAsync(new InvalidOperationException("boom"));
 
-        PaymentCapturedOutcome result = await sut.HandleAsync(paymentEvent, CancellationToken.None);
+        PaymentCapturedOutcome result = await _sut.HandleAsync(paymentEvent, CancellationToken.None);
 
         Assert.That(result, Is.InstanceOf<PaymentCapturedOutcome.Failed>());
     }

@@ -6,15 +6,15 @@ namespace Test.Validators.Todotix;
 [TestFixture]
 public class UpdateTodotixAppKeyDtoValidatorTests
 {
-    private UpdateTodotixAppKeyDtoValidator sut = null!;
+    private UpdateTodotixAppKeyDtoValidator _sut = null!;
 
     [SetUp]
-    public void Setup() => sut = new UpdateTodotixAppKeyDtoValidator();
+    public void Setup() => _sut = new UpdateTodotixAppKeyDtoValidator();
 
     [Test]
     public async Task Validate_LowercaseGuid_Passes()
     {
-        var result = await sut.ValidateAsync(new UpdateTodotixAppKeyDto { AppKey = "51599bd3-eed3-2826-45a4-a16c2fcc2724" });
+        var result = await _sut.ValidateAsync(new UpdateTodotixAppKeyDto { AppKey = "51599bd3-eed3-2826-45a4-a16c2fcc2724" });
 
         Assert.That(result.IsValid, Is.True);
     }
@@ -27,7 +27,7 @@ public class UpdateTodotixAppKeyDtoValidatorTests
     [TestCase("not-a-guid")]
     public async Task Validate_InvalidFormats_Fail(string appKey)
     {
-        var result = await sut.ValidateAsync(new UpdateTodotixAppKeyDto { AppKey = appKey });
+        var result = await _sut.ValidateAsync(new UpdateTodotixAppKeyDto { AppKey = appKey });
 
         Assert.That(result.IsValid, Is.False);
     }

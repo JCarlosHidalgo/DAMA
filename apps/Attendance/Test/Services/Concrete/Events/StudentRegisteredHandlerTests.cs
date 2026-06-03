@@ -15,27 +15,27 @@ namespace Test.Services.Concrete.Events;
 [TestFixture]
 public class StudentRegisteredHandlerTests
 {
-    private Mock<IUnitOfWork> unitOfWork = null!;
-    private Mock<IProcessedEventDao> processedEventDao = null!;
-    private Mock<IStudentRemainClassesDao> remainClassesDao = null!;
-    private Mock<ITransactionScope> transactionScope = null!;
+    private Mock<IUnitOfWork> _unitOfWork = null!;
+    private Mock<IProcessedEventDao> _processedEventDao = null!;
+    private Mock<IStudentRemainClassesDao> _remainClassesDao = null!;
+    private Mock<ITransactionScope> _transactionScope = null!;
 
-    private StudentRegisteredHandler sut = null!;
+    private StudentRegisteredHandler _sut = null!;
 
     [SetUp]
     public void SetUp()
     {
-        unitOfWork = new Mock<IUnitOfWork>(MockBehavior.Strict);
-        processedEventDao = new Mock<IProcessedEventDao>(MockBehavior.Strict);
-        remainClassesDao = new Mock<IStudentRemainClassesDao>(MockBehavior.Strict);
-        transactionScope = new Mock<ITransactionScope>(MockBehavior.Strict);
+        _unitOfWork = new Mock<IUnitOfWork>(MockBehavior.Strict);
+        _processedEventDao = new Mock<IProcessedEventDao>(MockBehavior.Strict);
+        _remainClassesDao = new Mock<IStudentRemainClassesDao>(MockBehavior.Strict);
+        _transactionScope = new Mock<ITransactionScope>(MockBehavior.Strict);
 
-        transactionScope.Setup(scope => scope.DisposeAsync()).Returns(ValueTask.CompletedTask);
+        _transactionScope.Setup(scope => scope.DisposeAsync()).Returns(ValueTask.CompletedTask);
 
-        sut = new StudentRegisteredHandler(
-            unitOfWork.Object,
-            processedEventDao.Object,
-            remainClassesDao.Object,
+        _sut = new StudentRegisteredHandler(
+            _unitOfWork.Object,
+            _processedEventDao.Object,
+            _remainClassesDao.Object,
             NullLogger<StudentRegisteredHandler>.Instance);
     }
 
@@ -58,21 +58,21 @@ public class StudentRegisteredHandlerTests
     {
         StudentRegisteredEvent studentRegisteredEvent = BuildEvent();
 
-        unitOfWork.Setup(target => target.BeginAsync()).ReturnsAsync(transactionScope.Object);
-        processedEventDao
-            .Setup(target => target.TryMarkProcessedAsync(studentRegisteredEvent.EventId, transactionScope.Object))
+        _unitOfWork.Setup(target => target.BeginAsync()).ReturnsAsync(_transactionScope.Object);
+        _processedEventDao
+            .Setup(target => target.TryMarkProcessedAsync(studentRegisteredEvent.EventId, _transactionScope.Object))
             .ReturnsAsync(true);
-        remainClassesDao
+        _remainClassesDao
             .Setup(target => target.IncrementAsync(
                 studentRegisteredEvent.Data.TenantId,
                 studentRegisteredEvent.Data.StudentId,
                 0,
                 studentRegisteredEvent.Data.UserName,
-                transactionScope.Object))
+                _transactionScope.Object))
             .Returns(Task.CompletedTask);
-        transactionScope.Setup(scope => scope.CommitAsync()).Returns(Task.CompletedTask);
+        _transactionScope.Setup(scope => scope.CommitAsync()).Returns(Task.CompletedTask);
 
-        StudentRegisteredOutcome result = await sut.HandleAsync(studentRegisteredEvent, CancellationToken.None);
+        StudentRegisteredOutcome result = await _sut.HandleAsync(studentRegisteredEvent, CancellationToken.None);
 
         Assert.That(result, Is.InstanceOf<StudentRegisteredOutcome.RemainCreated>());
     }
@@ -82,16 +82,16 @@ public class StudentRegisteredHandlerTests
     {
         StudentRegisteredEvent studentRegisteredEvent = BuildEvent();
 
-        unitOfWork.Setup(target => target.BeginAsync()).ReturnsAsync(transactionScope.Object);
-        processedEventDao
-            .Setup(target => target.TryMarkProcessedAsync(studentRegisteredEvent.EventId, transactionScope.Object))
+        _unitOfWork.Setup(target => target.BeginAsync()).ReturnsAsync(_transactionScope.Object);
+        _processedEventDao
+            .Setup(target => target.TryMarkProcessedAsync(studentRegisteredEvent.EventId, _transactionScope.Object))
             .ReturnsAsync(false);
-        transactionScope.Setup(scope => scope.CommitAsync()).Returns(Task.CompletedTask);
+        _transactionScope.Setup(scope => scope.CommitAsync()).Returns(Task.CompletedTask);
 
-        StudentRegisteredOutcome result = await sut.HandleAsync(studentRegisteredEvent, CancellationToken.None);
+        StudentRegisteredOutcome result = await _sut.HandleAsync(studentRegisteredEvent, CancellationToken.None);
 
         Assert.That(result, Is.InstanceOf<StudentRegisteredOutcome.AlreadyProcessed>());
-        remainClassesDao.Verify(
+        _remainClassesDao.Verify(
             target => target.IncrementAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<string?>(), It.IsAny<ITransactionContext>()),
             Times.Never);
     }
@@ -100,9 +100,9 @@ public class StudentRegisteredHandlerTests
     public async Task HandleAsync_WhenExceptionThrown_ReturnsFailed()
     {
         StudentRegisteredEvent studentRegisteredEvent = BuildEvent();
-        unitOfWork.Setup(target => target.BeginAsync()).ThrowsAsync(new InvalidOperationException("boom"));
+        _unitOfWork.Setup(target => target.BeginAsync()).ThrowsAsync(new InvalidOperationException("boom"));
 
-        StudentRegisteredOutcome result = await sut.HandleAsync(studentRegisteredEvent, CancellationToken.None);
+        StudentRegisteredOutcome result = await _sut.HandleAsync(studentRegisteredEvent, CancellationToken.None);
 
         Assert.That(result, Is.InstanceOf<StudentRegisteredOutcome.Failed>());
     }

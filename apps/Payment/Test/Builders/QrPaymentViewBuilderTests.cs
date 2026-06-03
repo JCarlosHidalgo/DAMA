@@ -7,17 +7,17 @@ namespace Test.Builders;
 [TestFixture]
 public class QrPaymentViewBuilderTests
 {
-    private QrPaymentViewBuilder sut = null!;
+    private QrPaymentViewBuilder _sut = null!;
 
     [SetUp]
-    public void Setup() => sut = new QrPaymentViewBuilder();
+    public void Setup() => _sut = new QrPaymentViewBuilder();
 
     [Test]
     public void BuildReadyStatus_WithUrl_SetsStatusAndUrl()
     {
         var id = Guid.NewGuid();
 
-        QrDebtStatusDto status = sut.BuildReadyStatus(id, "http://q.test");
+        QrDebtStatusDto status = _sut.BuildReadyStatus(id, "http://q.test");
 
         Assert.Multiple(() =>
         {
@@ -33,7 +33,7 @@ public class QrPaymentViewBuilderTests
     {
         var id = Guid.NewGuid();
 
-        QrDebtStatusDto status = sut.BuildFailedStatus(id, "todotix down");
+        QrDebtStatusDto status = _sut.BuildFailedStatus(id, "todotix down");
 
         Assert.Multiple(() =>
         {
@@ -48,7 +48,7 @@ public class QrPaymentViewBuilderTests
     {
         var id = Guid.NewGuid();
 
-        QrDebtStatusDto status = sut.BuildPendingStatus(id);
+        QrDebtStatusDto status = _sut.BuildPendingStatus(id);
 
         Assert.Multiple(() =>
         {
@@ -62,7 +62,7 @@ public class QrPaymentViewBuilderTests
     {
         List<string> items = ["a", "b"];
 
-        PageDto<string> page = sut.BuildPage(2, 4, items);
+        PageDto<string> page = _sut.BuildPage(2, 4, items);
 
         Assert.Multiple(() =>
         {

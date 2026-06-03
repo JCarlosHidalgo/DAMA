@@ -14,14 +14,14 @@ namespace Test.Application.Schedules;
 [TestFixture]
 public class ScheduleAssemblerTests
 {
-    private Mock<IMapper> mapper = null!;
-    private ScheduleAssembler assembler = null!;
+    private Mock<IMapper> _mapper = null!;
+    private ScheduleAssembler _assembler = null!;
 
     [SetUp]
     public void SetUp()
     {
-        mapper = new Mock<IMapper>(MockBehavior.Strict);
-        assembler = new ScheduleAssembler(mapper.Object);
+        _mapper = new Mock<IMapper>(MockBehavior.Strict);
+        _assembler = new ScheduleAssembler(_mapper.Object);
     }
 
     [Test]
@@ -32,13 +32,13 @@ public class ScheduleAssemblerTests
         var mappedScheduled = new List<GetScheduledClassDto>();
         var mappedUnique = new List<GetUniqueClassDto>();
 
-        mapper.Setup(map => map.Map<List<ScheduledClass>, List<GetScheduledClassDto>>(scheduledClasses)).Returns(mappedScheduled);
-        mapper.Setup(map => map.Map<List<UniqueClass>, List<GetUniqueClassDto>>(uniqueClasses)).Returns(mappedUnique);
+        _mapper.Setup(map => map.Map<List<ScheduledClass>, List<GetScheduledClassDto>>(scheduledClasses)).Returns(mappedScheduled);
+        _mapper.Setup(map => map.Map<List<UniqueClass>, List<GetUniqueClassDto>>(uniqueClasses)).Returns(mappedUnique);
 
         bool scheduledLoaderInvoked = false;
         bool uniqueLoaderInvoked = false;
 
-        GetCourseScheduleDto result = await assembler.AssembleAsync(
+        GetCourseScheduleDto result = await _assembler.AssembleAsync(
             loadScheduled: () =>
             {
                 scheduledLoaderInvoked = true;

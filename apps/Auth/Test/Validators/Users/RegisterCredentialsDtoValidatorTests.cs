@@ -8,17 +8,17 @@ namespace Test.Validators.Users;
 [TestFixture]
 public class RegisterCredentialsDtoValidatorTests
 {
-    private RegisterCredentialsDtoValidator sut = null!;
+    private RegisterCredentialsDtoValidator _sut = null!;
 
     [SetUp]
-    public void SetUp() => sut = new RegisterCredentialsDtoValidator();
+    public void SetUp() => _sut = new RegisterCredentialsDtoValidator();
 
     [Test]
     public async Task Validate_WithValidCredentials_IsValid()
     {
         RegisterCredentialsDto credentials = new() { Username = "validUserName", Password = "Strong#1" };
 
-        ValidationResult result = await sut.ValidateAsync(credentials);
+        ValidationResult result = await _sut.ValidateAsync(credentials);
 
         Assert.That(result.IsValid, Is.True);
     }
@@ -28,7 +28,7 @@ public class RegisterCredentialsDtoValidatorTests
     {
         RegisterCredentialsDto credentials = new() { Username = "abc", Password = "Strong#1" };
 
-        ValidationResult result = await sut.ValidateAsync(credentials);
+        ValidationResult result = await _sut.ValidateAsync(credentials);
 
         Assert.Multiple(() =>
         {
@@ -46,7 +46,7 @@ public class RegisterCredentialsDtoValidatorTests
             Password = "Strong#1"
         };
 
-        ValidationResult result = await sut.ValidateAsync(credentials);
+        ValidationResult result = await _sut.ValidateAsync(credentials);
 
         Assert.Multiple(() =>
         {
@@ -60,7 +60,7 @@ public class RegisterCredentialsDtoValidatorTests
     {
         RegisterCredentialsDto credentials = new() { Username = "user_with_underscore", Password = "Strong#1" };
 
-        ValidationResult result = await sut.ValidateAsync(credentials);
+        ValidationResult result = await _sut.ValidateAsync(credentials);
 
         Assert.Multiple(() =>
         {
@@ -74,7 +74,7 @@ public class RegisterCredentialsDtoValidatorTests
     {
         RegisterCredentialsDto credentials = new() { Username = "validUserName", Password = "1234" };
 
-        ValidationResult result = await sut.ValidateAsync(credentials);
+        ValidationResult result = await _sut.ValidateAsync(credentials);
 
         Assert.Multiple(() =>
         {
@@ -92,7 +92,7 @@ public class RegisterCredentialsDtoValidatorTests
             Password = new string('a', RegisterCredentialsDtoValidator.MaxPasswordLength + 1)
         };
 
-        ValidationResult result = await sut.ValidateAsync(credentials);
+        ValidationResult result = await _sut.ValidateAsync(credentials);
 
         Assert.Multiple(() =>
         {
@@ -106,7 +106,7 @@ public class RegisterCredentialsDtoValidatorTests
     {
         RegisterCredentialsDto credentials = new() { Username = "validUserName", Password = "ánbidde<>" };
 
-        ValidationResult result = await sut.ValidateAsync(credentials);
+        ValidationResult result = await _sut.ValidateAsync(credentials);
 
         Assert.Multiple(() =>
         {

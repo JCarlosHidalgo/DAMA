@@ -8,10 +8,10 @@ namespace Test.Builders;
 [TestFixture]
 public class AttendanceClassBuilderTests
 {
-    private AttendanceClassBuilder sut = null!;
+    private AttendanceClassBuilder _sut = null!;
 
     [SetUp]
-    public void SetUp() => sut = new AttendanceClassBuilder();
+    public void SetUp() => _sut = new AttendanceClassBuilder();
 
     [Test]
     public void BuildScheduledAttendance_MapsAllFields()
@@ -23,7 +23,7 @@ public class AttendanceClassBuilderTests
         ScheduledAttendanceDto request = new() { ClassId = classId, CourseName = "Course One" };
         ClassExistenceMeta metadata = new(new TimeOnly(8, 0), new TimeOnly(9, 30), classDate, 0);
 
-        ScheduledClassAttendance attendance = sut.BuildScheduledAttendance(
+        ScheduledClassAttendance attendance = _sut.BuildScheduledAttendance(
             tenantId, studentId, "Student", classDate, request, metadata);
 
         Assert.Multiple(() =>
@@ -49,7 +49,7 @@ public class AttendanceClassBuilderTests
         UniqueAttendanceDto request = new() { ClassId = classId, CourseName = "Course One" };
         ClassExistenceMeta metadata = new(new TimeOnly(10, 0), new TimeOnly(11, 30), classDate, 0);
 
-        UniqueClassAttendance attendance = sut.BuildUniqueAttendance(
+        UniqueClassAttendance attendance = _sut.BuildUniqueAttendance(
             tenantId, studentId, "Student", classDate, request, metadata);
 
         Assert.Multiple(() =>
@@ -70,7 +70,7 @@ public class AttendanceClassBuilderTests
     {
         List<string> items = ["a", "b"];
 
-        Backend.Common.PageDto<string> page = sut.BuildPage(currentIndex: 3, maxIndex: 7, items);
+        Backend.Common.PageDto<string> page = _sut.BuildPage(currentIndex: 3, maxIndex: 7, items);
 
         Assert.Multiple(() =>
         {

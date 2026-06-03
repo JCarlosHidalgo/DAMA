@@ -16,19 +16,19 @@ public class ListCoursesHandlerTests
 {
     private static readonly Guid TenantId = Guid.Parse("11111111-1111-1111-1111-111111111111");
 
-    private Mock<ICourseDao> courseDao = null!;
-    private Mock<IClaimContext> claimContext = null!;
-    private Mock<IMapper> mapper = null!;
-    private ListCoursesHandler handler = null!;
+    private Mock<ICourseDao> _courseDao = null!;
+    private Mock<IClaimContext> _claimContext = null!;
+    private Mock<IMapper> _mapper = null!;
+    private ListCoursesHandler _handler = null!;
 
     [SetUp]
     public void SetUp()
     {
-        courseDao = new Mock<ICourseDao>(MockBehavior.Strict);
-        claimContext = new Mock<IClaimContext>(MockBehavior.Strict);
-        mapper = new Mock<IMapper>(MockBehavior.Strict);
-        claimContext.SetupGet(context => context.TenantId).Returns(TenantId);
-        handler = new ListCoursesHandler(courseDao.Object, claimContext.Object, mapper.Object);
+        _courseDao = new Mock<ICourseDao>(MockBehavior.Strict);
+        _claimContext = new Mock<IClaimContext>(MockBehavior.Strict);
+        _mapper = new Mock<IMapper>(MockBehavior.Strict);
+        _claimContext.SetupGet(context => context.TenantId).Returns(TenantId);
+        _handler = new ListCoursesHandler(_courseDao.Object, _claimContext.Object, _mapper.Object);
     }
 
     [Test]
@@ -37,10 +37,10 @@ public class ListCoursesHandlerTests
         var sourceCourses = new List<Course> { new() { Id = Guid.NewGuid(), Name = "A", TenantId = TenantId } };
         var mappedDtos = new List<GetCourseDto> { new() { Id = sourceCourses[0].Id, Name = "A" } };
 
-        courseDao.Setup(dao => dao.GetCoursesByTenantIdAsync(TenantId)).ReturnsAsync(sourceCourses);
-        mapper.Setup(map => map.Map<List<Course>, List<GetCourseDto>>(sourceCourses)).Returns(mappedDtos);
+        _courseDao.Setup(dao => dao.GetCoursesByTenantIdAsync(TenantId)).ReturnsAsync(sourceCourses);
+        _mapper.Setup(map => map.Map<List<Course>, List<GetCourseDto>>(sourceCourses)).Returns(mappedDtos);
 
-        ListCoursesResult result = await handler.Handle(new ListCoursesQuery());
+        ListCoursesResult result = await _handler.Handle(new ListCoursesQuery());
 
         Assert.Multiple(() =>
         {

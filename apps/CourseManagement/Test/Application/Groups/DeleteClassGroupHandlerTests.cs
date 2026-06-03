@@ -13,37 +13,37 @@ public class DeleteClassGroupHandlerTests
     private static readonly Guid TenantId = Guid.Parse("11111111-1111-1111-1111-111111111111");
     private static readonly Guid GroupId = Guid.Parse("22222222-2222-2222-2222-222222222222");
 
-    private Mock<IClassGroupDao> classGroupDao = null!;
-    private Mock<IClaimContext> claimContext = null!;
-    private DeleteClassGroupHandler handler = null!;
+    private Mock<IClassGroupDao> _classGroupDao = null!;
+    private Mock<IClaimContext> _claimContext = null!;
+    private DeleteClassGroupHandler _handler = null!;
 
     [SetUp]
     public void SetUp()
     {
-        classGroupDao = new Mock<IClassGroupDao>(MockBehavior.Strict);
-        claimContext = new Mock<IClaimContext>(MockBehavior.Strict);
-        claimContext.SetupGet(context => context.TenantId).Returns(TenantId);
-        handler = new DeleteClassGroupHandler(classGroupDao.Object, claimContext.Object);
+        _classGroupDao = new Mock<IClassGroupDao>(MockBehavior.Strict);
+        _claimContext = new Mock<IClaimContext>(MockBehavior.Strict);
+        _claimContext.SetupGet(context => context.TenantId).Returns(TenantId);
+        _handler = new DeleteClassGroupHandler(_classGroupDao.Object, _claimContext.Object);
     }
 
     [Test]
     public async Task Handle_WhenGroupDoesNotExist_ReturnsNotFound()
     {
-        classGroupDao.Setup(dao => dao.ExistsForTenantAsync(TenantId, GroupId)).ReturnsAsync(false);
+        _classGroupDao.Setup(dao => dao.ExistsForTenantAsync(TenantId, GroupId)).ReturnsAsync(false);
 
-        DeleteClassGroupResult result = await handler.Handle(new DeleteClassGroupCommand(GroupId));
+        DeleteClassGroupResult result = await _handler.Handle(new DeleteClassGroupCommand(GroupId));
 
         Assert.That(result, Is.InstanceOf<DeleteClassGroupResult.NotFound>());
-        classGroupDao.Verify(dao => dao.DeleteForTenantIfEmptyAsync(It.IsAny<Guid>(), It.IsAny<Guid>()), Times.Never);
+        _classGroupDao.Verify(dao => dao.DeleteForTenantIfEmptyAsync(It.IsAny<Guid>(), It.IsAny<Guid>()), Times.Never);
     }
 
     [Test]
     public async Task Handle_WhenGroupHasClasses_ReturnsGroupNotEmpty()
     {
-        classGroupDao.Setup(dao => dao.ExistsForTenantAsync(TenantId, GroupId)).ReturnsAsync(true);
-        classGroupDao.Setup(dao => dao.DeleteForTenantIfEmptyAsync(TenantId, GroupId)).ReturnsAsync(false);
+        _classGroupDao.Setup(dao => dao.ExistsForTenantAsync(TenantId, GroupId)).ReturnsAsync(true);
+        _classGroupDao.Setup(dao => dao.DeleteForTenantIfEmptyAsync(TenantId, GroupId)).ReturnsAsync(false);
 
-        DeleteClassGroupResult result = await handler.Handle(new DeleteClassGroupCommand(GroupId));
+        DeleteClassGroupResult result = await _handler.Handle(new DeleteClassGroupCommand(GroupId));
 
         Assert.That(result, Is.InstanceOf<DeleteClassGroupResult.GroupNotEmpty>());
     }
@@ -51,10 +51,10 @@ public class DeleteClassGroupHandlerTests
     [Test]
     public async Task Handle_WhenGroupEmpty_ReturnsDeleted()
     {
-        classGroupDao.Setup(dao => dao.ExistsForTenantAsync(TenantId, GroupId)).ReturnsAsync(true);
-        classGroupDao.Setup(dao => dao.DeleteForTenantIfEmptyAsync(TenantId, GroupId)).ReturnsAsync(true);
+        _classGroupDao.Setup(dao => dao.ExistsForTenantAsync(TenantId, GroupId)).ReturnsAsync(true);
+        _classGroupDao.Setup(dao => dao.DeleteForTenantIfEmptyAsync(TenantId, GroupId)).ReturnsAsync(true);
 
-        DeleteClassGroupResult result = await handler.Handle(new DeleteClassGroupCommand(GroupId));
+        DeleteClassGroupResult result = await _handler.Handle(new DeleteClassGroupCommand(GroupId));
 
         Assert.That(result, Is.InstanceOf<DeleteClassGroupResult.Deleted>());
     }

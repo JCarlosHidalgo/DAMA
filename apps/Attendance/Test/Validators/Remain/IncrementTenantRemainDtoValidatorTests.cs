@@ -11,14 +11,14 @@ namespace Test.Validators.Remain;
 [TestFixture]
 public class IncrementTenantRemainDtoValidatorTests
 {
-    private IncrementTenantRemainDtoValidator sut = null!;
-    private RemainLimits limits = null!;
+    private IncrementTenantRemainDtoValidator _sut = null!;
+    private RemainLimits _limits = null!;
 
     [SetUp]
     public void SetUp()
     {
-        limits = new RemainLimits { MinIncrement = 1, MaxIncrement = 49, MaxStudentNameLength = 80 };
-        sut = new IncrementTenantRemainDtoValidator(Options.Create(limits));
+        _limits = new RemainLimits { MinIncrement = 1, MaxIncrement = 49, MaxStudentNameLength = 80 };
+        _sut = new IncrementTenantRemainDtoValidator(Options.Create(_limits));
     }
 
     [Test]
@@ -26,7 +26,7 @@ public class IncrementTenantRemainDtoValidatorTests
     {
         IncrementTenantRemainDto request = new() { RequestId = Guid.NewGuid(), Quantity = 5 };
 
-        ValidationResult result = await sut.ValidateAsync(request);
+        ValidationResult result = await _sut.ValidateAsync(request);
 
         Assert.That(result.IsValid, Is.True);
     }
@@ -36,7 +36,7 @@ public class IncrementTenantRemainDtoValidatorTests
     {
         IncrementTenantRemainDto request = new() { RequestId = Guid.Empty, Quantity = 5 };
 
-        ValidationResult result = await sut.ValidateAsync(request);
+        ValidationResult result = await _sut.ValidateAsync(request);
 
         Assert.Multiple(() =>
         {
@@ -50,7 +50,7 @@ public class IncrementTenantRemainDtoValidatorTests
     {
         IncrementTenantRemainDto request = new() { RequestId = Guid.NewGuid(), Quantity = 0 };
 
-        ValidationResult result = await sut.ValidateAsync(request);
+        ValidationResult result = await _sut.ValidateAsync(request);
 
         Assert.Multiple(() =>
         {
@@ -64,7 +64,7 @@ public class IncrementTenantRemainDtoValidatorTests
     {
         IncrementTenantRemainDto request = new() { RequestId = Guid.NewGuid(), Quantity = 100 };
 
-        ValidationResult result = await sut.ValidateAsync(request);
+        ValidationResult result = await _sut.ValidateAsync(request);
 
         Assert.That(result.IsValid, Is.False);
     }

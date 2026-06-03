@@ -29,35 +29,35 @@ public class UniqueClassServiceTests
     private static readonly Guid CallerTenantId = Guid.Parse("11111111-1111-1111-1111-111111111111");
     private static readonly Guid CallerStudentId = Guid.Parse("22222222-2222-2222-2222-222222222222");
 
-    private Mock<IUniqueClassAttendanceDao> uniqueClassAttendanceDao = null!;
-    private Mock<ICourseManagementClient> courseManagementClient = null!;
-    private Mock<IAttendanceMarker> attendanceMarker = null!;
-    private Mock<IClaimContext> claimContext = null!;
-    private Mock<IAttendanceClassBuilder> attendanceClassBuilder = null!;
-    private Mock<IMapper> mapper = null!;
+    private Mock<IUniqueClassAttendanceDao> _uniqueClassAttendanceDao = null!;
+    private Mock<ICourseManagementClient> _courseManagementClient = null!;
+    private Mock<IAttendanceMarker> _attendanceMarker = null!;
+    private Mock<IClaimContext> _claimContext = null!;
+    private Mock<IAttendanceClassBuilder> _attendanceClassBuilder = null!;
+    private Mock<IMapper> _mapper = null!;
 
-    private UniqueClassService sut = null!;
+    private UniqueClassService _sut = null!;
 
     [SetUp]
     public void SetUp()
     {
-        uniqueClassAttendanceDao = new Mock<IUniqueClassAttendanceDao>(MockBehavior.Strict);
-        courseManagementClient = new Mock<ICourseManagementClient>(MockBehavior.Strict);
-        attendanceMarker = new Mock<IAttendanceMarker>(MockBehavior.Strict);
-        claimContext = new Mock<IClaimContext>(MockBehavior.Strict);
-        attendanceClassBuilder = new Mock<IAttendanceClassBuilder>(MockBehavior.Strict);
-        mapper = new Mock<IMapper>(MockBehavior.Strict);
+        _uniqueClassAttendanceDao = new Mock<IUniqueClassAttendanceDao>(MockBehavior.Strict);
+        _courseManagementClient = new Mock<ICourseManagementClient>(MockBehavior.Strict);
+        _attendanceMarker = new Mock<IAttendanceMarker>(MockBehavior.Strict);
+        _claimContext = new Mock<IClaimContext>(MockBehavior.Strict);
+        _attendanceClassBuilder = new Mock<IAttendanceClassBuilder>(MockBehavior.Strict);
+        _mapper = new Mock<IMapper>(MockBehavior.Strict);
 
-        claimContext.Setup(target => target.TenantId).Returns(CallerTenantId);
+        _claimContext.Setup(target => target.TenantId).Returns(CallerTenantId);
 
-        sut = new UniqueClassService(
-            uniqueClassAttendanceDao.Object,
-            courseManagementClient.Object,
-            attendanceMarker.Object,
-            claimContext.Object,
+        _sut = new UniqueClassService(
+            _uniqueClassAttendanceDao.Object,
+            _courseManagementClient.Object,
+            _attendanceMarker.Object,
+            _claimContext.Object,
             Options.Create(new AttendanceOptions { PageSize = 10 }),
-            attendanceClassBuilder.Object,
-            mapper.Object);
+            _attendanceClassBuilder.Object,
+            _mapper.Object);
     }
 
     [Test]
@@ -67,12 +67,12 @@ public class UniqueClassServiceTests
         List<UniqueClassAttendance> attendances = [new UniqueClassAttendance()];
         List<UniqueAttendanceResponse> mapped = [new UniqueAttendanceResponse()];
 
-        uniqueClassAttendanceDao
+        _uniqueClassAttendanceDao
             .Setup(target => target.GetUniqueAttendanceAsync(CallerTenantId, classId))
             .ReturnsAsync(attendances);
-        mapper.Setup(target => target.Map<List<UniqueAttendanceResponse>>(attendances)).Returns(mapped);
+        _mapper.Setup(target => target.Map<List<UniqueAttendanceResponse>>(attendances)).Returns(mapped);
 
-        List<UniqueAttendanceResponse> result = await sut.GetUniqueAttendance(classId);
+        List<UniqueAttendanceResponse> result = await _sut.GetUniqueAttendance(classId);
 
         Assert.That(result, Is.SameAs(mapped));
     }
@@ -81,10 +81,10 @@ public class UniqueClassServiceTests
     public async Task GetUniqueAttendanceByStudentId_WhenStudentAccessingOther_ReturnsForbidden()
     {
         var studentId = Guid.NewGuid();
-        claimContext.Setup(target => target.Role).Returns(UserRoles.Student);
-        claimContext.Setup(target => target.UserId).Returns(CallerStudentId);
+        _claimContext.Setup(target => target.Role).Returns(UserRoles.Student);
+        _claimContext.Setup(target => target.UserId).Returns(CallerStudentId);
 
-        GetUniqueByStudentOutcome result = await sut.GetUniqueAttendanceByStudentId(studentId);
+        GetUniqueByStudentOutcome result = await _sut.GetUniqueAttendanceByStudentId(studentId);
 
         Assert.That(result, Is.InstanceOf<GetUniqueByStudentOutcome.Forbidden>());
     }
@@ -96,13 +96,13 @@ public class UniqueClassServiceTests
         List<UniqueClassAttendance> attendances = [new UniqueClassAttendance()];
         List<UniqueAttendanceResponse> mapped = [new UniqueAttendanceResponse()];
 
-        claimContext.Setup(target => target.Role).Returns(UserRoles.Client);
-        uniqueClassAttendanceDao
+        _claimContext.Setup(target => target.Role).Returns(UserRoles.Client);
+        _uniqueClassAttendanceDao
             .Setup(target => target.GetUniqueAttendanceByStudentIdAsync(CallerTenantId, studentId))
             .ReturnsAsync(attendances);
-        mapper.Setup(target => target.Map<List<UniqueAttendanceResponse>>(attendances)).Returns(mapped);
+        _mapper.Setup(target => target.Map<List<UniqueAttendanceResponse>>(attendances)).Returns(mapped);
 
-        GetUniqueByStudentOutcome result = await sut.GetUniqueAttendanceByStudentId(studentId);
+        GetUniqueByStudentOutcome result = await _sut.GetUniqueAttendanceByStudentId(studentId);
 
         Assert.That(result, Is.InstanceOf<GetUniqueByStudentOutcome.Found>());
     }
@@ -114,17 +114,17 @@ public class UniqueClassServiceTests
         List<UniqueAttendanceResponse> mapped = [new UniqueAttendanceResponse()];
         PageDto<UniqueAttendanceResponse> expectedPage = new() { CurrentIndex = 0, MaxIndex = 0, Items = mapped };
 
-        claimContext.Setup(target => target.UserId).Returns(CallerStudentId);
-        uniqueClassAttendanceDao
+        _claimContext.Setup(target => target.UserId).Returns(CallerStudentId);
+        _uniqueClassAttendanceDao
             .Setup(target => target.CountByStudentForTenantAsync(CallerTenantId, CallerStudentId))
             .ReturnsAsync(1);
-        uniqueClassAttendanceDao
+        _uniqueClassAttendanceDao
             .Setup(target => target.GetPageByStudentForTenantAsync(CallerTenantId, CallerStudentId, 0, 10))
             .ReturnsAsync(attendances);
-        mapper.Setup(target => target.Map<List<UniqueAttendanceResponse>>(attendances)).Returns(mapped);
-        attendanceClassBuilder.Setup(target => target.BuildPage(0, 0, mapped)).Returns(expectedPage);
+        _mapper.Setup(target => target.Map<List<UniqueAttendanceResponse>>(attendances)).Returns(mapped);
+        _attendanceClassBuilder.Setup(target => target.BuildPage(0, 0, mapped)).Returns(expectedPage);
 
-        PageDto<UniqueAttendanceResponse> result = await sut.ListMyUniqueAttendanceAsync(0);
+        PageDto<UniqueAttendanceResponse> result = await _sut.ListMyUniqueAttendanceAsync(0);
 
         Assert.That(result, Is.SameAs(expectedPage));
     }
@@ -134,7 +134,7 @@ public class UniqueClassServiceTests
     {
         UniqueAttendanceDto request = new() { ClassId = Guid.NewGuid(), CourseName = "Course" };
 
-        attendanceMarker
+        _attendanceMarker
             .Setup(target => target.MarkAsync<UniqueClassAttendance, UniqueAttendanceResponse>(
                 It.IsAny<Func<AttendanceMarkContext, Task<AttendanceBuildResult<UniqueClassAttendance>?>>>(),
                 It.IsAny<Func<UniqueClassAttendance, ITransactionContext, Task<int>>>(),
@@ -142,7 +142,7 @@ public class UniqueClassServiceTests
                 It.IsAny<Func<UniqueClassAttendance, string>>()))
             .ReturnsAsync(new MarkAttendanceOutcome.Marked());
 
-        MarkAttendanceOutcome result = await sut.MarkUniqueAttendance(request);
+        MarkAttendanceOutcome result = await _sut.MarkUniqueAttendance(request);
 
         Assert.That(result, Is.InstanceOf<MarkAttendanceOutcome.Marked>());
     }
@@ -156,10 +156,10 @@ public class UniqueClassServiceTests
         UniqueClassAttendance builtAttendance = new();
         AttendanceMarkContext markContext = new(CallerTenantId, CallerStudentId, "Pedro", "America/La_Paz");
 
-        courseManagementClient
+        _courseManagementClient
             .Setup(target => target.FindUniqueClassAsync(request.ClassId))
             .ReturnsAsync(classMetadata);
-        attendanceClassBuilder
+        _attendanceClassBuilder
             .Setup(target => target.BuildUniqueAttendance(
                 CallerTenantId, CallerStudentId, "Pedro", metadataDate, request, classMetadata))
             .Returns(builtAttendance);
@@ -167,7 +167,7 @@ public class UniqueClassServiceTests
         UniqueClassAttendance? capturedAttendance = await InvokeMarkLambdaAsync(request, markContext);
 
         Assert.That(capturedAttendance, Is.SameAs(builtAttendance));
-        attendanceClassBuilder.Verify(
+        _attendanceClassBuilder.Verify(
             target => target.BuildUniqueAttendance(
                 CallerTenantId, CallerStudentId, "Pedro", metadataDate, request, classMetadata),
             Times.Once);
@@ -182,10 +182,10 @@ public class UniqueClassServiceTests
         UniqueClassAttendance builtAttendance = new();
         AttendanceMarkContext markContext = new(CallerTenantId, CallerStudentId, "Pedro", "America/La_Paz");
 
-        courseManagementClient
+        _courseManagementClient
             .Setup(target => target.FindUniqueClassAsync(request.ClassId))
             .ReturnsAsync(classMetadata);
-        attendanceClassBuilder
+        _attendanceClassBuilder
             .Setup(target => target.BuildUniqueAttendance(
                 CallerTenantId, CallerStudentId, "Pedro", utcToday, request, classMetadata))
             .Returns(builtAttendance);
@@ -193,7 +193,7 @@ public class UniqueClassServiceTests
         UniqueClassAttendance? capturedAttendance = await InvokeMarkLambdaAsync(request, markContext);
 
         Assert.That(capturedAttendance, Is.SameAs(builtAttendance));
-        attendanceClassBuilder.Verify(
+        _attendanceClassBuilder.Verify(
             target => target.BuildUniqueAttendance(
                 CallerTenantId, CallerStudentId, "Pedro", utcToday, request, classMetadata),
             Times.Once);
@@ -205,14 +205,14 @@ public class UniqueClassServiceTests
         UniqueAttendanceDto request = new() { ClassId = Guid.NewGuid(), CourseName = "Course" };
         AttendanceMarkContext markContext = new(CallerTenantId, CallerStudentId, "Pedro", "America/La_Paz");
 
-        courseManagementClient
+        _courseManagementClient
             .Setup(target => target.FindUniqueClassAsync(request.ClassId))
             .ReturnsAsync((ClassExistenceMeta?)null);
 
         UniqueClassAttendance? capturedAttendance = await InvokeMarkLambdaAsync(request, markContext);
 
         Assert.That(capturedAttendance, Is.Null);
-        attendanceClassBuilder.VerifyNoOtherCalls();
+        _attendanceClassBuilder.VerifyNoOtherCalls();
     }
 
     [Test]
@@ -227,22 +227,22 @@ public class UniqueClassServiceTests
             Items = emptyMapped
         };
 
-        claimContext.Setup(target => target.UserId).Returns(CallerStudentId);
-        uniqueClassAttendanceDao
+        _claimContext.Setup(target => target.UserId).Returns(CallerStudentId);
+        _uniqueClassAttendanceDao
             .Setup(target => target.CountByStudentForTenantAsync(CallerTenantId, CallerStudentId))
             .ReturnsAsync(1);
-        mapper
+        _mapper
             .Setup(target => target.Map<List<UniqueAttendanceResponse>>(
                 It.Is<List<UniqueClassAttendance>>(list => list.Count == 0)))
             .Returns(emptyMapped);
-        attendanceClassBuilder
+        _attendanceClassBuilder
             .Setup(target => target.BuildPage(pageIndexBeyondMax, 0, emptyMapped))
             .Returns(expectedPage);
 
-        PageDto<UniqueAttendanceResponse> result = await sut.ListMyUniqueAttendanceAsync(pageIndexBeyondMax);
+        PageDto<UniqueAttendanceResponse> result = await _sut.ListMyUniqueAttendanceAsync(pageIndexBeyondMax);
 
         Assert.That(result, Is.SameAs(expectedPage));
-        uniqueClassAttendanceDao.Verify(
+        _uniqueClassAttendanceDao.Verify(
             target => target.GetPageByStudentForTenantAsync(
                 It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<int>()),
             Times.Never);
@@ -253,7 +253,7 @@ public class UniqueClassServiceTests
         AttendanceMarkContext markContext)
     {
         UniqueClassAttendance? capturedAttendance = null;
-        attendanceMarker
+        _attendanceMarker
             .Setup(target => target.MarkAsync<UniqueClassAttendance, UniqueAttendanceResponse>(
                 It.IsAny<Func<AttendanceMarkContext, Task<AttendanceBuildResult<UniqueClassAttendance>?>>>(),
                 It.IsAny<Func<UniqueClassAttendance, ITransactionContext, Task<int>>>(),
@@ -269,7 +269,7 @@ public class UniqueClassServiceTests
                 capturedAttendance = buildResult?.Attendance;
                 if (capturedAttendance is not null)
                 {
-                    uniqueClassAttendanceDao
+                    _uniqueClassAttendanceDao
                         .Setup(target => target.TryMarkAttendanceAsync(capturedAttendance, It.IsAny<ITransactionContext>()))
                         .ReturnsAsync(true);
                     await tryMark(capturedAttendance, Mock.Of<ITransactionContext>());
@@ -280,7 +280,7 @@ public class UniqueClassServiceTests
                     : new MarkAttendanceOutcome.Marked();
             });
 
-        await sut.MarkUniqueAttendance(request);
+        await _sut.MarkUniqueAttendance(request);
         return capturedAttendance;
     }
 }

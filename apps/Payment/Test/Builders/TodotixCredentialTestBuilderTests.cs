@@ -12,27 +12,27 @@ namespace Test.Builders;
 [TestFixture]
 public class TodotixCredentialTestBuilderTests
 {
-    private Mock<ICallbackSignature> callbackSignature = null!;
-    private TodotixOptions todotixOptions = null!;
-    private TodotixCredentialTestBuilder sut = null!;
+    private Mock<ICallbackSignature> _callbackSignature = null!;
+    private TodotixOptions _todotixOptions = null!;
+    private TodotixCredentialTestBuilder _sut = null!;
 
     [SetUp]
     public void Setup()
     {
-        callbackSignature = new Mock<ICallbackSignature>(MockBehavior.Strict);
-        todotixOptions = new TodotixOptions
+        _callbackSignature = new Mock<ICallbackSignature>(MockBehavior.Strict);
+        _todotixOptions = new TodotixOptions
         {
             CallbackUrl = "https://payment.example.com/api/payment/qr/callback"
         };
-        sut = new TodotixCredentialTestBuilder(callbackSignature.Object, Options.Create(todotixOptions));
+        _sut = new TodotixCredentialTestBuilder(_callbackSignature.Object, Options.Create(_todotixOptions));
     }
 
     [Test]
     public void BuildCredentialTestRequest_BuildsGenericDebtOfValueOne()
     {
-        callbackSignature.Setup(s => s.Sign(It.IsAny<string>())).Returns("sig123");
+        _callbackSignature.Setup(s => s.Sign(It.IsAny<string>())).Returns("sig123");
 
-        RegisterDebtRequest request = sut.BuildCredentialTestRequest("custom-app-key", "America/La_Paz");
+        RegisterDebtRequest request = _sut.BuildCredentialTestRequest("custom-app-key", "America/La_Paz");
 
         Assert.Multiple(() =>
         {
@@ -54,10 +54,10 @@ public class TodotixCredentialTestBuilderTests
     [Test]
     public void BuildCredentialTestRequest_MintsAFreshIdentifierEachCall()
     {
-        callbackSignature.Setup(s => s.Sign(It.IsAny<string>())).Returns("sig");
+        _callbackSignature.Setup(s => s.Sign(It.IsAny<string>())).Returns("sig");
 
-        RegisterDebtRequest first = sut.BuildCredentialTestRequest("k", "America/La_Paz");
-        RegisterDebtRequest second = sut.BuildCredentialTestRequest("k", "America/La_Paz");
+        RegisterDebtRequest first = _sut.BuildCredentialTestRequest("k", "America/La_Paz");
+        RegisterDebtRequest second = _sut.BuildCredentialTestRequest("k", "America/La_Paz");
 
         Assert.That(first.IdentificadorDeuda, Is.Not.EqualTo(second.IdentificadorDeuda));
     }

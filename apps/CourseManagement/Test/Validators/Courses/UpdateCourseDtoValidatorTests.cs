@@ -11,17 +11,17 @@ public class UpdateCourseDtoValidatorTests
     private const string EmptyNameMessage = "Name es requerido";
     private const string TooLongNameMessage = "Name no debe exceder 100 caracteres";
 
-    private UpdateCourseDtoValidator validator = null!;
+    private UpdateCourseDtoValidator _validator = null!;
 
     [SetUp]
-    public void SetUp() => validator = new UpdateCourseDtoValidator();
+    public void SetUp() => _validator = new UpdateCourseDtoValidator();
 
     [Test]
     public async Task Validate_WithValidName_IsValid()
     {
         var request = new UpdateCourseDto { Name = "Curso Renombrado" };
 
-        ValidationResult result = await validator.ValidateAsync(request);
+        ValidationResult result = await _validator.ValidateAsync(request);
 
         Assert.That(result.IsValid, Is.True);
     }
@@ -31,7 +31,7 @@ public class UpdateCourseDtoValidatorTests
     {
         var request = new UpdateCourseDto { Name = string.Empty };
 
-        ValidationResult result = await validator.ValidateAsync(request);
+        ValidationResult result = await _validator.ValidateAsync(request);
 
         Assert.Multiple(() =>
         {
@@ -45,7 +45,7 @@ public class UpdateCourseDtoValidatorTests
     {
         var request = new UpdateCourseDto { Name = new string('a', 101) };
 
-        ValidationResult result = await validator.ValidateAsync(request);
+        ValidationResult result = await _validator.ValidateAsync(request);
 
         Assert.Multiple(() =>
         {

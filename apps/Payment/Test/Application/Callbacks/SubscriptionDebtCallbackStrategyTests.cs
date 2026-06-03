@@ -19,40 +19,40 @@ namespace Test.Application.Callbacks;
 [TestFixture]
 public class SubscriptionDebtCallbackStrategyTests
 {
-    private Mock<IPendingSubscriptionPaymentDao> pendingDao = null!;
-    private Mock<ISuccessSubscriptionPaymentDao> successDao = null!;
-    private Mock<IFailedSubscriptionPaymentDao> failedDao = null!;
-    private Mock<ISubscriptionPlanDao> planDao = null!;
-    private Mock<ITodotixClient> todotixClient = null!;
-    private Mock<IAuthSubscriptionUpdater> authSubscriptionUpdater = null!;
-    private Mock<IUnitOfWork> unitOfWork = null!;
-    private Mock<ITransactionScope> transactionScope = null!;
-    private Mock<ISubscriptionTransitionBuilder> transitionBuilder = null!;
-    private SubscriptionDebtCallbackStrategy sut = null!;
+    private Mock<IPendingSubscriptionPaymentDao> _pendingDao = null!;
+    private Mock<ISuccessSubscriptionPaymentDao> _successDao = null!;
+    private Mock<IFailedSubscriptionPaymentDao> _failedDao = null!;
+    private Mock<ISubscriptionPlanDao> _planDao = null!;
+    private Mock<ITodotixClient> _todotixClient = null!;
+    private Mock<IAuthSubscriptionUpdater> _authSubscriptionUpdater = null!;
+    private Mock<IUnitOfWork> _unitOfWork = null!;
+    private Mock<ITransactionScope> _transactionScope = null!;
+    private Mock<ISubscriptionTransitionBuilder> _transitionBuilder = null!;
+    private SubscriptionDebtCallbackStrategy _sut = null!;
 
     [SetUp]
     public void Setup()
     {
-        pendingDao = new Mock<IPendingSubscriptionPaymentDao>(MockBehavior.Strict);
-        successDao = new Mock<ISuccessSubscriptionPaymentDao>(MockBehavior.Strict);
-        failedDao = new Mock<IFailedSubscriptionPaymentDao>(MockBehavior.Strict);
-        planDao = new Mock<ISubscriptionPlanDao>(MockBehavior.Strict);
-        todotixClient = new Mock<ITodotixClient>(MockBehavior.Strict);
-        authSubscriptionUpdater = new Mock<IAuthSubscriptionUpdater>(MockBehavior.Strict);
-        (unitOfWork, transactionScope) = UnitOfWorkMockHelper.BuildCommittingMocks();
-        transitionBuilder = new Mock<ISubscriptionTransitionBuilder>(MockBehavior.Strict);
+        _pendingDao = new Mock<IPendingSubscriptionPaymentDao>(MockBehavior.Strict);
+        _successDao = new Mock<ISuccessSubscriptionPaymentDao>(MockBehavior.Strict);
+        _failedDao = new Mock<IFailedSubscriptionPaymentDao>(MockBehavior.Strict);
+        _planDao = new Mock<ISubscriptionPlanDao>(MockBehavior.Strict);
+        _todotixClient = new Mock<ITodotixClient>(MockBehavior.Strict);
+        _authSubscriptionUpdater = new Mock<IAuthSubscriptionUpdater>(MockBehavior.Strict);
+        (_unitOfWork, _transactionScope) = UnitOfWorkMockHelper.BuildCommittingMocks();
+        _transitionBuilder = new Mock<ISubscriptionTransitionBuilder>(MockBehavior.Strict);
 
         IOptions<TodotixOptions> options = Options.Create(new TodotixOptions { PlatformAppKey = "platform-key" });
 
-        sut = new SubscriptionDebtCallbackStrategy(
-            pendingDao.Object,
-            successDao.Object,
-            failedDao.Object,
-            planDao.Object,
-            todotixClient.Object,
-            authSubscriptionUpdater.Object,
-            unitOfWork.Object,
-            transitionBuilder.Object,
+        _sut = new SubscriptionDebtCallbackStrategy(
+            _pendingDao.Object,
+            _successDao.Object,
+            _failedDao.Object,
+            _planDao.Object,
+            _todotixClient.Object,
+            _authSubscriptionUpdater.Object,
+            _unitOfWork.Object,
+            _transitionBuilder.Object,
             options);
     }
 
@@ -60,15 +60,15 @@ public class SubscriptionDebtCallbackStrategyTests
     public async Task TryHandleAsync_PendingMissing_ReturnsFalseWithoutSideEffects()
     {
         Guid txId = Guid.NewGuid();
-        pendingDao.Setup(d => d.GetByIdAsync(txId)).ReturnsAsync((PendingSubscriptionPayment?)null);
+        _pendingDao.Setup(d => d.GetByIdAsync(txId)).ReturnsAsync((PendingSubscriptionPayment?)null);
 
-        bool handled = await sut.TryHandleAsync(txId);
+        bool handled = await _sut.TryHandleAsync(txId);
 
         Assert.That(handled, Is.False);
-        authSubscriptionUpdater.Verify(
+        _authSubscriptionUpdater.Verify(
             u => u.UpdateAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<DateTime>(), It.IsAny<CancellationToken>()),
             Times.Never);
-        unitOfWork.Verify(unit => unit.BeginAsync(), Times.Never);
+        _unitOfWork.Verify(unit => unit.BeginAsync(), Times.Never);
     }
 
     [Test]
@@ -79,22 +79,22 @@ public class SubscriptionDebtCallbackStrategyTests
         SubscriptionPlan plan = new() { Level = 2, Price = 180, DurationAmount = 1, DurationUnit = "Month" };
         SuccessSubscriptionPayment success = new() { Id = txId };
 
-        pendingDao.Setup(d => d.GetByIdAsync(txId)).ReturnsAsync(pending);
-        todotixClient.Setup(c => c.ConsultDebtAsync(txId, "platform-key")).ReturnsAsync(TodotixDebtState.Paid);
-        planDao.Setup(d => d.GetByLevelAsync(2)).ReturnsAsync(plan);
-        authSubscriptionUpdater
+        _pendingDao.Setup(d => d.GetByIdAsync(txId)).ReturnsAsync(pending);
+        _todotixClient.Setup(c => c.ConsultDebtAsync(txId, "platform-key")).ReturnsAsync(TodotixDebtState.Paid);
+        _planDao.Setup(d => d.GetByLevelAsync(2)).ReturnsAsync(plan);
+        _authSubscriptionUpdater
             .Setup(u => u.UpdateAsync(pending.TenantId, 2, It.IsAny<DateTime>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
-        transitionBuilder.Setup(b => b.BuildSuccessPayment(pending)).Returns(success);
-        successDao.Setup(d => d.TryCreateAsync(success, transactionScope.Object)).ReturnsAsync(true);
-        pendingDao.Setup(d => d.DeleteAsync(pending.Id, transactionScope.Object)).ReturnsAsync(true);
+        _transitionBuilder.Setup(b => b.BuildSuccessPayment(pending)).Returns(success);
+        _successDao.Setup(d => d.TryCreateAsync(success, _transactionScope.Object)).ReturnsAsync(true);
+        _pendingDao.Setup(d => d.DeleteAsync(pending.Id, _transactionScope.Object)).ReturnsAsync(true);
 
-        bool handled = await sut.TryHandleAsync(txId);
+        bool handled = await _sut.TryHandleAsync(txId);
 
         Assert.That(handled, Is.True);
-        authSubscriptionUpdater.Verify(
+        _authSubscriptionUpdater.Verify(
             u => u.UpdateAsync(pending.TenantId, 2, It.IsAny<DateTime>(), It.IsAny<CancellationToken>()), Times.Once);
-        transactionScope.Verify(s => s.CommitAsync(), Times.Once);
+        _transactionScope.Verify(s => s.CommitAsync(), Times.Once);
     }
 
     [Test]
@@ -104,18 +104,18 @@ public class SubscriptionDebtCallbackStrategyTests
         PendingSubscriptionPayment pending = new() { Id = txId, TenantId = Guid.NewGuid(), Level = 1, Cost = 100 };
         FailedSubscriptionPayment failed = new() { Id = txId };
 
-        pendingDao.Setup(d => d.GetByIdAsync(txId)).ReturnsAsync(pending);
-        todotixClient.Setup(c => c.ConsultDebtAsync(txId, "platform-key")).ReturnsAsync(TodotixDebtState.Unpaid);
-        transitionBuilder.Setup(b => b.BuildFailedPayment(pending)).Returns(failed);
-        failedDao.Setup(d => d.TryCreateAsync(failed, transactionScope.Object)).ReturnsAsync(true);
-        pendingDao.Setup(d => d.DeleteAsync(pending.Id, transactionScope.Object)).ReturnsAsync(true);
+        _pendingDao.Setup(d => d.GetByIdAsync(txId)).ReturnsAsync(pending);
+        _todotixClient.Setup(c => c.ConsultDebtAsync(txId, "platform-key")).ReturnsAsync(TodotixDebtState.Unpaid);
+        _transitionBuilder.Setup(b => b.BuildFailedPayment(pending)).Returns(failed);
+        _failedDao.Setup(d => d.TryCreateAsync(failed, _transactionScope.Object)).ReturnsAsync(true);
+        _pendingDao.Setup(d => d.DeleteAsync(pending.Id, _transactionScope.Object)).ReturnsAsync(true);
 
-        bool handled = await sut.TryHandleAsync(txId);
+        bool handled = await _sut.TryHandleAsync(txId);
 
         Assert.That(handled, Is.True);
-        authSubscriptionUpdater.Verify(
+        _authSubscriptionUpdater.Verify(
             u => u.UpdateAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<DateTime>(), It.IsAny<CancellationToken>()),
             Times.Never);
-        transactionScope.Verify(s => s.CommitAsync(), Times.Once);
+        _transactionScope.Verify(s => s.CommitAsync(), Times.Once);
     }
 }

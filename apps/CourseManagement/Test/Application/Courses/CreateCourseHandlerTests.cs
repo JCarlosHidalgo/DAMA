@@ -21,28 +21,28 @@ public class CreateCourseHandlerTests
 {
     private static readonly Guid TenantId = Guid.Parse("11111111-1111-1111-1111-111111111111");
 
-    private Mock<ICourseDao> courseDao = null!;
-    private Mock<IIdempotentTransactionExecutor> idempotentExecutor = null!;
-    private Mock<IClaimContext> claimContext = null!;
-    private Mock<ICourseBuilder> courseBuilder = null!;
-    private Mock<IMapper> mapper = null!;
-    private CreateCourseHandler handler = null!;
+    private Mock<ICourseDao> _courseDao = null!;
+    private Mock<IIdempotentTransactionExecutor> _idempotentExecutor = null!;
+    private Mock<IClaimContext> _claimContext = null!;
+    private Mock<ICourseBuilder> _courseBuilder = null!;
+    private Mock<IMapper> _mapper = null!;
+    private CreateCourseHandler _handler = null!;
 
     [SetUp]
     public void SetUp()
     {
-        courseDao = new Mock<ICourseDao>(MockBehavior.Strict);
-        idempotentExecutor = new Mock<IIdempotentTransactionExecutor>(MockBehavior.Strict);
-        claimContext = new Mock<IClaimContext>(MockBehavior.Strict);
-        courseBuilder = new Mock<ICourseBuilder>(MockBehavior.Strict);
-        mapper = new Mock<IMapper>(MockBehavior.Strict);
-        claimContext.SetupGet(context => context.TenantId).Returns(TenantId);
-        handler = new CreateCourseHandler(
-            courseDao.Object,
-            idempotentExecutor.Object,
-            claimContext.Object,
-            courseBuilder.Object,
-            mapper.Object);
+        _courseDao = new Mock<ICourseDao>(MockBehavior.Strict);
+        _idempotentExecutor = new Mock<IIdempotentTransactionExecutor>(MockBehavior.Strict);
+        _claimContext = new Mock<IClaimContext>(MockBehavior.Strict);
+        _courseBuilder = new Mock<ICourseBuilder>(MockBehavior.Strict);
+        _mapper = new Mock<IMapper>(MockBehavior.Strict);
+        _claimContext.SetupGet(context => context.TenantId).Returns(TenantId);
+        _handler = new CreateCourseHandler(
+            _courseDao.Object,
+            _idempotentExecutor.Object,
+            _claimContext.Object,
+            _courseBuilder.Object,
+            _mapper.Object);
     }
 
     [Test]
@@ -52,16 +52,16 @@ public class CreateCourseHandlerTests
         var candidate = new Course { Id = Guid.NewGuid(), Name = "Curso Demo", TenantId = TenantId };
         var mapped = new GetCourseDto { Id = candidate.Id, Name = candidate.Name };
 
-        courseBuilder.Setup(builder => builder.BuildCourse(TenantId, payload)).Returns(candidate);
-        idempotentExecutor
+        _courseBuilder.Setup(builder => builder.BuildCourse(TenantId, payload)).Returns(candidate);
+        _idempotentExecutor
             .Setup(executor => executor.ExecuteAsync<Course>(
                 TenantId, "ref-1", "Course", candidate.Id,
                 It.IsAny<Func<ITransactionContext, Task<Course?>>>(),
                 It.IsAny<Func<Guid, Task<Course?>>>()))
             .ReturnsAsync(new IdempotentInsertOutcome<Course>.Inserted(candidate));
-        mapper.Setup(map => map.Map<GetCourseDto>(candidate)).Returns(mapped);
+        _mapper.Setup(map => map.Map<GetCourseDto>(candidate)).Returns(mapped);
 
-        CreateCourseResult result = await handler.Handle(new CreateCourseCommand(payload));
+        CreateCourseResult result = await _handler.Handle(new CreateCourseCommand(payload));
 
         Assert.Multiple(() =>
         {
@@ -78,16 +78,16 @@ public class CreateCourseHandlerTests
         var prior = new Course { Id = Guid.NewGuid(), Name = "Curso Previo", TenantId = TenantId };
         var mappedPrior = new GetCourseDto { Id = prior.Id, Name = prior.Name };
 
-        courseBuilder.Setup(builder => builder.BuildCourse(TenantId, payload)).Returns(candidate);
-        idempotentExecutor
+        _courseBuilder.Setup(builder => builder.BuildCourse(TenantId, payload)).Returns(candidate);
+        _idempotentExecutor
             .Setup(executor => executor.ExecuteAsync<Course>(
                 TenantId, "ref-dup", "Course", candidate.Id,
                 It.IsAny<Func<ITransactionContext, Task<Course?>>>(),
                 It.IsAny<Func<Guid, Task<Course?>>>()))
             .ReturnsAsync(new IdempotentInsertOutcome<Course>.Replayed(prior));
-        mapper.Setup(map => map.Map<GetCourseDto>(prior)).Returns(mappedPrior);
+        _mapper.Setup(map => map.Map<GetCourseDto>(prior)).Returns(mappedPrior);
 
-        CreateCourseResult result = await handler.Handle(new CreateCourseCommand(payload));
+        CreateCourseResult result = await _handler.Handle(new CreateCourseCommand(payload));
 
         Assert.Multiple(() =>
         {
@@ -102,15 +102,15 @@ public class CreateCourseHandlerTests
         var payload = new CreateCourseDto { Name = "Curso Demo", ExternalReference = null };
         var candidate = new Course { Id = Guid.NewGuid(), Name = "Curso Demo", TenantId = TenantId };
 
-        courseBuilder.Setup(builder => builder.BuildCourse(TenantId, payload)).Returns(candidate);
-        idempotentExecutor
+        _courseBuilder.Setup(builder => builder.BuildCourse(TenantId, payload)).Returns(candidate);
+        _idempotentExecutor
             .Setup(executor => executor.ExecuteAsync<Course>(
                 TenantId, null, "Course", candidate.Id,
                 It.IsAny<Func<ITransactionContext, Task<Course?>>>(),
                 It.IsAny<Func<Guid, Task<Course?>>>()))
             .ReturnsAsync(new IdempotentInsertOutcome<Course>.InsertFailed());
 
-        Assert.ThrowsAsync<System.Diagnostics.UnreachableException>(async () => await handler.Handle(new CreateCourseCommand(payload)));
+        Assert.ThrowsAsync<System.Diagnostics.UnreachableException>(async () => await _handler.Handle(new CreateCourseCommand(payload)));
     }
 
     [Test]
@@ -121,12 +121,12 @@ public class CreateCourseHandlerTests
         var mapped = new GetCourseDto { Id = candidate.Id, Name = candidate.Name };
         var transactionContext = new Mock<ITransactionContext>(MockBehavior.Strict);
 
-        courseBuilder.Setup(builder => builder.BuildCourse(TenantId, payload)).Returns(candidate);
-        courseDao.Setup(dao => dao.CreateAsync(candidate, transactionContext.Object)).Returns(Task.CompletedTask);
-        mapper.Setup(map => map.Map<GetCourseDto>(candidate)).Returns(mapped);
+        _courseBuilder.Setup(builder => builder.BuildCourse(TenantId, payload)).Returns(candidate);
+        _courseDao.Setup(dao => dao.CreateAsync(candidate, transactionContext.Object)).Returns(Task.CompletedTask);
+        _mapper.Setup(map => map.Map<GetCourseDto>(candidate)).Returns(mapped);
 
         Func<ITransactionContext, Task<Course?>>? capturedInsert = null;
-        idempotentExecutor
+        _idempotentExecutor
             .Setup(executor => executor.ExecuteAsync<Course>(
                 TenantId, "ref-delegate", "Course", candidate.Id,
                 It.IsAny<Func<ITransactionContext, Task<Course?>>>(),
@@ -135,10 +135,10 @@ public class CreateCourseHandlerTests
                 (_, _, _, _, insertDelegate, _) => capturedInsert = insertDelegate)
             .ReturnsAsync(new IdempotentInsertOutcome<Course>.Inserted(candidate));
 
-        await handler.Handle(new CreateCourseCommand(payload));
+        await _handler.Handle(new CreateCourseCommand(payload));
         Course? inserted = await capturedInsert!(transactionContext.Object);
 
         Assert.That(inserted, Is.SameAs(candidate));
-        courseDao.Verify(dao => dao.CreateAsync(candidate, transactionContext.Object), Times.Once);
+        _courseDao.Verify(dao => dao.CreateAsync(candidate, transactionContext.Object), Times.Once);
     }
 }

@@ -15,22 +15,22 @@ public class IdempotentTransactionExecutorTests
     private static readonly Guid TenantId = Guid.Parse("11111111-1111-1111-1111-111111111111");
     private const string EntityType = "Course";
 
-    private Mock<IUnitOfWork> unitOfWork = null!;
-    private Mock<ITransactionScope> transactionScope = null!;
-    private Mock<ICourseIdempotencyDao> idempotencyDao = null!;
-    private IdempotentTransactionExecutor executor = null!;
+    private Mock<IUnitOfWork> _unitOfWork = null!;
+    private Mock<ITransactionScope> _transactionScope = null!;
+    private Mock<ICourseIdempotencyDao> _idempotencyDao = null!;
+    private IdempotentTransactionExecutor _executor = null!;
 
     [SetUp]
     public void SetUp()
     {
-        unitOfWork = new Mock<IUnitOfWork>(MockBehavior.Strict);
-        transactionScope = new Mock<ITransactionScope>(MockBehavior.Strict);
-        idempotencyDao = new Mock<ICourseIdempotencyDao>(MockBehavior.Strict);
+        _unitOfWork = new Mock<IUnitOfWork>(MockBehavior.Strict);
+        _transactionScope = new Mock<ITransactionScope>(MockBehavior.Strict);
+        _idempotencyDao = new Mock<ICourseIdempotencyDao>(MockBehavior.Strict);
 
-        transactionScope.Setup(scope => scope.DisposeAsync()).Returns(ValueTask.CompletedTask);
-        unitOfWork.Setup(unit => unit.BeginAsync()).ReturnsAsync(transactionScope.Object);
+        _transactionScope.Setup(scope => scope.DisposeAsync()).Returns(ValueTask.CompletedTask);
+        _unitOfWork.Setup(unit => unit.BeginAsync()).ReturnsAsync(_transactionScope.Object);
 
-        executor = new IdempotentTransactionExecutor(unitOfWork.Object, idempotencyDao.Object);
+        _executor = new IdempotentTransactionExecutor(_unitOfWork.Object, _idempotencyDao.Object);
     }
 
     [Test]
@@ -39,9 +39,9 @@ public class IdempotentTransactionExecutorTests
         var newEntityId = Guid.NewGuid();
         var candidate = new Course { Id = newEntityId, Name = "Curso", TenantId = TenantId };
 
-        transactionScope.Setup(scope => scope.CommitAsync()).Returns(Task.CompletedTask);
+        _transactionScope.Setup(scope => scope.CommitAsync()).Returns(Task.CompletedTask);
 
-        IdempotentInsertOutcome<Course> outcome = await executor.ExecuteAsync<Course>(
+        IdempotentInsertOutcome<Course> outcome = await _executor.ExecuteAsync<Course>(
             TenantId,
             externalReference: null,
             EntityType,
@@ -54,8 +54,8 @@ public class IdempotentTransactionExecutorTests
             Assert.That(outcome, Is.InstanceOf<IdempotentInsertOutcome<Course>.Inserted>());
             Assert.That(((IdempotentInsertOutcome<Course>.Inserted)outcome).Entity, Is.SameAs(candidate));
         });
-        transactionScope.Verify(scope => scope.CommitAsync(), Times.Once);
-        idempotencyDao.VerifyNoOtherCalls();
+        _transactionScope.Verify(scope => scope.CommitAsync(), Times.Once);
+        _idempotencyDao.VerifyNoOtherCalls();
     }
 
     [Test]
@@ -64,9 +64,9 @@ public class IdempotentTransactionExecutorTests
         var newEntityId = Guid.NewGuid();
         var candidate = new Course { Id = newEntityId };
 
-        transactionScope.Setup(scope => scope.CommitAsync()).Returns(Task.CompletedTask);
+        _transactionScope.Setup(scope => scope.CommitAsync()).Returns(Task.CompletedTask);
 
-        IdempotentInsertOutcome<Course> outcome = await executor.ExecuteAsync<Course>(
+        IdempotentInsertOutcome<Course> outcome = await _executor.ExecuteAsync<Course>(
             TenantId,
             externalReference: string.Empty,
             EntityType,
@@ -75,7 +75,7 @@ public class IdempotentTransactionExecutorTests
             loadPrior: _ => Task.FromResult<Course?>(null));
 
         Assert.That(outcome, Is.InstanceOf<IdempotentInsertOutcome<Course>.Inserted>());
-        idempotencyDao.VerifyNoOtherCalls();
+        _idempotencyDao.VerifyNoOtherCalls();
     }
 
     [Test]
@@ -83,7 +83,7 @@ public class IdempotentTransactionExecutorTests
     {
         var newEntityId = Guid.NewGuid();
 
-        IdempotentInsertOutcome<Course> outcome = await executor.ExecuteAsync<Course>(
+        IdempotentInsertOutcome<Course> outcome = await _executor.ExecuteAsync<Course>(
             TenantId,
             externalReference: null,
             EntityType,
@@ -92,7 +92,7 @@ public class IdempotentTransactionExecutorTests
             loadPrior: _ => Task.FromResult<Course?>(null));
 
         Assert.That(outcome, Is.InstanceOf<IdempotentInsertOutcome<Course>.InsertFailed>());
-        transactionScope.Verify(scope => scope.CommitAsync(), Times.Never);
+        _transactionScope.Verify(scope => scope.CommitAsync(), Times.Never);
     }
 
     [Test]
@@ -101,18 +101,18 @@ public class IdempotentTransactionExecutorTests
         var newEntityId = Guid.NewGuid();
         var candidate = new Course { Id = newEntityId };
 
-        idempotencyDao
+        _idempotencyDao
             .Setup(dao => dao.TryRecordAsync(
                 It.Is<CourseIdempotency>(record =>
                     record.TenantId == TenantId
                     && record.ExternalReference == "ref-001"
                     && record.EntityType == EntityType
                     && record.EntityId == newEntityId),
-                transactionScope.Object))
+                _transactionScope.Object))
             .ReturnsAsync(true);
-        transactionScope.Setup(scope => scope.CommitAsync()).Returns(Task.CompletedTask);
+        _transactionScope.Setup(scope => scope.CommitAsync()).Returns(Task.CompletedTask);
 
-        IdempotentInsertOutcome<Course> outcome = await executor.ExecuteAsync<Course>(
+        IdempotentInsertOutcome<Course> outcome = await _executor.ExecuteAsync<Course>(
             TenantId,
             externalReference: "ref-001",
             EntityType,
@@ -121,7 +121,7 @@ public class IdempotentTransactionExecutorTests
             loadPrior: _ => Task.FromResult<Course?>(null));
 
         Assert.That(outcome, Is.InstanceOf<IdempotentInsertOutcome<Course>.Inserted>());
-        transactionScope.Verify(scope => scope.CommitAsync(), Times.Once);
+        _transactionScope.Verify(scope => scope.CommitAsync(), Times.Once);
     }
 
     [Test]
@@ -129,11 +129,11 @@ public class IdempotentTransactionExecutorTests
     {
         var newEntityId = Guid.NewGuid();
 
-        idempotencyDao
-            .Setup(dao => dao.TryRecordAsync(It.IsAny<CourseIdempotency>(), transactionScope.Object))
+        _idempotencyDao
+            .Setup(dao => dao.TryRecordAsync(It.IsAny<CourseIdempotency>(), _transactionScope.Object))
             .ReturnsAsync(true);
 
-        IdempotentInsertOutcome<Course> outcome = await executor.ExecuteAsync<Course>(
+        IdempotentInsertOutcome<Course> outcome = await _executor.ExecuteAsync<Course>(
             TenantId,
             externalReference: "ref-002",
             EntityType,
@@ -142,7 +142,7 @@ public class IdempotentTransactionExecutorTests
             loadPrior: _ => Task.FromResult<Course?>(null));
 
         Assert.That(outcome, Is.InstanceOf<IdempotentInsertOutcome<Course>.InsertFailed>());
-        transactionScope.Verify(scope => scope.CommitAsync(), Times.Never);
+        _transactionScope.Verify(scope => scope.CommitAsync(), Times.Never);
     }
 
     [Test]
@@ -152,10 +152,10 @@ public class IdempotentTransactionExecutorTests
         var priorEntityId = Guid.NewGuid();
         var prior = new Course { Id = priorEntityId, Name = "Prior" };
 
-        idempotencyDao
-            .Setup(dao => dao.TryRecordAsync(It.IsAny<CourseIdempotency>(), transactionScope.Object))
+        _idempotencyDao
+            .Setup(dao => dao.TryRecordAsync(It.IsAny<CourseIdempotency>(), _transactionScope.Object))
             .ReturnsAsync(false);
-        idempotencyDao
+        _idempotencyDao
             .Setup(dao => dao.GetByExternalReferenceAsync(TenantId, "ref-dup"))
             .ReturnsAsync(new CourseIdempotency
             {
@@ -165,7 +165,7 @@ public class IdempotentTransactionExecutorTests
                 EntityId = priorEntityId
             });
 
-        IdempotentInsertOutcome<Course> outcome = await executor.ExecuteAsync<Course>(
+        IdempotentInsertOutcome<Course> outcome = await _executor.ExecuteAsync<Course>(
             TenantId,
             externalReference: "ref-dup",
             EntityType,
@@ -182,7 +182,7 @@ public class IdempotentTransactionExecutorTests
             Assert.That(outcome, Is.InstanceOf<IdempotentInsertOutcome<Course>.Replayed>());
             Assert.That(((IdempotentInsertOutcome<Course>.Replayed)outcome).Prior, Is.SameAs(prior));
         });
-        transactionScope.Verify(scope => scope.CommitAsync(), Times.Never);
+        _transactionScope.Verify(scope => scope.CommitAsync(), Times.Never);
     }
 
     [Test]
@@ -191,14 +191,14 @@ public class IdempotentTransactionExecutorTests
         var newEntityId = Guid.NewGuid();
         var priorEntityId = Guid.NewGuid();
 
-        idempotencyDao
-            .Setup(dao => dao.TryRecordAsync(It.IsAny<CourseIdempotency>(), transactionScope.Object))
+        _idempotencyDao
+            .Setup(dao => dao.TryRecordAsync(It.IsAny<CourseIdempotency>(), _transactionScope.Object))
             .ReturnsAsync(false);
-        idempotencyDao
+        _idempotencyDao
             .Setup(dao => dao.GetByExternalReferenceAsync(TenantId, "ref-dup-orphan"))
             .ReturnsAsync(new CourseIdempotency { EntityId = priorEntityId });
 
-        IdempotentInsertOutcome<Course> outcome = await executor.ExecuteAsync<Course>(
+        IdempotentInsertOutcome<Course> outcome = await _executor.ExecuteAsync<Course>(
             TenantId,
             externalReference: "ref-dup-orphan",
             EntityType,
@@ -214,16 +214,16 @@ public class IdempotentTransactionExecutorTests
     {
         var newEntityId = Guid.NewGuid();
 
-        idempotencyDao
-            .Setup(dao => dao.TryRecordAsync(It.IsAny<CourseIdempotency>(), transactionScope.Object))
+        _idempotencyDao
+            .Setup(dao => dao.TryRecordAsync(It.IsAny<CourseIdempotency>(), _transactionScope.Object))
             .ReturnsAsync(false);
-        idempotencyDao
+        _idempotencyDao
             .Setup(dao => dao.GetByExternalReferenceAsync(TenantId, "ref-vanished"))
             .ReturnsAsync((CourseIdempotency?)null);
 
         Assert.ThrowsAsync<InvalidOperationException>(async () =>
         {
-            await executor.ExecuteAsync<Course>(
+            await _executor.ExecuteAsync<Course>(
                 TenantId,
                 externalReference: "ref-vanished",
                 EntityType,

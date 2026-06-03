@@ -26,75 +26,75 @@ public class AttendanceMarkerTests
     private const string CallerStudentName = "test student";
     private const string ValidTimezoneId = "America/La_Paz";
 
-    private Mock<IClaimContext> claimContext = null!;
-    private Mock<IUnitOfWork> unitOfWork = null!;
-    private Mock<IStudentRemainClassesDao> remainClassesDao = null!;
-    private Mock<IHubContext<AttendanceHub>> hubContext = null!;
-    private Mock<IHubClients> hubClients = null!;
-    private Mock<IClientProxy> clientProxy = null!;
-    private Mock<IMapper> mapper = null!;
-    private Mock<ITransactionScope> transactionScope = null!;
+    private Mock<IClaimContext> _claimContext = null!;
+    private Mock<IUnitOfWork> _unitOfWork = null!;
+    private Mock<IStudentRemainClassesDao> _remainClassesDao = null!;
+    private Mock<IHubContext<AttendanceHub>> _hubContext = null!;
+    private Mock<IHubClients> _hubClients = null!;
+    private Mock<IClientProxy> _clientProxy = null!;
+    private Mock<IMapper> _mapper = null!;
+    private Mock<ITransactionScope> _transactionScope = null!;
 
-    private AttendanceOptions options = null!;
-    private AttendanceMarker sut = null!;
+    private AttendanceOptions _options = null!;
+    private AttendanceMarker _sut = null!;
 
     [SetUp]
     public void SetUp()
     {
-        claimContext = new Mock<IClaimContext>(MockBehavior.Strict);
-        unitOfWork = new Mock<IUnitOfWork>(MockBehavior.Strict);
-        remainClassesDao = new Mock<IStudentRemainClassesDao>(MockBehavior.Strict);
-        hubContext = new Mock<IHubContext<AttendanceHub>>(MockBehavior.Strict);
-        hubClients = new Mock<IHubClients>(MockBehavior.Strict);
-        clientProxy = new Mock<IClientProxy>(MockBehavior.Strict);
-        mapper = new Mock<IMapper>(MockBehavior.Strict);
-        transactionScope = new Mock<ITransactionScope>(MockBehavior.Strict);
+        _claimContext = new Mock<IClaimContext>(MockBehavior.Strict);
+        _unitOfWork = new Mock<IUnitOfWork>(MockBehavior.Strict);
+        _remainClassesDao = new Mock<IStudentRemainClassesDao>(MockBehavior.Strict);
+        _hubContext = new Mock<IHubContext<AttendanceHub>>(MockBehavior.Strict);
+        _hubClients = new Mock<IHubClients>(MockBehavior.Strict);
+        _clientProxy = new Mock<IClientProxy>(MockBehavior.Strict);
+        _mapper = new Mock<IMapper>(MockBehavior.Strict);
+        _transactionScope = new Mock<ITransactionScope>(MockBehavior.Strict);
 
-        transactionScope.Setup(scope => scope.DisposeAsync()).Returns(ValueTask.CompletedTask);
+        _transactionScope.Setup(scope => scope.DisposeAsync()).Returns(ValueTask.CompletedTask);
 
-        options = new AttendanceOptions
+        _options = new AttendanceOptions
         {
             AllowedWindowStart = new TimeOnly(0, 0),
             AllowedWindowEnd = new TimeOnly(23, 59, 59, 999)
         };
 
-        sut = new AttendanceMarker(
-            claimContext.Object,
-            unitOfWork.Object,
-            remainClassesDao.Object,
-            hubContext.Object,
-            mapper.Object,
-            Options.Create(options),
+        _sut = new AttendanceMarker(
+            _claimContext.Object,
+            _unitOfWork.Object,
+            _remainClassesDao.Object,
+            _hubContext.Object,
+            _mapper.Object,
+            Options.Create(_options),
             NullLogger<AttendanceMarker>.Instance);
     }
 
     [Test]
     public async Task MarkAsync_WhenTimezoneInvalid_ReturnsInvalidTenantTimezone()
     {
-        claimContext.Setup(target => target.TenantTimezone).Returns("Continent/NonExistent");
+        _claimContext.Setup(target => target.TenantTimezone).Returns("Continent/NonExistent");
 
-        MarkAttendanceOutcome result = await sut.MarkAsync<string, string>(
+        MarkAttendanceOutcome result = await _sut.MarkAsync<string, string>(
             _ => Task.FromResult<AttendanceBuildResult<string>?>(new AttendanceBuildResult<string>("x", 0)),
             (_, _) => Task.FromResult(0),
             (_, _) => Task.FromResult(true),
             _ => "group");
 
         Assert.That(result, Is.InstanceOf<MarkAttendanceOutcome.InvalidTenantTimezone>());
-        unitOfWork.Verify(target => target.BeginAsync(), Times.Never);
+        _unitOfWork.Verify(target => target.BeginAsync(), Times.Never);
     }
 
     [Test]
     public async Task MarkAsync_WhenNowIsOutsideWindow_ReturnsOutsideAllowedWindow()
     {
-        options.AllowedWindowStart = new TimeOnly(0, 0);
-        options.AllowedWindowEnd = new TimeOnly(0, 0);
+        _options.AllowedWindowStart = new TimeOnly(0, 0);
+        _options.AllowedWindowEnd = new TimeOnly(0, 0);
 
         AttendanceMarker localSut = new(
-            claimContext.Object, unitOfWork.Object, remainClassesDao.Object,
-            hubContext.Object, mapper.Object, Options.Create(options),
+            _claimContext.Object, _unitOfWork.Object, _remainClassesDao.Object,
+            _hubContext.Object, _mapper.Object, Options.Create(_options),
             NullLogger<AttendanceMarker>.Instance);
 
-        claimContext.Setup(target => target.TenantTimezone).Returns(ValidTimezoneId);
+        _claimContext.Setup(target => target.TenantTimezone).Returns(ValidTimezoneId);
 
         MarkAttendanceOutcome result = await localSut.MarkAsync<string, string>(
             _ => Task.FromResult<AttendanceBuildResult<string>?>(new AttendanceBuildResult<string>("x", 0)),
@@ -103,7 +103,7 @@ public class AttendanceMarkerTests
             _ => "group");
 
         Assert.That(result, Is.InstanceOf<MarkAttendanceOutcome.OutsideAllowedWindow>());
-        unitOfWork.Verify(target => target.BeginAsync(), Times.Never);
+        _unitOfWork.Verify(target => target.BeginAsync(), Times.Never);
     }
 
     [Test]
@@ -111,86 +111,86 @@ public class AttendanceMarkerTests
     {
         SetupClaimsForHappyPath();
 
-        MarkAttendanceOutcome result = await sut.MarkAsync<string, string>(
+        MarkAttendanceOutcome result = await _sut.MarkAsync<string, string>(
             _ => Task.FromResult<AttendanceBuildResult<string>?>(null),
             (_, _) => Task.FromResult(0),
             (_, _) => Task.FromResult(true),
             _ => "group");
 
         Assert.That(result, Is.InstanceOf<MarkAttendanceOutcome.InvalidClass>());
-        unitOfWork.Verify(target => target.BeginAsync(), Times.Never);
+        _unitOfWork.Verify(target => target.BeginAsync(), Times.Never);
     }
 
     [Test]
     public async Task MarkAsync_WhenRemainDecrementFails_ReturnsNoRemainingClassesAndDoesNotCommit()
     {
         SetupClaimsForHappyPath();
-        unitOfWork.Setup(target => target.BeginAsync()).ReturnsAsync(transactionScope.Object);
-        remainClassesDao
-            .Setup(target => target.TryDecrementAsync(CallerTenantId, CallerStudentId, transactionScope.Object))
+        _unitOfWork.Setup(target => target.BeginAsync()).ReturnsAsync(_transactionScope.Object);
+        _remainClassesDao
+            .Setup(target => target.TryDecrementAsync(CallerTenantId, CallerStudentId, _transactionScope.Object))
             .ReturnsAsync(false);
 
-        MarkAttendanceOutcome result = await sut.MarkAsync<string, string>(
+        MarkAttendanceOutcome result = await _sut.MarkAsync<string, string>(
             _ => Task.FromResult<AttendanceBuildResult<string>?>(new AttendanceBuildResult<string>("attendance", 0)),
             (_, _) => Task.FromResult(0),
             (_, _) => Task.FromResult(true),
             _ => "group");
 
         Assert.That(result, Is.InstanceOf<MarkAttendanceOutcome.NoRemainingClasses>());
-        transactionScope.Verify(scope => scope.CommitAsync(), Times.Never);
+        _transactionScope.Verify(scope => scope.CommitAsync(), Times.Never);
     }
 
     [Test]
     public async Task MarkAsync_WhenMarkAttendanceFails_ReturnsAlreadyMarkedAndDoesNotCommit()
     {
         SetupClaimsForHappyPath();
-        unitOfWork.Setup(target => target.BeginAsync()).ReturnsAsync(transactionScope.Object);
-        remainClassesDao
-            .Setup(target => target.TryDecrementAsync(CallerTenantId, CallerStudentId, transactionScope.Object))
+        _unitOfWork.Setup(target => target.BeginAsync()).ReturnsAsync(_transactionScope.Object);
+        _remainClassesDao
+            .Setup(target => target.TryDecrementAsync(CallerTenantId, CallerStudentId, _transactionScope.Object))
             .ReturnsAsync(true);
 
-        MarkAttendanceOutcome result = await sut.MarkAsync<string, string>(
+        MarkAttendanceOutcome result = await _sut.MarkAsync<string, string>(
             _ => Task.FromResult<AttendanceBuildResult<string>?>(new AttendanceBuildResult<string>("attendance", 0)),
             (_, _) => Task.FromResult(0),
             (_, _) => Task.FromResult(false),
             _ => "group");
 
         Assert.That(result, Is.InstanceOf<MarkAttendanceOutcome.AlreadyMarked>());
-        transactionScope.Verify(scope => scope.CommitAsync(), Times.Never);
+        _transactionScope.Verify(scope => scope.CommitAsync(), Times.Never);
     }
 
     [Test]
     public async Task MarkAsync_WhenAllSucceed_CommitsAndBroadcastsAttendanceMarkedToGroup()
     {
         SetupClaimsForHappyPath();
-        unitOfWork.Setup(target => target.BeginAsync()).ReturnsAsync(transactionScope.Object);
-        remainClassesDao
-            .Setup(target => target.TryDecrementAsync(CallerTenantId, CallerStudentId, transactionScope.Object))
+        _unitOfWork.Setup(target => target.BeginAsync()).ReturnsAsync(_transactionScope.Object);
+        _remainClassesDao
+            .Setup(target => target.TryDecrementAsync(CallerTenantId, CallerStudentId, _transactionScope.Object))
             .ReturnsAsync(true);
-        transactionScope.Setup(scope => scope.CommitAsync()).Returns(Task.CompletedTask);
+        _transactionScope.Setup(scope => scope.CommitAsync()).Returns(Task.CompletedTask);
 
         string expectedResponse = "mapped_response";
         const string broadcastGroupName = "scheduled:test-group";
-        mapper.Setup(target => target.Map<string>("attendance")).Returns(expectedResponse);
+        _mapper.Setup(target => target.Map<string>("attendance")).Returns(expectedResponse);
 
-        hubContext.SetupGet(hub => hub.Clients).Returns(hubClients.Object);
-        hubClients.Setup(clients => clients.Group(broadcastGroupName)).Returns(clientProxy.Object);
-        clientProxy
+        _hubContext.SetupGet(hub => hub.Clients).Returns(_hubClients.Object);
+        _hubClients.Setup(clients => clients.Group(broadcastGroupName)).Returns(_clientProxy.Object);
+        _clientProxy
             .Setup(proxy => proxy.SendCoreAsync(
                 "AttendanceMarked",
                 It.Is<object?[]>(args => args.Length == 1 && (string)args[0]! == expectedResponse),
                 It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
-        MarkAttendanceOutcome result = await sut.MarkAsync<string, string>(
+        MarkAttendanceOutcome result = await _sut.MarkAsync<string, string>(
             _ => Task.FromResult<AttendanceBuildResult<string>?>(new AttendanceBuildResult<string>("attendance", 0)),
             (_, _) => Task.FromResult(0),
             (_, _) => Task.FromResult(true),
             _ => broadcastGroupName);
 
         Assert.That(result, Is.InstanceOf<MarkAttendanceOutcome.Marked>());
-        transactionScope.Verify(scope => scope.CommitAsync(), Times.Once);
-        clientProxy.Verify(proxy => proxy.SendCoreAsync(
+        _transactionScope.Verify(scope => scope.CommitAsync(), Times.Once);
+        _clientProxy.Verify(proxy => proxy.SendCoreAsync(
                 "AttendanceMarked",
                 It.IsAny<object?[]>(),
                 It.IsAny<CancellationToken>()),
@@ -201,54 +201,54 @@ public class AttendanceMarkerTests
     public async Task MarkAsync_WhenClassIsFull_ReturnsClassFullAndDoesNotDecrementOrCommit()
     {
         SetupClaimsForHappyPath();
-        unitOfWork.Setup(target => target.BeginAsync()).ReturnsAsync(transactionScope.Object);
+        _unitOfWork.Setup(target => target.BeginAsync()).ReturnsAsync(_transactionScope.Object);
 
-        MarkAttendanceOutcome result = await sut.MarkAsync<string, string>(
+        MarkAttendanceOutcome result = await _sut.MarkAsync<string, string>(
             _ => Task.FromResult<AttendanceBuildResult<string>?>(new AttendanceBuildResult<string>("attendance", 1)),
             (_, _) => Task.FromResult(1),
             (_, _) => Task.FromResult(true),
             _ => "group");
 
         Assert.That(result, Is.InstanceOf<MarkAttendanceOutcome.ClassFull>());
-        remainClassesDao.Verify(
+        _remainClassesDao.Verify(
             target => target.TryDecrementAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<ITransactionContext>()),
             Times.Never);
-        transactionScope.Verify(scope => scope.CommitAsync(), Times.Never);
+        _transactionScope.Verify(scope => scope.CommitAsync(), Times.Never);
     }
 
     [Test]
     public async Task MarkAsync_WhenUnderLimit_ConsultsCountAndProceedsToMarked()
     {
         SetupClaimsForHappyPath();
-        unitOfWork.Setup(target => target.BeginAsync()).ReturnsAsync(transactionScope.Object);
-        remainClassesDao
-            .Setup(target => target.TryDecrementAsync(CallerTenantId, CallerStudentId, transactionScope.Object))
+        _unitOfWork.Setup(target => target.BeginAsync()).ReturnsAsync(_transactionScope.Object);
+        _remainClassesDao
+            .Setup(target => target.TryDecrementAsync(CallerTenantId, CallerStudentId, _transactionScope.Object))
             .ReturnsAsync(true);
-        transactionScope.Setup(scope => scope.CommitAsync()).Returns(Task.CompletedTask);
+        _transactionScope.Setup(scope => scope.CommitAsync()).Returns(Task.CompletedTask);
 
         const string broadcastGroupName = "scheduled:test-group";
-        mapper.Setup(target => target.Map<string>("attendance")).Returns("mapped_response");
-        hubContext.SetupGet(hub => hub.Clients).Returns(hubClients.Object);
-        hubClients.Setup(clients => clients.Group(broadcastGroupName)).Returns(clientProxy.Object);
-        clientProxy
+        _mapper.Setup(target => target.Map<string>("attendance")).Returns("mapped_response");
+        _hubContext.SetupGet(hub => hub.Clients).Returns(_hubClients.Object);
+        _hubClients.Setup(clients => clients.Group(broadcastGroupName)).Returns(_clientProxy.Object);
+        _clientProxy
             .Setup(proxy => proxy.SendCoreAsync("AttendanceMarked", It.IsAny<object?[]>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
-        MarkAttendanceOutcome result = await sut.MarkAsync<string, string>(
+        MarkAttendanceOutcome result = await _sut.MarkAsync<string, string>(
             _ => Task.FromResult<AttendanceBuildResult<string>?>(new AttendanceBuildResult<string>("attendance", 5)),
             (_, _) => Task.FromResult(2),
             (_, _) => Task.FromResult(true),
             _ => broadcastGroupName);
 
         Assert.That(result, Is.InstanceOf<MarkAttendanceOutcome.Marked>());
-        transactionScope.Verify(scope => scope.CommitAsync(), Times.Once);
+        _transactionScope.Verify(scope => scope.CommitAsync(), Times.Once);
     }
 
     private void SetupClaimsForHappyPath()
     {
-        claimContext.Setup(target => target.TenantTimezone).Returns(ValidTimezoneId);
-        claimContext.Setup(target => target.TenantId).Returns(CallerTenantId);
-        claimContext.Setup(target => target.UserId).Returns(CallerStudentId);
-        claimContext.Setup(target => target.UserName).Returns(CallerStudentName);
+        _claimContext.Setup(target => target.TenantTimezone).Returns(ValidTimezoneId);
+        _claimContext.Setup(target => target.TenantId).Returns(CallerTenantId);
+        _claimContext.Setup(target => target.UserId).Returns(CallerStudentId);
+        _claimContext.Setup(target => target.UserName).Returns(CallerStudentName);
     }
 }

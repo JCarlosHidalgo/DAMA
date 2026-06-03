@@ -15,30 +15,30 @@ namespace Test.Services.Concrete.Events;
 [TestFixture]
 public class CourseDeletedHandlerTests
 {
-    private Mock<IUnitOfWork> unitOfWork = null!;
-    private Mock<IProcessedEventDao> processedEventDao = null!;
-    private Mock<IScheduledClassAttendanceDao> scheduledClassAttendanceDao = null!;
-    private Mock<IUniqueClassAttendanceDao> uniqueClassAttendanceDao = null!;
-    private Mock<ITransactionScope> transactionScope = null!;
+    private Mock<IUnitOfWork> _unitOfWork = null!;
+    private Mock<IProcessedEventDao> _processedEventDao = null!;
+    private Mock<IScheduledClassAttendanceDao> _scheduledClassAttendanceDao = null!;
+    private Mock<IUniqueClassAttendanceDao> _uniqueClassAttendanceDao = null!;
+    private Mock<ITransactionScope> _transactionScope = null!;
 
-    private CourseDeletedHandler sut = null!;
+    private CourseDeletedHandler _sut = null!;
 
     [SetUp]
     public void SetUp()
     {
-        unitOfWork = new Mock<IUnitOfWork>(MockBehavior.Strict);
-        processedEventDao = new Mock<IProcessedEventDao>(MockBehavior.Strict);
-        scheduledClassAttendanceDao = new Mock<IScheduledClassAttendanceDao>(MockBehavior.Strict);
-        uniqueClassAttendanceDao = new Mock<IUniqueClassAttendanceDao>(MockBehavior.Strict);
-        transactionScope = new Mock<ITransactionScope>(MockBehavior.Strict);
+        _unitOfWork = new Mock<IUnitOfWork>(MockBehavior.Strict);
+        _processedEventDao = new Mock<IProcessedEventDao>(MockBehavior.Strict);
+        _scheduledClassAttendanceDao = new Mock<IScheduledClassAttendanceDao>(MockBehavior.Strict);
+        _uniqueClassAttendanceDao = new Mock<IUniqueClassAttendanceDao>(MockBehavior.Strict);
+        _transactionScope = new Mock<ITransactionScope>(MockBehavior.Strict);
 
-        transactionScope.Setup(scope => scope.DisposeAsync()).Returns(ValueTask.CompletedTask);
+        _transactionScope.Setup(scope => scope.DisposeAsync()).Returns(ValueTask.CompletedTask);
 
-        sut = new CourseDeletedHandler(
-            unitOfWork.Object,
-            processedEventDao.Object,
-            scheduledClassAttendanceDao.Object,
-            uniqueClassAttendanceDao.Object,
+        _sut = new CourseDeletedHandler(
+            _unitOfWork.Object,
+            _processedEventDao.Object,
+            _scheduledClassAttendanceDao.Object,
+            _uniqueClassAttendanceDao.Object,
             NullLogger<CourseDeletedHandler>.Instance);
     }
 
@@ -62,25 +62,25 @@ public class CourseDeletedHandlerTests
         var secondClassId = Guid.NewGuid();
         CourseDeletedEvent courseEvent = BuildEvent(firstClassId, secondClassId);
 
-        unitOfWork.Setup(target => target.BeginAsync()).ReturnsAsync(transactionScope.Object);
-        processedEventDao
-            .Setup(target => target.TryMarkProcessedAsync(courseEvent.EventId, transactionScope.Object))
+        _unitOfWork.Setup(target => target.BeginAsync()).ReturnsAsync(_transactionScope.Object);
+        _processedEventDao
+            .Setup(target => target.TryMarkProcessedAsync(courseEvent.EventId, _transactionScope.Object))
             .ReturnsAsync(true);
-        scheduledClassAttendanceDao
-            .Setup(target => target.DeleteByClassForTenantAsync(courseEvent.Data.TenantId, It.IsAny<Guid>(), transactionScope.Object))
+        _scheduledClassAttendanceDao
+            .Setup(target => target.DeleteByClassForTenantAsync(courseEvent.Data.TenantId, It.IsAny<Guid>(), _transactionScope.Object))
             .ReturnsAsync(0);
-        uniqueClassAttendanceDao
-            .Setup(target => target.DeleteByClassForTenantAsync(courseEvent.Data.TenantId, It.IsAny<Guid>(), transactionScope.Object))
+        _uniqueClassAttendanceDao
+            .Setup(target => target.DeleteByClassForTenantAsync(courseEvent.Data.TenantId, It.IsAny<Guid>(), _transactionScope.Object))
             .ReturnsAsync(0);
-        transactionScope.Setup(scope => scope.CommitAsync()).Returns(Task.CompletedTask);
+        _transactionScope.Setup(scope => scope.CommitAsync()).Returns(Task.CompletedTask);
 
-        CourseDeletedOutcome result = await sut.HandleAsync(courseEvent, CancellationToken.None);
+        CourseDeletedOutcome result = await _sut.HandleAsync(courseEvent, CancellationToken.None);
 
         Assert.That(result, Is.InstanceOf<CourseDeletedOutcome.AttendancesDeleted>());
-        scheduledClassAttendanceDao.Verify(target => target.DeleteByClassForTenantAsync(courseEvent.Data.TenantId, firstClassId, transactionScope.Object), Times.Once);
-        scheduledClassAttendanceDao.Verify(target => target.DeleteByClassForTenantAsync(courseEvent.Data.TenantId, secondClassId, transactionScope.Object), Times.Once);
-        uniqueClassAttendanceDao.Verify(target => target.DeleteByClassForTenantAsync(courseEvent.Data.TenantId, firstClassId, transactionScope.Object), Times.Once);
-        uniqueClassAttendanceDao.Verify(target => target.DeleteByClassForTenantAsync(courseEvent.Data.TenantId, secondClassId, transactionScope.Object), Times.Once);
+        _scheduledClassAttendanceDao.Verify(target => target.DeleteByClassForTenantAsync(courseEvent.Data.TenantId, firstClassId, _transactionScope.Object), Times.Once);
+        _scheduledClassAttendanceDao.Verify(target => target.DeleteByClassForTenantAsync(courseEvent.Data.TenantId, secondClassId, _transactionScope.Object), Times.Once);
+        _uniqueClassAttendanceDao.Verify(target => target.DeleteByClassForTenantAsync(courseEvent.Data.TenantId, firstClassId, _transactionScope.Object), Times.Once);
+        _uniqueClassAttendanceDao.Verify(target => target.DeleteByClassForTenantAsync(courseEvent.Data.TenantId, secondClassId, _transactionScope.Object), Times.Once);
     }
 
     [Test]
@@ -88,13 +88,13 @@ public class CourseDeletedHandlerTests
     {
         CourseDeletedEvent courseEvent = BuildEvent();
 
-        unitOfWork.Setup(target => target.BeginAsync()).ReturnsAsync(transactionScope.Object);
-        processedEventDao
-            .Setup(target => target.TryMarkProcessedAsync(courseEvent.EventId, transactionScope.Object))
+        _unitOfWork.Setup(target => target.BeginAsync()).ReturnsAsync(_transactionScope.Object);
+        _processedEventDao
+            .Setup(target => target.TryMarkProcessedAsync(courseEvent.EventId, _transactionScope.Object))
             .ReturnsAsync(false);
-        transactionScope.Setup(scope => scope.CommitAsync()).Returns(Task.CompletedTask);
+        _transactionScope.Setup(scope => scope.CommitAsync()).Returns(Task.CompletedTask);
 
-        CourseDeletedOutcome result = await sut.HandleAsync(courseEvent, CancellationToken.None);
+        CourseDeletedOutcome result = await _sut.HandleAsync(courseEvent, CancellationToken.None);
 
         Assert.That(result, Is.InstanceOf<CourseDeletedOutcome.AlreadyProcessed>());
     }
@@ -103,9 +103,9 @@ public class CourseDeletedHandlerTests
     public async Task HandleAsync_WhenExceptionThrown_ReturnsFailed()
     {
         CourseDeletedEvent courseEvent = BuildEvent();
-        unitOfWork.Setup(target => target.BeginAsync()).ThrowsAsync(new InvalidOperationException("boom"));
+        _unitOfWork.Setup(target => target.BeginAsync()).ThrowsAsync(new InvalidOperationException("boom"));
 
-        CourseDeletedOutcome result = await sut.HandleAsync(courseEvent, CancellationToken.None);
+        CourseDeletedOutcome result = await _sut.HandleAsync(courseEvent, CancellationToken.None);
 
         Assert.That(result, Is.InstanceOf<CourseDeletedOutcome.Failed>());
     }

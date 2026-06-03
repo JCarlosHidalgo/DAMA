@@ -16,20 +16,20 @@ public class TenantServiceTests
 {
     private static readonly Guid CallerTenantId = Guid.Parse("33333333-3333-3333-3333-333333333333");
 
-    private Mock<ITenantDao> tenantDao = null!;
-    private Mock<IClaimContext> claimContext = null!;
-    private Mock<ITenantBuilder> tenantBuilder = null!;
+    private Mock<ITenantDao> _tenantDao = null!;
+    private Mock<IClaimContext> _claimContext = null!;
+    private Mock<ITenantBuilder> _tenantBuilder = null!;
 
-    private TenantService sut = null!;
+    private TenantService _sut = null!;
 
     [SetUp]
     public void SetUp()
     {
-        tenantDao = new Mock<ITenantDao>(MockBehavior.Strict);
-        claimContext = new Mock<IClaimContext>(MockBehavior.Strict);
-        tenantBuilder = new Mock<ITenantBuilder>(MockBehavior.Strict);
+        _tenantDao = new Mock<ITenantDao>(MockBehavior.Strict);
+        _claimContext = new Mock<IClaimContext>(MockBehavior.Strict);
+        _tenantBuilder = new Mock<ITenantBuilder>(MockBehavior.Strict);
 
-        sut = new TenantService(tenantDao.Object, claimContext.Object, tenantBuilder.Object);
+        _sut = new TenantService(_tenantDao.Object, _claimContext.Object, _tenantBuilder.Object);
     }
 
     [Test]
@@ -44,10 +44,10 @@ public class TenantServiceTests
             new TenantDto { Id = tenants[0].Id, Name = "Escuela Example", Timezone = "America/La_Paz" }
         };
 
-        tenantDao.Setup(dao => dao.ReadAllAsync()).ReturnsAsync(tenants);
-        tenantBuilder.Setup(builder => builder.BuildTenantDtos(tenants)).Returns(projected);
+        _tenantDao.Setup(dao => dao.ReadAllAsync()).ReturnsAsync(tenants);
+        _tenantBuilder.Setup(builder => builder.BuildTenantDtos(tenants)).Returns(projected);
 
-        List<TenantDto> result = await sut.GetAllTenants();
+        List<TenantDto> result = await _sut.GetAllTenants();
 
         Assert.That(result, Is.SameAs(projected));
     }
@@ -58,23 +58,23 @@ public class TenantServiceTests
         Tenant built = new() { Id = Guid.NewGuid(), Name = "Nueva Escuela", Timezone = "America/La_Paz" };
         TenantDto dto = new() { Id = built.Id, Name = built.Name, Timezone = built.Timezone };
 
-        tenantBuilder.Setup(builder => builder.BuildTenant("Nueva Escuela")).Returns(built);
-        tenantDao.Setup(dao => dao.CreateTenantAsync(built)).Returns(Task.CompletedTask);
-        tenantBuilder.Setup(builder => builder.BuildTenantDto(built)).Returns(dto);
+        _tenantBuilder.Setup(builder => builder.BuildTenant("Nueva Escuela")).Returns(built);
+        _tenantDao.Setup(dao => dao.CreateTenantAsync(built)).Returns(Task.CompletedTask);
+        _tenantBuilder.Setup(builder => builder.BuildTenantDto(built)).Returns(dto);
 
-        TenantDto result = await sut.CreateTenant(new CreateTenantDto { Name = "Nueva Escuela" });
+        TenantDto result = await _sut.CreateTenant(new CreateTenantDto { Name = "Nueva Escuela" });
 
         Assert.That(result, Is.SameAs(dto));
-        tenantDao.Verify(dao => dao.CreateTenantAsync(built), Times.Once);
+        _tenantDao.Verify(dao => dao.CreateTenantAsync(built), Times.Once);
     }
 
     [Test]
     public async Task RenameTenant_WhenUpdateAffectsRows_ReturnsUpdated()
     {
         var targetTenantId = Guid.NewGuid();
-        tenantDao.Setup(dao => dao.UpdateNameAsync(targetTenantId, "Renombrado")).ReturnsAsync(1);
+        _tenantDao.Setup(dao => dao.UpdateNameAsync(targetTenantId, "Renombrado")).ReturnsAsync(1);
 
-        UpdateTenantNameOutcome outcome = await sut.RenameTenant(targetTenantId, "Renombrado");
+        UpdateTenantNameOutcome outcome = await _sut.RenameTenant(targetTenantId, "Renombrado");
 
         Assert.That(outcome, Is.InstanceOf<UpdateTenantNameOutcome.Updated>());
     }
@@ -83,9 +83,9 @@ public class TenantServiceTests
     public async Task RenameTenant_WhenTenantNotFound_ReturnsNotFound()
     {
         var targetTenantId = Guid.NewGuid();
-        tenantDao.Setup(dao => dao.UpdateNameAsync(targetTenantId, "Renombrado")).ReturnsAsync(0);
+        _tenantDao.Setup(dao => dao.UpdateNameAsync(targetTenantId, "Renombrado")).ReturnsAsync(0);
 
-        UpdateTenantNameOutcome outcome = await sut.RenameTenant(targetTenantId, "Renombrado");
+        UpdateTenantNameOutcome outcome = await _sut.RenameTenant(targetTenantId, "Renombrado");
 
         Assert.That(outcome, Is.InstanceOf<UpdateTenantNameOutcome.NotFound>());
     }
@@ -94,13 +94,13 @@ public class TenantServiceTests
     public async Task UpdateTenantTimezone_WhenCallerBelongsToDifferentTenant_ReturnsForbidden()
     {
         var targetTenantId = Guid.NewGuid();
-        claimContext.Setup(accessor => accessor.TenantId).Returns(CallerTenantId);
+        _claimContext.Setup(accessor => accessor.TenantId).Returns(CallerTenantId);
 
         UpdateTenantTimezoneOutcome outcome =
-            await sut.UpdateTenantTimezone(targetTenantId, "America/La_Paz");
+            await _sut.UpdateTenantTimezone(targetTenantId, "America/La_Paz");
 
         Assert.That(outcome, Is.InstanceOf<UpdateTenantTimezoneOutcome.Forbidden>());
-        tenantDao.Verify(
+        _tenantDao.Verify(
             dao => dao.UpdateTimezoneAsync(It.IsAny<Guid>(), It.IsAny<string>()),
             Times.Never);
     }
@@ -108,13 +108,13 @@ public class TenantServiceTests
     [Test]
     public async Task UpdateTenantTimezone_WhenTenantNotFound_ReturnsNotFound()
     {
-        claimContext.Setup(accessor => accessor.TenantId).Returns(CallerTenantId);
-        tenantDao
+        _claimContext.Setup(accessor => accessor.TenantId).Returns(CallerTenantId);
+        _tenantDao
             .Setup(dao => dao.UpdateTimezoneAsync(CallerTenantId, "America/Bogota"))
             .ReturnsAsync(0);
 
         UpdateTenantTimezoneOutcome outcome =
-            await sut.UpdateTenantTimezone(CallerTenantId, "America/Bogota");
+            await _sut.UpdateTenantTimezone(CallerTenantId, "America/Bogota");
 
         Assert.That(outcome, Is.InstanceOf<UpdateTenantTimezoneOutcome.NotFound>());
     }
@@ -122,13 +122,13 @@ public class TenantServiceTests
     [Test]
     public async Task UpdateTenantTimezone_WhenUpdateAffectsRows_ReturnsUpdated()
     {
-        claimContext.Setup(accessor => accessor.TenantId).Returns(CallerTenantId);
-        tenantDao
+        _claimContext.Setup(accessor => accessor.TenantId).Returns(CallerTenantId);
+        _tenantDao
             .Setup(dao => dao.UpdateTimezoneAsync(CallerTenantId, "Europe/Madrid"))
             .ReturnsAsync(1);
 
         UpdateTenantTimezoneOutcome outcome =
-            await sut.UpdateTenantTimezone(CallerTenantId, "Europe/Madrid");
+            await _sut.UpdateTenantTimezone(CallerTenantId, "Europe/Madrid");
 
         Assert.That(outcome, Is.InstanceOf<UpdateTenantTimezoneOutcome.Updated>());
     }

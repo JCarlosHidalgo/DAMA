@@ -22,31 +22,31 @@ public class UpdateScheduledClassHandlerTests
     private static readonly Guid ScheduledClassId = Guid.Parse("22222222-2222-2222-2222-222222222222");
     private static readonly Guid GroupId = Guid.Parse("33333333-3333-3333-3333-333333333333");
 
-    private Mock<IScheduledClassDao> scheduledClassDao = null!;
-    private Mock<IUnitOfWork> unitOfWork = null!;
-    private Mock<ITransactionScope> transactionScope = null!;
-    private Mock<IClaimContext> claimContext = null!;
-    private Mock<IMapper> mapper = null!;
-    private UpdateScheduledClassHandler handler = null!;
+    private Mock<IScheduledClassDao> _scheduledClassDao = null!;
+    private Mock<IUnitOfWork> _unitOfWork = null!;
+    private Mock<ITransactionScope> _transactionScope = null!;
+    private Mock<IClaimContext> _claimContext = null!;
+    private Mock<IMapper> _mapper = null!;
+    private UpdateScheduledClassHandler _handler = null!;
 
     [SetUp]
     public void SetUp()
     {
-        scheduledClassDao = new Mock<IScheduledClassDao>(MockBehavior.Strict);
-        unitOfWork = new Mock<IUnitOfWork>(MockBehavior.Strict);
-        transactionScope = new Mock<ITransactionScope>(MockBehavior.Strict);
-        claimContext = new Mock<IClaimContext>(MockBehavior.Strict);
-        mapper = new Mock<IMapper>(MockBehavior.Strict);
+        _scheduledClassDao = new Mock<IScheduledClassDao>(MockBehavior.Strict);
+        _unitOfWork = new Mock<IUnitOfWork>(MockBehavior.Strict);
+        _transactionScope = new Mock<ITransactionScope>(MockBehavior.Strict);
+        _claimContext = new Mock<IClaimContext>(MockBehavior.Strict);
+        _mapper = new Mock<IMapper>(MockBehavior.Strict);
 
-        transactionScope.Setup(scope => scope.DisposeAsync()).Returns(ValueTask.CompletedTask);
-        unitOfWork.Setup(work => work.BeginAsync()).ReturnsAsync(transactionScope.Object);
-        claimContext.SetupGet(context => context.TenantId).Returns(TenantId);
+        _transactionScope.Setup(scope => scope.DisposeAsync()).Returns(ValueTask.CompletedTask);
+        _unitOfWork.Setup(work => work.BeginAsync()).ReturnsAsync(_transactionScope.Object);
+        _claimContext.SetupGet(context => context.TenantId).Returns(TenantId);
 
-        handler = new UpdateScheduledClassHandler(
-            scheduledClassDao.Object,
-            unitOfWork.Object,
-            claimContext.Object,
-            mapper.Object);
+        _handler = new UpdateScheduledClassHandler(
+            _scheduledClassDao.Object,
+            _unitOfWork.Object,
+            _claimContext.Object,
+            _mapper.Object);
     }
 
     private static UpdateScheduledClassDto Payload(List<ClassTeacherDto> teachers) => new()
@@ -73,13 +73,13 @@ public class UpdateScheduledClassHandlerTests
         var teacherEntities = new List<ClassTeacher> { new() { TeacherId = teacherId, TeacherName = "Profesor" } };
         UpdateScheduledClassDto payload = Payload(teacherDtos);
 
-        mapper.Setup(map => map.Map<List<ClassTeacherDto>, List<ClassTeacher>>(teacherDtos)).Returns(teacherEntities);
-        scheduledClassDao.Setup(dao => dao.GetByIdForTenantAsync(TenantId, ScheduledClassId)).ReturnsAsync((ScheduledClass?)null);
+        _mapper.Setup(map => map.Map<List<ClassTeacherDto>, List<ClassTeacher>>(teacherDtos)).Returns(teacherEntities);
+        _scheduledClassDao.Setup(dao => dao.GetByIdForTenantAsync(TenantId, ScheduledClassId)).ReturnsAsync((ScheduledClass?)null);
 
-        UpdateScheduledClassResult result = await handler.Handle(new UpdateScheduledClassCommand(ScheduledClassId, payload));
+        UpdateScheduledClassResult result = await _handler.Handle(new UpdateScheduledClassCommand(ScheduledClassId, payload));
 
         Assert.That(result, Is.InstanceOf<UpdateScheduledClassResult.NotFound>());
-        unitOfWork.Verify(work => work.BeginAsync(), Times.Never);
+        _unitOfWork.Verify(work => work.BeginAsync(), Times.Never);
     }
 
     [Test]
@@ -90,16 +90,16 @@ public class UpdateScheduledClassHandlerTests
         var teacherEntities = new List<ClassTeacher> { new() { TeacherId = teacherId, TeacherName = "Profesor" } };
         UpdateScheduledClassDto payload = Payload(teacherDtos);
 
-        mapper.Setup(map => map.Map<List<ClassTeacherDto>, List<ClassTeacher>>(teacherDtos)).Returns(teacherEntities);
-        scheduledClassDao.Setup(dao => dao.GetByIdForTenantAsync(TenantId, ScheduledClassId)).ReturnsAsync(Existing());
-        scheduledClassDao
+        _mapper.Setup(map => map.Map<List<ClassTeacherDto>, List<ClassTeacher>>(teacherDtos)).Returns(teacherEntities);
+        _scheduledClassDao.Setup(dao => dao.GetByIdForTenantAsync(TenantId, ScheduledClassId)).ReturnsAsync(Existing());
+        _scheduledClassDao
             .Setup(dao => dao.HasGroupOverlapAsync(TenantId, GroupId, payload.DayOfWeekIndex, payload.StartTime, payload.EndTime, ScheduledClassId))
             .ReturnsAsync(true);
 
-        UpdateScheduledClassResult result = await handler.Handle(new UpdateScheduledClassCommand(ScheduledClassId, payload));
+        UpdateScheduledClassResult result = await _handler.Handle(new UpdateScheduledClassCommand(ScheduledClassId, payload));
 
         Assert.That(result, Is.InstanceOf<UpdateScheduledClassResult.GroupOverlapConflict>());
-        unitOfWork.Verify(work => work.BeginAsync(), Times.Never);
+        _unitOfWork.Verify(work => work.BeginAsync(), Times.Never);
     }
 
     [Test]
@@ -110,20 +110,20 @@ public class UpdateScheduledClassHandlerTests
         var teacherEntities = new List<ClassTeacher> { new() { TeacherId = teacherId, TeacherName = "A" } };
         UpdateScheduledClassDto payload = Payload(teacherDtos);
 
-        mapper.Setup(map => map.Map<List<ClassTeacherDto>, List<ClassTeacher>>(teacherDtos)).Returns(teacherEntities);
-        scheduledClassDao.Setup(dao => dao.GetByIdForTenantAsync(TenantId, ScheduledClassId)).ReturnsAsync(Existing());
-        scheduledClassDao
+        _mapper.Setup(map => map.Map<List<ClassTeacherDto>, List<ClassTeacher>>(teacherDtos)).Returns(teacherEntities);
+        _scheduledClassDao.Setup(dao => dao.GetByIdForTenantAsync(TenantId, ScheduledClassId)).ReturnsAsync(Existing());
+        _scheduledClassDao
             .Setup(dao => dao.HasGroupOverlapAsync(TenantId, GroupId, payload.DayOfWeekIndex, payload.StartTime, payload.EndTime, ScheduledClassId))
             .ReturnsAsync(false);
-        scheduledClassDao
-            .Setup(dao => dao.UpdateForTenantAsync(It.Is<ScheduledClassUpdate>(update => update.Id == ScheduledClassId), TenantId, transactionScope.Object))
+        _scheduledClassDao
+            .Setup(dao => dao.UpdateForTenantAsync(It.Is<ScheduledClassUpdate>(update => update.Id == ScheduledClassId), TenantId, _transactionScope.Object))
             .ReturnsAsync(false);
 
-        UpdateScheduledClassResult result = await handler.Handle(new UpdateScheduledClassCommand(ScheduledClassId, payload));
+        UpdateScheduledClassResult result = await _handler.Handle(new UpdateScheduledClassCommand(ScheduledClassId, payload));
 
         Assert.That(result, Is.InstanceOf<UpdateScheduledClassResult.NotFound>());
-        transactionScope.Verify(scope => scope.CommitAsync(), Times.Never);
-        scheduledClassDao.Verify(dao => dao.ReplaceTeachersAsync(It.IsAny<Guid>(), It.IsAny<IReadOnlyList<ClassTeacher>>(), It.IsAny<Guid>(), It.IsAny<ITransactionContext>()), Times.Never);
+        _transactionScope.Verify(scope => scope.CommitAsync(), Times.Never);
+        _scheduledClassDao.Verify(dao => dao.ReplaceTeachersAsync(It.IsAny<Guid>(), It.IsAny<IReadOnlyList<ClassTeacher>>(), It.IsAny<Guid>(), It.IsAny<ITransactionContext>()), Times.Never);
     }
 
     [Test]
@@ -143,23 +143,23 @@ public class UpdateScheduledClassHandlerTests
         };
         UpdateScheduledClassDto payload = Payload(teacherDtos);
 
-        mapper.Setup(map => map.Map<List<ClassTeacherDto>, List<ClassTeacher>>(teacherDtos)).Returns(teacherEntities);
-        scheduledClassDao.Setup(dao => dao.GetByIdForTenantAsync(TenantId, ScheduledClassId)).ReturnsAsync(Existing());
-        scheduledClassDao
+        _mapper.Setup(map => map.Map<List<ClassTeacherDto>, List<ClassTeacher>>(teacherDtos)).Returns(teacherEntities);
+        _scheduledClassDao.Setup(dao => dao.GetByIdForTenantAsync(TenantId, ScheduledClassId)).ReturnsAsync(Existing());
+        _scheduledClassDao
             .Setup(dao => dao.HasGroupOverlapAsync(TenantId, GroupId, payload.DayOfWeekIndex, payload.StartTime, payload.EndTime, ScheduledClassId))
             .ReturnsAsync(false);
-        scheduledClassDao
-            .Setup(dao => dao.UpdateForTenantAsync(It.Is<ScheduledClassUpdate>(update => update.Id == ScheduledClassId), TenantId, transactionScope.Object))
+        _scheduledClassDao
+            .Setup(dao => dao.UpdateForTenantAsync(It.Is<ScheduledClassUpdate>(update => update.Id == ScheduledClassId), TenantId, _transactionScope.Object))
             .ReturnsAsync(true);
-        scheduledClassDao
-            .Setup(dao => dao.ReplaceTeachersAsync(ScheduledClassId, teacherEntities, TenantId, transactionScope.Object))
+        _scheduledClassDao
+            .Setup(dao => dao.ReplaceTeachersAsync(ScheduledClassId, teacherEntities, TenantId, _transactionScope.Object))
             .Returns(Task.CompletedTask);
-        transactionScope.Setup(scope => scope.CommitAsync()).Returns(Task.CompletedTask);
+        _transactionScope.Setup(scope => scope.CommitAsync()).Returns(Task.CompletedTask);
 
-        UpdateScheduledClassResult result = await handler.Handle(new UpdateScheduledClassCommand(ScheduledClassId, payload));
+        UpdateScheduledClassResult result = await _handler.Handle(new UpdateScheduledClassCommand(ScheduledClassId, payload));
 
         Assert.That(result, Is.InstanceOf<UpdateScheduledClassResult.Updated>());
-        transactionScope.Verify(scope => scope.CommitAsync(), Times.Once);
-        scheduledClassDao.Verify(dao => dao.ReplaceTeachersAsync(ScheduledClassId, teacherEntities, TenantId, transactionScope.Object), Times.Once);
+        _transactionScope.Verify(scope => scope.CommitAsync(), Times.Once);
+        _scheduledClassDao.Verify(dao => dao.ReplaceTeachersAsync(ScheduledClassId, teacherEntities, TenantId, _transactionScope.Object), Times.Once);
     }
 }

@@ -6,16 +6,16 @@ namespace Test.Validators;
 [TestFixture]
 public class PaginationParamsDtoValidatorTests
 {
-    private PaginationParamsDtoValidator sut = null!;
+    private PaginationParamsDtoValidator _sut = null!;
 
     [SetUp]
-    public void Setup() => sut = new PaginationParamsDtoValidator();
+    public void Setup() => _sut = new PaginationParamsDtoValidator();
 
     [Test]
     public async Task Validate_ZeroOrPositive_Passes()
     {
-        FluentValidation.Results.ValidationResult resultZero = await sut.ValidateAsync(new PaginationParamsDto { Index = 0 });
-        FluentValidation.Results.ValidationResult resultPositive = await sut.ValidateAsync(new PaginationParamsDto { Index = 7 });
+        FluentValidation.Results.ValidationResult resultZero = await _sut.ValidateAsync(new PaginationParamsDto { Index = 0 });
+        FluentValidation.Results.ValidationResult resultPositive = await _sut.ValidateAsync(new PaginationParamsDto { Index = 7 });
 
         Assert.Multiple(() =>
         {
@@ -27,7 +27,7 @@ public class PaginationParamsDtoValidatorTests
     [Test]
     public async Task Validate_Negative_Fails()
     {
-        FluentValidation.Results.ValidationResult result = await sut.ValidateAsync(new PaginationParamsDto { Index = -1 });
+        FluentValidation.Results.ValidationResult result = await _sut.ValidateAsync(new PaginationParamsDto { Index = -1 });
 
         Assert.That(result.IsValid, Is.False);
     }

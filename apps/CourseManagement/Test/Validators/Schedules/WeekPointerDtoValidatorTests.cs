@@ -10,17 +10,17 @@ public class WeekPointerDtoValidatorTests
 {
     private const string InvalidIndexMessage = "WeekPaginationIndex fuera de rango razonable";
 
-    private WeekPointerDtoValidator validator = null!;
+    private WeekPointerDtoValidator _validator = null!;
 
     [SetUp]
-    public void SetUp() => validator = new WeekPointerDtoValidator();
+    public void SetUp() => _validator = new WeekPointerDtoValidator();
 
     [Test]
     public async Task Validate_WithZeroIndex_IsValid()
     {
         var request = new WeekPointerDto { WeekPaginationIndex = 0 };
 
-        ValidationResult result = await validator.ValidateAsync(request);
+        ValidationResult result = await _validator.ValidateAsync(request);
 
         Assert.That(result.IsValid, Is.True);
     }
@@ -31,7 +31,7 @@ public class WeekPointerDtoValidatorTests
     {
         var request = new WeekPointerDto { WeekPaginationIndex = weekPaginationIndex };
 
-        ValidationResult result = await validator.ValidateAsync(request);
+        ValidationResult result = await _validator.ValidateAsync(request);
 
         Assert.That(result.IsValid, Is.True);
     }
@@ -42,7 +42,7 @@ public class WeekPointerDtoValidatorTests
     {
         var request = new WeekPointerDto { WeekPaginationIndex = weekPaginationIndex };
 
-        ValidationResult result = await validator.ValidateAsync(request);
+        ValidationResult result = await _validator.ValidateAsync(request);
 
         Assert.Multiple(() =>
         {

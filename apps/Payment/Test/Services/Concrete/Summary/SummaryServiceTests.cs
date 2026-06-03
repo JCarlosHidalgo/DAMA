@@ -10,29 +10,29 @@ namespace Test.Services.Concrete.Summary;
 [TestFixture]
 public class SummaryServiceTests
 {
-    private Mock<ISuccessQrPaymentDao> successDao = null!;
-    private Mock<IClaimContext> claimContext = null!;
-    private SummaryService sut = null!;
-    private Guid tenantId;
+    private Mock<ISuccessQrPaymentDao> _successDao = null!;
+    private Mock<IClaimContext> _claimContext = null!;
+    private SummaryService _sut = null!;
+    private Guid _tenantId;
 
     [SetUp]
     public void Setup()
     {
-        successDao = new Mock<ISuccessQrPaymentDao>(MockBehavior.Strict);
-        claimContext = new Mock<IClaimContext>(MockBehavior.Strict);
-        tenantId = Guid.NewGuid();
-        claimContext.Setup(c => c.TenantId).Returns(tenantId);
-        sut = new SummaryService(successDao.Object, claimContext.Object);
+        _successDao = new Mock<ISuccessQrPaymentDao>(MockBehavior.Strict);
+        _claimContext = new Mock<IClaimContext>(MockBehavior.Strict);
+        _tenantId = Guid.NewGuid();
+        _claimContext.Setup(c => c.TenantId).Returns(_tenantId);
+        _sut = new SummaryService(_successDao.Object, _claimContext.Object);
     }
 
     [Test]
     public async Task GetByTenantAsync_WithData_ReturnsTotalsAndDates()
     {
         DateTime firstPaid = DateTime.UtcNow.AddDays(-100);
-        successDao.Setup(d => d.GetSummaryAsync(tenantId, It.IsAny<DateTime>()))
+        _successDao.Setup(d => d.GetSummaryAsync(_tenantId, It.IsAny<DateTime>()))
                   .ReturnsAsync((1000, 200, (DateTime?)firstPaid));
 
-        PaymentSummaryDto summary = await sut.GetByTenantAsync();
+        PaymentSummaryDto summary = await _sut.GetByTenantAsync();
 
         Assert.Multiple(() =>
         {
@@ -47,10 +47,10 @@ public class SummaryServiceTests
     [Test]
     public async Task GetByTenantAsync_WithoutData_ReturnsZeroEarningsAndNullFirstPaid()
     {
-        successDao.Setup(d => d.GetSummaryAsync(tenantId, It.IsAny<DateTime>()))
+        _successDao.Setup(d => d.GetSummaryAsync(_tenantId, It.IsAny<DateTime>()))
                   .ReturnsAsync((0, 0, (DateTime?)null));
 
-        PaymentSummaryDto summary = await sut.GetByTenantAsync();
+        PaymentSummaryDto summary = await _sut.GetByTenantAsync();
 
         Assert.Multiple(() =>
         {

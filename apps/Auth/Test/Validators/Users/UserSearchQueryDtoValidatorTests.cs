@@ -8,17 +8,17 @@ namespace Test.Validators.Users;
 [TestFixture]
 public class UserSearchQueryDtoValidatorTests
 {
-    private UserSearchQueryDtoValidator sut = null!;
+    private UserSearchQueryDtoValidator _sut = null!;
 
     [SetUp]
-    public void SetUp() => sut = new UserSearchQueryDtoValidator();
+    public void SetUp() => _sut = new UserSearchQueryDtoValidator();
 
     [Test]
     public async Task Validate_WithValidName_IsValid()
     {
         UserSearchQueryDto query = new() { Name = "validQuery" };
 
-        ValidationResult result = await sut.ValidateAsync(query);
+        ValidationResult result = await _sut.ValidateAsync(query);
 
         Assert.That(result.IsValid, Is.True);
     }
@@ -28,7 +28,7 @@ public class UserSearchQueryDtoValidatorTests
     {
         UserSearchQueryDto query = new() { Name = "ab" };
 
-        ValidationResult result = await sut.ValidateAsync(query);
+        ValidationResult result = await _sut.ValidateAsync(query);
 
         Assert.Multiple(() =>
         {
@@ -45,7 +45,7 @@ public class UserSearchQueryDtoValidatorTests
             Name = new string('a', RegisterCredentialsDtoValidator.MaxUsernameLength + 1)
         };
 
-        ValidationResult result = await sut.ValidateAsync(query);
+        ValidationResult result = await _sut.ValidateAsync(query);
 
         Assert.Multiple(() =>
         {
@@ -59,7 +59,7 @@ public class UserSearchQueryDtoValidatorTests
     {
         UserSearchQueryDto query = new() { Name = "bad_query!" };
 
-        ValidationResult result = await sut.ValidateAsync(query);
+        ValidationResult result = await _sut.ValidateAsync(query);
 
         Assert.Multiple(() =>
         {

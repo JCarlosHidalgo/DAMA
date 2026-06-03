@@ -10,10 +10,10 @@ namespace Test.Builders;
 [TestFixture]
 public class ClassBuilderTests
 {
-    private ClassBuilder builder = null!;
+    private ClassBuilder _builder = null!;
 
     [SetUp]
-    public void SetUp() => builder = new ClassBuilder();
+    public void SetUp() => _builder = new ClassBuilder();
 
     [Test]
     public void BuildScheduledClass_CopiesPayloadAndAssignsTenantGroupAndTeachers()
@@ -36,7 +36,7 @@ public class ClassBuilderTests
             new() { TeacherId = Guid.NewGuid(), TeacherName = "Profesor" }
         };
 
-        ScheduledClass result = builder.BuildScheduledClass(tenantId, courseId, groupId, payload, teachers);
+        ScheduledClass result = _builder.BuildScheduledClass(tenantId, courseId, groupId, payload, teachers);
 
         Assert.Multiple(() =>
         {
@@ -67,8 +67,8 @@ public class ClassBuilderTests
         };
         var teachers = new List<ClassTeacher>();
 
-        ScheduledClass first = builder.BuildScheduledClass(Guid.NewGuid(), payload.CourseId, payload.GroupId, payload, teachers);
-        ScheduledClass second = builder.BuildScheduledClass(Guid.NewGuid(), payload.CourseId, payload.GroupId, payload, teachers);
+        ScheduledClass first = _builder.BuildScheduledClass(Guid.NewGuid(), payload.CourseId, payload.GroupId, payload, teachers);
+        ScheduledClass second = _builder.BuildScheduledClass(Guid.NewGuid(), payload.CourseId, payload.GroupId, payload, teachers);
 
         Assert.That(first.Id, Is.Not.EqualTo(second.Id));
     }
@@ -95,7 +95,7 @@ public class ClassBuilderTests
             new() { TeacherId = Guid.NewGuid(), TeacherName = "Profesor" }
         };
 
-        UniqueClass result = builder.BuildUniqueClass(tenantId, courseId, groupId, payload, teachers);
+        UniqueClass result = _builder.BuildUniqueClass(tenantId, courseId, groupId, payload, teachers);
 
         Assert.Multiple(() =>
         {
@@ -126,8 +126,8 @@ public class ClassBuilderTests
         };
         var teachers = new List<ClassTeacher>();
 
-        UniqueClass first = builder.BuildUniqueClass(Guid.NewGuid(), payload.CourseId, payload.GroupId, payload, teachers);
-        UniqueClass second = builder.BuildUniqueClass(Guid.NewGuid(), payload.CourseId, payload.GroupId, payload, teachers);
+        UniqueClass first = _builder.BuildUniqueClass(Guid.NewGuid(), payload.CourseId, payload.GroupId, payload, teachers);
+        UniqueClass second = _builder.BuildUniqueClass(Guid.NewGuid(), payload.CourseId, payload.GroupId, payload, teachers);
 
         Assert.That(first.Id, Is.Not.EqualTo(second.Id));
     }

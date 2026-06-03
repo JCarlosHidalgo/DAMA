@@ -19,29 +19,29 @@ namespace Test.Services.Concrete.Events;
 [TestFixture]
 public class DebtExpiredHandlerTests
 {
-    private Mock<IUnitOfWork> unitOfWork = null!;
-    private Mock<ITransactionScope> transactionScope = null!;
-    private Mock<IProcessedEventDao> processedEventDao = null!;
-    private Mock<IPendingQrPaymentDao> pendingDao = null!;
-    private Mock<IFailedQrPaymentDao> failedDao = null!;
-    private Mock<IQrPaymentTransitionBuilder> transitionBuilder = null!;
-    private DebtExpiredHandler sut = null!;
+    private Mock<IUnitOfWork> _unitOfWork = null!;
+    private Mock<ITransactionScope> _transactionScope = null!;
+    private Mock<IProcessedEventDao> _processedEventDao = null!;
+    private Mock<IPendingQrPaymentDao> _pendingDao = null!;
+    private Mock<IFailedQrPaymentDao> _failedDao = null!;
+    private Mock<IQrPaymentTransitionBuilder> _transitionBuilder = null!;
+    private DebtExpiredHandler _sut = null!;
 
     [SetUp]
     public void Setup()
     {
-        (unitOfWork, transactionScope) = UnitOfWorkMockHelper.BuildCommittingMocks();
-        processedEventDao = new Mock<IProcessedEventDao>(MockBehavior.Strict);
-        pendingDao = new Mock<IPendingQrPaymentDao>(MockBehavior.Strict);
-        failedDao = new Mock<IFailedQrPaymentDao>(MockBehavior.Strict);
-        transitionBuilder = new Mock<IQrPaymentTransitionBuilder>(MockBehavior.Strict);
+        (_unitOfWork, _transactionScope) = UnitOfWorkMockHelper.BuildCommittingMocks();
+        _processedEventDao = new Mock<IProcessedEventDao>(MockBehavior.Strict);
+        _pendingDao = new Mock<IPendingQrPaymentDao>(MockBehavior.Strict);
+        _failedDao = new Mock<IFailedQrPaymentDao>(MockBehavior.Strict);
+        _transitionBuilder = new Mock<IQrPaymentTransitionBuilder>(MockBehavior.Strict);
 
-        sut = new DebtExpiredHandler(
-            unitOfWork.Object,
-            processedEventDao.Object,
-            pendingDao.Object,
-            failedDao.Object,
-            transitionBuilder.Object,
+        _sut = new DebtExpiredHandler(
+            _unitOfWork.Object,
+            _processedEventDao.Object,
+            _pendingDao.Object,
+            _failedDao.Object,
+            _transitionBuilder.Object,
             NullLogger<DebtExpiredHandler>.Instance);
     }
 
@@ -64,41 +64,41 @@ public class DebtExpiredHandlerTests
         var pending = new PendingQrPayment { Id = debtEvent.Data.PendingId, TenantId = debtEvent.Data.TenantId };
         var failed = new FailedQrPayment { Id = pending.Id };
 
-        processedEventDao.Setup(d => d.TryMarkProcessedAsync(debtEvent.EventId, transactionScope.Object)).ReturnsAsync(true);
-        pendingDao.Setup(d => d.GetByIdAsync(debtEvent.Data.PendingId)).ReturnsAsync(pending);
-        transitionBuilder.Setup(b => b.BuildFailedPayment(pending)).Returns(failed);
-        failedDao.Setup(d => d.TryCreateAsync(failed, transactionScope.Object)).ReturnsAsync(true);
-        pendingDao.Setup(d => d.DeleteAsync(pending.Id, transactionScope.Object)).ReturnsAsync(true);
+        _processedEventDao.Setup(d => d.TryMarkProcessedAsync(debtEvent.EventId, _transactionScope.Object)).ReturnsAsync(true);
+        _pendingDao.Setup(d => d.GetByIdAsync(debtEvent.Data.PendingId)).ReturnsAsync(pending);
+        _transitionBuilder.Setup(b => b.BuildFailedPayment(pending)).Returns(failed);
+        _failedDao.Setup(d => d.TryCreateAsync(failed, _transactionScope.Object)).ReturnsAsync(true);
+        _pendingDao.Setup(d => d.DeleteAsync(pending.Id, _transactionScope.Object)).ReturnsAsync(true);
 
-        HandleDebtExpiredOutcome outcome = await sut.HandleAsync(debtEvent, CancellationToken.None);
+        HandleDebtExpiredOutcome outcome = await _sut.HandleAsync(debtEvent, CancellationToken.None);
 
         Assert.That(outcome, Is.TypeOf<HandleDebtExpiredOutcome.Processed>());
-        transactionScope.Verify(s => s.CommitAsync(), Times.Once);
+        _transactionScope.Verify(s => s.CommitAsync(), Times.Once);
     }
 
     [Test]
     public async Task HandleAsync_AlreadyProcessed_ReturnsAlreadyProcessedAndCommits()
     {
         DebtExpiredEvent debtEvent = NewEvent();
-        processedEventDao.Setup(d => d.TryMarkProcessedAsync(debtEvent.EventId, transactionScope.Object)).ReturnsAsync(false);
+        _processedEventDao.Setup(d => d.TryMarkProcessedAsync(debtEvent.EventId, _transactionScope.Object)).ReturnsAsync(false);
 
-        HandleDebtExpiredOutcome outcome = await sut.HandleAsync(debtEvent, CancellationToken.None);
+        HandleDebtExpiredOutcome outcome = await _sut.HandleAsync(debtEvent, CancellationToken.None);
 
         Assert.That(outcome, Is.TypeOf<HandleDebtExpiredOutcome.AlreadyProcessed>());
-        transactionScope.Verify(s => s.CommitAsync(), Times.Once);
+        _transactionScope.Verify(s => s.CommitAsync(), Times.Once);
     }
 
     [Test]
     public async Task HandleAsync_PendingMissing_ReturnsPendingMissing()
     {
         DebtExpiredEvent debtEvent = NewEvent();
-        processedEventDao.Setup(d => d.TryMarkProcessedAsync(debtEvent.EventId, transactionScope.Object)).ReturnsAsync(true);
-        pendingDao.Setup(d => d.GetByIdAsync(debtEvent.Data.PendingId)).ReturnsAsync((PendingQrPayment?)null);
+        _processedEventDao.Setup(d => d.TryMarkProcessedAsync(debtEvent.EventId, _transactionScope.Object)).ReturnsAsync(true);
+        _pendingDao.Setup(d => d.GetByIdAsync(debtEvent.Data.PendingId)).ReturnsAsync((PendingQrPayment?)null);
 
-        HandleDebtExpiredOutcome outcome = await sut.HandleAsync(debtEvent, CancellationToken.None);
+        HandleDebtExpiredOutcome outcome = await _sut.HandleAsync(debtEvent, CancellationToken.None);
 
         Assert.That(outcome, Is.TypeOf<HandleDebtExpiredOutcome.PendingMissing>());
-        transactionScope.Verify(s => s.CommitAsync(), Times.Once);
+        _transactionScope.Verify(s => s.CommitAsync(), Times.Once);
     }
 
     [Test]
@@ -107,9 +107,9 @@ public class DebtExpiredHandlerTests
         DebtExpiredEvent debtEvent = NewEvent();
         Mock<IUnitOfWork> failing = new(MockBehavior.Strict);
         failing.Setup(u => u.BeginAsync()).ThrowsAsync(new InvalidOperationException("oops"));
-        sut = new DebtExpiredHandler(failing.Object, processedEventDao.Object, pendingDao.Object, failedDao.Object, transitionBuilder.Object, NullLogger<DebtExpiredHandler>.Instance);
+        _sut = new DebtExpiredHandler(failing.Object, _processedEventDao.Object, _pendingDao.Object, _failedDao.Object, _transitionBuilder.Object, NullLogger<DebtExpiredHandler>.Instance);
 
-        HandleDebtExpiredOutcome outcome = await sut.HandleAsync(debtEvent, CancellationToken.None);
+        HandleDebtExpiredOutcome outcome = await _sut.HandleAsync(debtEvent, CancellationToken.None);
 
         Assert.Multiple(() =>
         {

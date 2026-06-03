@@ -19,56 +19,56 @@ namespace Test.Services.Concrete.QrPayments;
 [TestFixture]
 public class QrPaymentQueryServiceTests
 {
-    private Mock<IPendingQrPaymentDao> pendingDao = null!;
-    private Mock<ISuccessQrPaymentDao> successDao = null!;
-    private Mock<IFailedQrPaymentDao> failedDao = null!;
-    private Mock<ITodotixOutboxDao> todotixOutboxDao = null!;
-    private IMapper autoMapper = null!;
-    private Mock<IClaimContext> claimContext = null!;
-    private QrPaymentViewBuilder viewBuilder = null!;
-    private QrPaymentQueryService sut = null!;
-    private Guid tenantId;
-    private Guid studentId;
+    private Mock<IPendingQrPaymentDao> _pendingDao = null!;
+    private Mock<ISuccessQrPaymentDao> _successDao = null!;
+    private Mock<IFailedQrPaymentDao> _failedDao = null!;
+    private Mock<ITodotixOutboxDao> _todotixOutboxDao = null!;
+    private IMapper _autoMapper = null!;
+    private Mock<IClaimContext> _claimContext = null!;
+    private QrPaymentViewBuilder _viewBuilder = null!;
+    private QrPaymentQueryService _sut = null!;
+    private Guid _tenantId;
+    private Guid _studentId;
 
     [SetUp]
     public void Setup()
     {
-        pendingDao = new Mock<IPendingQrPaymentDao>(MockBehavior.Strict);
-        successDao = new Mock<ISuccessQrPaymentDao>(MockBehavior.Strict);
-        failedDao = new Mock<IFailedQrPaymentDao>(MockBehavior.Strict);
-        todotixOutboxDao = new Mock<ITodotixOutboxDao>(MockBehavior.Strict);
+        _pendingDao = new Mock<IPendingQrPaymentDao>(MockBehavior.Strict);
+        _successDao = new Mock<ISuccessQrPaymentDao>(MockBehavior.Strict);
+        _failedDao = new Mock<IFailedQrPaymentDao>(MockBehavior.Strict);
+        _todotixOutboxDao = new Mock<ITodotixOutboxDao>(MockBehavior.Strict);
 
         var mapperConfiguration = new MapperConfiguration(
             configuration => configuration.AddProfile<DebtTemplateProfile>(),
             Microsoft.Extensions.Logging.Abstractions.NullLoggerFactory.Instance);
-        autoMapper = mapperConfiguration.CreateMapper();
+        _autoMapper = mapperConfiguration.CreateMapper();
 
-        claimContext = new Mock<IClaimContext>(MockBehavior.Strict);
-        tenantId = Guid.NewGuid();
-        studentId = Guid.NewGuid();
-        claimContext.Setup(c => c.TenantId).Returns(tenantId);
-        claimContext.Setup(c => c.UserId).Returns(studentId);
+        _claimContext = new Mock<IClaimContext>(MockBehavior.Strict);
+        _tenantId = Guid.NewGuid();
+        _studentId = Guid.NewGuid();
+        _claimContext.Setup(c => c.TenantId).Returns(_tenantId);
+        _claimContext.Setup(c => c.UserId).Returns(_studentId);
 
-        viewBuilder = new QrPaymentViewBuilder();
+        _viewBuilder = new QrPaymentViewBuilder();
 
-        sut = new QrPaymentQueryService(
-            pendingDao.Object,
-            successDao.Object,
-            failedDao.Object,
-            todotixOutboxDao.Object,
-            autoMapper,
-            claimContext.Object,
-            viewBuilder);
+        _sut = new QrPaymentQueryService(
+            _pendingDao.Object,
+            _successDao.Object,
+            _failedDao.Object,
+            _todotixOutboxDao.Object,
+            _autoMapper,
+            _claimContext.Object,
+            _viewBuilder);
     }
 
     [Test]
     public async Task GetDebtStatusAsync_PendingWithQrUrl_ReturnsReady()
     {
         var paymentId = Guid.NewGuid();
-        var pending = new PendingQrPayment { Id = paymentId, TenantId = tenantId, QrImageUrl = "http://q" };
-        pendingDao.Setup(d => d.GetByIdForTenantAsync(tenantId, paymentId)).ReturnsAsync(pending);
+        var pending = new PendingQrPayment { Id = paymentId, TenantId = _tenantId, QrImageUrl = "http://q" };
+        _pendingDao.Setup(d => d.GetByIdForTenantAsync(_tenantId, paymentId)).ReturnsAsync(pending);
 
-        GetQrDebtStatusOutcome outcome = await sut.GetDebtStatusAsync(paymentId);
+        GetQrDebtStatusOutcome outcome = await _sut.GetDebtStatusAsync(paymentId);
 
         var found = (GetQrDebtStatusOutcome.Found)outcome;
         Assert.Multiple(() =>
@@ -82,11 +82,11 @@ public class QrPaymentQueryServiceTests
     public async Task GetDebtStatusAsync_PendingNoQrAndOutboxFailed_ReturnsFailedStatus()
     {
         var paymentId = Guid.NewGuid();
-        var pending = new PendingQrPayment { Id = paymentId, TenantId = tenantId, QrImageUrl = null };
-        pendingDao.Setup(d => d.GetByIdForTenantAsync(tenantId, paymentId)).ReturnsAsync(pending);
-        todotixOutboxDao.Setup(d => d.GetByPendingIdAsync(paymentId)).ReturnsAsync(new TodotixOutboxEvent { Status = "Failed", LastError = "todotix down" });
+        var pending = new PendingQrPayment { Id = paymentId, TenantId = _tenantId, QrImageUrl = null };
+        _pendingDao.Setup(d => d.GetByIdForTenantAsync(_tenantId, paymentId)).ReturnsAsync(pending);
+        _todotixOutboxDao.Setup(d => d.GetByPendingIdAsync(paymentId)).ReturnsAsync(new TodotixOutboxEvent { Status = "Failed", LastError = "todotix down" });
 
-        GetQrDebtStatusOutcome outcome = await sut.GetDebtStatusAsync(paymentId);
+        GetQrDebtStatusOutcome outcome = await _sut.GetDebtStatusAsync(paymentId);
 
         var found = (GetQrDebtStatusOutcome.Found)outcome;
         Assert.Multiple(() =>
@@ -100,11 +100,11 @@ public class QrPaymentQueryServiceTests
     public async Task GetDebtStatusAsync_PendingNoQrAndOutboxNotFailed_ReturnsPending()
     {
         var paymentId = Guid.NewGuid();
-        var pending = new PendingQrPayment { Id = paymentId, TenantId = tenantId, QrImageUrl = null };
-        pendingDao.Setup(d => d.GetByIdForTenantAsync(tenantId, paymentId)).ReturnsAsync(pending);
-        todotixOutboxDao.Setup(d => d.GetByPendingIdAsync(paymentId)).ReturnsAsync((TodotixOutboxEvent?)null);
+        var pending = new PendingQrPayment { Id = paymentId, TenantId = _tenantId, QrImageUrl = null };
+        _pendingDao.Setup(d => d.GetByIdForTenantAsync(_tenantId, paymentId)).ReturnsAsync(pending);
+        _todotixOutboxDao.Setup(d => d.GetByPendingIdAsync(paymentId)).ReturnsAsync((TodotixOutboxEvent?)null);
 
-        GetQrDebtStatusOutcome outcome = await sut.GetDebtStatusAsync(paymentId);
+        GetQrDebtStatusOutcome outcome = await _sut.GetDebtStatusAsync(paymentId);
 
         var found = (GetQrDebtStatusOutcome.Found)outcome;
         Assert.That(found.Status.Status, Is.EqualTo("Pending"));
@@ -114,10 +114,10 @@ public class QrPaymentQueryServiceTests
     public async Task GetDebtStatusAsync_SuccessExistsForTenant_ReturnsReady()
     {
         var paymentId = Guid.NewGuid();
-        pendingDao.Setup(d => d.GetByIdForTenantAsync(tenantId, paymentId)).ReturnsAsync((PendingQrPayment?)null);
-        successDao.Setup(d => d.GetByIdAsync(paymentId)).ReturnsAsync(new SuccessQrPayment { Id = paymentId, TenantId = tenantId });
+        _pendingDao.Setup(d => d.GetByIdForTenantAsync(_tenantId, paymentId)).ReturnsAsync((PendingQrPayment?)null);
+        _successDao.Setup(d => d.GetByIdAsync(paymentId)).ReturnsAsync(new SuccessQrPayment { Id = paymentId, TenantId = _tenantId });
 
-        GetQrDebtStatusOutcome outcome = await sut.GetDebtStatusAsync(paymentId);
+        GetQrDebtStatusOutcome outcome = await _sut.GetDebtStatusAsync(paymentId);
 
         var found = (GetQrDebtStatusOutcome.Found)outcome;
         Assert.That(found.Status.Status, Is.EqualTo("Ready"));
@@ -127,10 +127,10 @@ public class QrPaymentQueryServiceTests
     public async Task GetDebtStatusAsync_SuccessForOtherTenant_ReturnsNotFound()
     {
         var paymentId = Guid.NewGuid();
-        pendingDao.Setup(d => d.GetByIdForTenantAsync(tenantId, paymentId)).ReturnsAsync((PendingQrPayment?)null);
-        successDao.Setup(d => d.GetByIdAsync(paymentId)).ReturnsAsync(new SuccessQrPayment { Id = paymentId, TenantId = Guid.NewGuid() });
+        _pendingDao.Setup(d => d.GetByIdForTenantAsync(_tenantId, paymentId)).ReturnsAsync((PendingQrPayment?)null);
+        _successDao.Setup(d => d.GetByIdAsync(paymentId)).ReturnsAsync(new SuccessQrPayment { Id = paymentId, TenantId = Guid.NewGuid() });
 
-        GetQrDebtStatusOutcome outcome = await sut.GetDebtStatusAsync(paymentId);
+        GetQrDebtStatusOutcome outcome = await _sut.GetDebtStatusAsync(paymentId);
 
         Assert.That(outcome, Is.TypeOf<GetQrDebtStatusOutcome.NotFound>());
     }
@@ -139,10 +139,10 @@ public class QrPaymentQueryServiceTests
     public async Task GetDebtStatusAsync_Missing_ReturnsNotFound()
     {
         var paymentId = Guid.NewGuid();
-        pendingDao.Setup(d => d.GetByIdForTenantAsync(tenantId, paymentId)).ReturnsAsync((PendingQrPayment?)null);
-        successDao.Setup(d => d.GetByIdAsync(paymentId)).ReturnsAsync((SuccessQrPayment?)null);
+        _pendingDao.Setup(d => d.GetByIdForTenantAsync(_tenantId, paymentId)).ReturnsAsync((PendingQrPayment?)null);
+        _successDao.Setup(d => d.GetByIdAsync(paymentId)).ReturnsAsync((SuccessQrPayment?)null);
 
-        GetQrDebtStatusOutcome outcome = await sut.GetDebtStatusAsync(paymentId);
+        GetQrDebtStatusOutcome outcome = await _sut.GetDebtStatusAsync(paymentId);
 
         Assert.That(outcome, Is.TypeOf<GetQrDebtStatusOutcome.NotFound>());
     }
@@ -150,11 +150,11 @@ public class QrPaymentQueryServiceTests
     [Test]
     public async Task ListPendingAsync_WithItems_FetchesPageAndComputesIndices()
     {
-        pendingDao.Setup(d => d.CountByStudentForTenantAsync(tenantId, studentId)).ReturnsAsync(25);
-        pendingDao.Setup(d => d.GetPageByStudentForTenantAsync(tenantId, studentId, 10, 10))
+        _pendingDao.Setup(d => d.CountByStudentForTenantAsync(_tenantId, _studentId)).ReturnsAsync(25);
+        _pendingDao.Setup(d => d.GetPageByStudentForTenantAsync(_tenantId, _studentId, 10, 10))
                   .ReturnsAsync([new() { Id = Guid.NewGuid(), ClassQuantity = 1, Cost = 100 }]);
 
-        PageDto<PendingQrDebtDto> page = await sut.ListPendingAsync(1);
+        PageDto<PendingQrDebtDto> page = await _sut.ListPendingAsync(1);
 
         Assert.Multiple(() =>
         {
@@ -167,9 +167,9 @@ public class QrPaymentQueryServiceTests
     [Test]
     public async Task ListPendingAsync_PageBeyondMax_ReturnsEmpty()
     {
-        pendingDao.Setup(d => d.CountByStudentForTenantAsync(tenantId, studentId)).ReturnsAsync(0);
+        _pendingDao.Setup(d => d.CountByStudentForTenantAsync(_tenantId, _studentId)).ReturnsAsync(0);
 
-        PageDto<PendingQrDebtDto> page = await sut.ListPendingAsync(5);
+        PageDto<PendingQrDebtDto> page = await _sut.ListPendingAsync(5);
 
         Assert.Multiple(() =>
         {
@@ -182,11 +182,11 @@ public class QrPaymentQueryServiceTests
     [Test]
     public async Task ListSuccessAsync_FetchesPageFromSuccessDao()
     {
-        successDao.Setup(d => d.CountByStudentForTenantAsync(tenantId, studentId)).ReturnsAsync(3);
-        successDao.Setup(d => d.GetPageByStudentForTenantAsync(tenantId, studentId, 0, 10))
+        _successDao.Setup(d => d.CountByStudentForTenantAsync(_tenantId, _studentId)).ReturnsAsync(3);
+        _successDao.Setup(d => d.GetPageByStudentForTenantAsync(_tenantId, _studentId, 0, 10))
                   .ReturnsAsync([new() { Id = Guid.NewGuid(), ClassQuantity = 1, Cost = 10 }]);
 
-        PageDto<SuccessQrPaymentDto> page = await sut.ListSuccessAsync(0);
+        PageDto<SuccessQrPaymentDto> page = await _sut.ListSuccessAsync(0);
 
         Assert.That(page.Items, Has.Count.EqualTo(1));
     }
@@ -194,11 +194,11 @@ public class QrPaymentQueryServiceTests
     [Test]
     public async Task ListFailedAsync_FetchesPageFromFailedDao()
     {
-        failedDao.Setup(d => d.CountByStudentForTenantAsync(tenantId, studentId)).ReturnsAsync(3);
-        failedDao.Setup(d => d.GetPageByStudentForTenantAsync(tenantId, studentId, 0, 10))
+        _failedDao.Setup(d => d.CountByStudentForTenantAsync(_tenantId, _studentId)).ReturnsAsync(3);
+        _failedDao.Setup(d => d.GetPageByStudentForTenantAsync(_tenantId, _studentId, 0, 10))
                  .ReturnsAsync([new() { Id = Guid.NewGuid(), ClassQuantity = 1, Cost = 10 }]);
 
-        PageDto<FailedQrPaymentDto> page = await sut.ListFailedAsync(0);
+        PageDto<FailedQrPaymentDto> page = await _sut.ListFailedAsync(0);
 
         Assert.That(page.Items, Has.Count.EqualTo(1));
     }

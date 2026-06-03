@@ -8,10 +8,10 @@ namespace Test.Builders;
 [TestFixture]
 public class DebtTemplateBuilderTests
 {
-    private DebtTemplateBuilder sut = null!;
+    private DebtTemplateBuilder _sut = null!;
 
     [SetUp]
-    public void Setup() => sut = new DebtTemplateBuilder();
+    public void Setup() => _sut = new DebtTemplateBuilder();
 
     [Test]
     public void BuildDebtTemplate_WithValidInputs_PopulatesAllFieldsAndGeneratesId()
@@ -24,7 +24,7 @@ public class DebtTemplateBuilderTests
             Cost = 1200
         };
 
-        DebtTemplate result = sut.BuildDebtTemplate(tenantId, request);
+        DebtTemplate result = _sut.BuildDebtTemplate(tenantId, request);
 
         Assert.Multiple(() =>
         {
@@ -42,7 +42,7 @@ public class DebtTemplateBuilderTests
         var tenantId = Guid.NewGuid();
         var entityId = Guid.NewGuid();
 
-        QrPaymentIdempotency record = sut.BuildIdempotencyRecord(tenantId, "ref-001", entityId);
+        QrPaymentIdempotency record = _sut.BuildIdempotencyRecord(tenantId, "ref-001", entityId);
 
         Assert.Multiple(() =>
         {

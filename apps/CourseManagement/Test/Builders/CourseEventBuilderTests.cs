@@ -9,10 +9,10 @@ namespace Test.Builders;
 [TestFixture]
 public class CourseEventBuilderTests
 {
-    private CourseEventBuilder builder = null!;
+    private CourseEventBuilder _builder = null!;
 
     [SetUp]
-    public void SetUp() => builder = new CourseEventBuilder();
+    public void SetUp() => _builder = new CourseEventBuilder();
 
     [Test]
     public void BuildCourseDeleted_PopulatesOutboxFieldsAndStampsTimestamp()
@@ -22,7 +22,7 @@ public class CourseEventBuilderTests
         var classIds = new List<Guid> { Guid.NewGuid(), Guid.NewGuid() };
         DateTime before = DateTime.UtcNow;
 
-        OutboxEvent outboxEvent = builder.BuildCourseDeleted(tenantId, courseId, classIds);
+        OutboxEvent outboxEvent = _builder.BuildCourseDeleted(tenantId, courseId, classIds);
 
         DateTime after = DateTime.UtcNow;
         Assert.Multiple(() =>
@@ -39,7 +39,7 @@ public class CourseEventBuilderTests
     [Test]
     public void BuildCourseDeleted_PayloadEventIdMatchesOutboxRowId()
     {
-        OutboxEvent outboxEvent = builder.BuildCourseDeleted(Guid.NewGuid(), Guid.NewGuid(), new List<Guid>());
+        OutboxEvent outboxEvent = _builder.BuildCourseDeleted(Guid.NewGuid(), Guid.NewGuid(), new List<Guid>());
 
         CourseDeletedEvent? payload = JsonSerializer.Deserialize<CourseDeletedEvent>(outboxEvent.Payload);
 
@@ -54,7 +54,7 @@ public class CourseEventBuilderTests
         var courseId = Guid.NewGuid();
         var classIds = new List<Guid> { Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid() };
 
-        OutboxEvent outboxEvent = builder.BuildCourseDeleted(tenantId, courseId, classIds);
+        OutboxEvent outboxEvent = _builder.BuildCourseDeleted(tenantId, courseId, classIds);
 
         CourseDeletedEvent payload = JsonSerializer.Deserialize<CourseDeletedEvent>(outboxEvent.Payload)!;
         Assert.Multiple(() =>
@@ -74,7 +74,7 @@ public class CourseEventBuilderTests
         var classId = Guid.NewGuid();
         DateTime before = DateTime.UtcNow;
 
-        OutboxEvent outboxEvent = builder.BuildClassDeleted(tenantId, classId);
+        OutboxEvent outboxEvent = _builder.BuildClassDeleted(tenantId, classId);
 
         DateTime after = DateTime.UtcNow;
         Assert.Multiple(() =>
@@ -91,7 +91,7 @@ public class CourseEventBuilderTests
     [Test]
     public void BuildClassDeleted_PayloadEventIdMatchesOutboxRowId()
     {
-        OutboxEvent outboxEvent = builder.BuildClassDeleted(Guid.NewGuid(), Guid.NewGuid());
+        OutboxEvent outboxEvent = _builder.BuildClassDeleted(Guid.NewGuid(), Guid.NewGuid());
 
         ClassDeletedEvent? payload = JsonSerializer.Deserialize<ClassDeletedEvent>(outboxEvent.Payload);
 
@@ -105,7 +105,7 @@ public class CourseEventBuilderTests
         var tenantId = Guid.NewGuid();
         var classId = Guid.NewGuid();
 
-        OutboxEvent outboxEvent = builder.BuildClassDeleted(tenantId, classId);
+        OutboxEvent outboxEvent = _builder.BuildClassDeleted(tenantId, classId);
 
         ClassDeletedEvent payload = JsonSerializer.Deserialize<ClassDeletedEvent>(outboxEvent.Payload)!;
         Assert.Multiple(() =>
@@ -120,8 +120,8 @@ public class CourseEventBuilderTests
     [Test]
     public void BuildCourseDeleted_GeneratesUniqueEventIdPerInvocation()
     {
-        OutboxEvent first = builder.BuildCourseDeleted(Guid.NewGuid(), Guid.NewGuid(), new List<Guid>());
-        OutboxEvent second = builder.BuildCourseDeleted(Guid.NewGuid(), Guid.NewGuid(), new List<Guid>());
+        OutboxEvent first = _builder.BuildCourseDeleted(Guid.NewGuid(), Guid.NewGuid(), new List<Guid>());
+        OutboxEvent second = _builder.BuildCourseDeleted(Guid.NewGuid(), Guid.NewGuid(), new List<Guid>());
 
         Assert.That(first.Id, Is.Not.EqualTo(second.Id));
     }
@@ -129,8 +129,8 @@ public class CourseEventBuilderTests
     [Test]
     public void BuildClassDeleted_GeneratesUniqueEventIdPerInvocation()
     {
-        OutboxEvent first = builder.BuildClassDeleted(Guid.NewGuid(), Guid.NewGuid());
-        OutboxEvent second = builder.BuildClassDeleted(Guid.NewGuid(), Guid.NewGuid());
+        OutboxEvent first = _builder.BuildClassDeleted(Guid.NewGuid(), Guid.NewGuid());
+        OutboxEvent second = _builder.BuildClassDeleted(Guid.NewGuid(), Guid.NewGuid());
 
         Assert.That(first.Id, Is.Not.EqualTo(second.Id));
     }

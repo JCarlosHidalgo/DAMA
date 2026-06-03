@@ -18,37 +18,37 @@ namespace Test.Services.Concrete.Users;
 [TestFixture]
 public class RefreshServiceTests
 {
-    private Mock<IRefreshTokenReadDao> refreshTokenReadDao = null!;
-    private Mock<IRefreshTokenWriteDao> refreshTokenWriteDao = null!;
-    private Mock<ITenantAllowedServicesDao> tenantAllowedServicesDao = null!;
-    private Mock<IAccessTokenGenerator> accessTokenGenerator = null!;
-    private Mock<IRefreshTokenGenerator> refreshTokenGenerator = null!;
-    private Mock<IUnitOfWork> unitOfWork = null!;
-    private Mock<ITransactionScope> transactionScope = null!;
+    private Mock<IRefreshTokenReadDao> _refreshTokenReadDao = null!;
+    private Mock<IRefreshTokenWriteDao> _refreshTokenWriteDao = null!;
+    private Mock<ITenantAllowedServicesDao> _tenantAllowedServicesDao = null!;
+    private Mock<IAccessTokenGenerator> _accessTokenGenerator = null!;
+    private Mock<IRefreshTokenGenerator> _refreshTokenGenerator = null!;
+    private Mock<IUnitOfWork> _unitOfWork = null!;
+    private Mock<ITransactionScope> _transactionScope = null!;
 
-    private RefreshService sut = null!;
+    private RefreshService _sut = null!;
 
     [SetUp]
     public void SetUp()
     {
-        refreshTokenReadDao = new Mock<IRefreshTokenReadDao>(MockBehavior.Strict);
-        refreshTokenWriteDao = new Mock<IRefreshTokenWriteDao>(MockBehavior.Strict);
-        tenantAllowedServicesDao = new Mock<ITenantAllowedServicesDao>(MockBehavior.Strict);
-        accessTokenGenerator = new Mock<IAccessTokenGenerator>(MockBehavior.Strict);
-        refreshTokenGenerator = new Mock<IRefreshTokenGenerator>(MockBehavior.Strict);
-        unitOfWork = new Mock<IUnitOfWork>(MockBehavior.Strict);
-        transactionScope = new Mock<ITransactionScope>(MockBehavior.Strict);
+        _refreshTokenReadDao = new Mock<IRefreshTokenReadDao>(MockBehavior.Strict);
+        _refreshTokenWriteDao = new Mock<IRefreshTokenWriteDao>(MockBehavior.Strict);
+        _tenantAllowedServicesDao = new Mock<ITenantAllowedServicesDao>(MockBehavior.Strict);
+        _accessTokenGenerator = new Mock<IAccessTokenGenerator>(MockBehavior.Strict);
+        _refreshTokenGenerator = new Mock<IRefreshTokenGenerator>(MockBehavior.Strict);
+        _unitOfWork = new Mock<IUnitOfWork>(MockBehavior.Strict);
+        _transactionScope = new Mock<ITransactionScope>(MockBehavior.Strict);
 
-        transactionScope.Setup(scope => scope.DisposeAsync()).Returns(ValueTask.CompletedTask);
-        unitOfWork.Setup(unit => unit.BeginAsync()).ReturnsAsync(transactionScope.Object);
+        _transactionScope.Setup(scope => scope.DisposeAsync()).Returns(ValueTask.CompletedTask);
+        _unitOfWork.Setup(unit => unit.BeginAsync()).ReturnsAsync(_transactionScope.Object);
 
-        sut = new RefreshService(
-            refreshTokenReadDao.Object,
-            refreshTokenWriteDao.Object,
-            tenantAllowedServicesDao.Object,
-            accessTokenGenerator.Object,
-            refreshTokenGenerator.Object,
-            unitOfWork.Object);
+        _sut = new RefreshService(
+            _refreshTokenReadDao.Object,
+            _refreshTokenWriteDao.Object,
+            _tenantAllowedServicesDao.Object,
+            _accessTokenGenerator.Object,
+            _refreshTokenGenerator.Object,
+            _unitOfWork.Object);
     }
 
     private static RefreshTokenWithOwner OwnerFor(RefreshToken token)
@@ -62,13 +62,13 @@ public class RefreshServiceTests
     public async Task RefreshAsync_WhenTokenUnknown_ReturnsNull()
     {
         RefreshTokenRequestDto request = new() { RefreshToken = "unknown" };
-        refreshTokenGenerator.Setup(generator => generator.ComputeHash("unknown")).Returns("hash");
-        refreshTokenReadDao.Setup(dao => dao.GetByHashAsync("hash")).ReturnsAsync((RefreshTokenWithOwner?)null);
+        _refreshTokenGenerator.Setup(generator => generator.ComputeHash("unknown")).Returns("hash");
+        _refreshTokenReadDao.Setup(dao => dao.GetByHashAsync("hash")).ReturnsAsync((RefreshTokenWithOwner?)null);
 
-        TokenResponseDto? result = await sut.RefreshAsync(request);
+        TokenResponseDto? result = await _sut.RefreshAsync(request);
 
         Assert.That(result, Is.Null);
-        unitOfWork.Verify(unit => unit.BeginAsync(), Times.Never);
+        _unitOfWork.Verify(unit => unit.BeginAsync(), Times.Never);
     }
 
     [Test]
@@ -84,18 +84,18 @@ public class RefreshServiceTests
             RevokedAt = DateTime.UtcNow.AddMinutes(-5),
             CreatedAt = DateTime.UtcNow.AddDays(-1)
         };
-        refreshTokenGenerator.Setup(generator => generator.ComputeHash("reused")).Returns("hash");
-        refreshTokenReadDao.Setup(dao => dao.GetByHashAsync("hash")).ReturnsAsync(OwnerFor(revoked));
-        refreshTokenWriteDao
-            .Setup(dao => dao.RevokeAllForUserAsync(revoked.UserId, transactionScope.Object))
+        _refreshTokenGenerator.Setup(generator => generator.ComputeHash("reused")).Returns("hash");
+        _refreshTokenReadDao.Setup(dao => dao.GetByHashAsync("hash")).ReturnsAsync(OwnerFor(revoked));
+        _refreshTokenWriteDao
+            .Setup(dao => dao.RevokeAllForUserAsync(revoked.UserId, _transactionScope.Object))
             .Returns(Task.CompletedTask);
-        transactionScope.Setup(scope => scope.CommitAsync()).Returns(Task.CompletedTask);
+        _transactionScope.Setup(scope => scope.CommitAsync()).Returns(Task.CompletedTask);
 
-        TokenResponseDto? result = await sut.RefreshAsync(request);
+        TokenResponseDto? result = await _sut.RefreshAsync(request);
 
         Assert.That(result, Is.Null);
-        refreshTokenWriteDao.Verify(dao => dao.RevokeAllForUserAsync(revoked.UserId, transactionScope.Object), Times.Once);
-        transactionScope.Verify(scope => scope.CommitAsync(), Times.Once);
+        _refreshTokenWriteDao.Verify(dao => dao.RevokeAllForUserAsync(revoked.UserId, _transactionScope.Object), Times.Once);
+        _transactionScope.Verify(scope => scope.CommitAsync(), Times.Once);
     }
 
     [Test]
@@ -111,13 +111,13 @@ public class RefreshServiceTests
             RevokedAt = null,
             CreatedAt = DateTime.UtcNow.AddDays(-31)
         };
-        refreshTokenGenerator.Setup(generator => generator.ComputeHash("expired")).Returns("hash");
-        refreshTokenReadDao.Setup(dao => dao.GetByHashAsync("hash")).ReturnsAsync(OwnerFor(expired));
+        _refreshTokenGenerator.Setup(generator => generator.ComputeHash("expired")).Returns("hash");
+        _refreshTokenReadDao.Setup(dao => dao.GetByHashAsync("hash")).ReturnsAsync(OwnerFor(expired));
 
-        TokenResponseDto? result = await sut.RefreshAsync(request);
+        TokenResponseDto? result = await _sut.RefreshAsync(request);
 
         Assert.That(result, Is.Null);
-        unitOfWork.Verify(unit => unit.BeginAsync(), Times.Never);
+        _unitOfWork.Verify(unit => unit.BeginAsync(), Times.Never);
     }
 
     [Test]
@@ -137,21 +137,21 @@ public class RefreshServiceTests
         RefreshToken rotated = new() { Id = Guid.NewGuid(), UserId = current.UserId, TokenHash = "newhash" };
         IssuedRefreshToken issued = new("new.raw.token", rotated);
 
-        refreshTokenGenerator.Setup(generator => generator.ComputeHash("valid")).Returns("hash");
-        refreshTokenReadDao.Setup(dao => dao.GetByHashAsync("hash")).ReturnsAsync(stored);
-        refreshTokenGenerator.Setup(generator => generator.Issue(current.UserId)).Returns(issued);
-        refreshTokenWriteDao.Setup(dao => dao.RevokeAsync(current.Id, transactionScope.Object)).Returns(Task.CompletedTask);
-        refreshTokenWriteDao.Setup(dao => dao.CreateAsync(rotated, transactionScope.Object)).Returns(Task.CompletedTask);
-        transactionScope.Setup(scope => scope.CommitAsync()).Returns(Task.CompletedTask);
-        tenantAllowedServicesDao
+        _refreshTokenGenerator.Setup(generator => generator.ComputeHash("valid")).Returns("hash");
+        _refreshTokenReadDao.Setup(dao => dao.GetByHashAsync("hash")).ReturnsAsync(stored);
+        _refreshTokenGenerator.Setup(generator => generator.Issue(current.UserId)).Returns(issued);
+        _refreshTokenWriteDao.Setup(dao => dao.RevokeAsync(current.Id, _transactionScope.Object)).Returns(Task.CompletedTask);
+        _refreshTokenWriteDao.Setup(dao => dao.CreateAsync(rotated, _transactionScope.Object)).Returns(Task.CompletedTask);
+        _transactionScope.Setup(scope => scope.CommitAsync()).Returns(Task.CompletedTask);
+        _tenantAllowedServicesDao
             .Setup(dao => dao.ReadByTenantIdAsync(stored.Owner.Tenant.Id))
             .ReturnsAsync((TenantAllowedServices?)null);
-        accessTokenGenerator
+        _accessTokenGenerator
             .Setup(generator => generator.Issue(
                 stored.Owner.User, stored.Owner.Tenant, It.IsAny<TenantAllowedServices?>()))
             .Returns("new.jwt");
 
-        TokenResponseDto? result = await sut.RefreshAsync(request);
+        TokenResponseDto? result = await _sut.RefreshAsync(request);
 
         Assert.That(result, Is.Not.Null);
         Assert.Multiple(() =>
@@ -159,23 +159,23 @@ public class RefreshServiceTests
             Assert.That(result!.AccessToken, Is.EqualTo("new.jwt"));
             Assert.That(result.RefreshToken, Is.EqualTo("new.raw.token"));
         });
-        refreshTokenWriteDao.Verify(dao => dao.RevokeAsync(current.Id, transactionScope.Object), Times.Once);
-        refreshTokenWriteDao.Verify(dao => dao.CreateAsync(rotated, transactionScope.Object), Times.Once);
-        transactionScope.Verify(scope => scope.CommitAsync(), Times.Once);
+        _refreshTokenWriteDao.Verify(dao => dao.RevokeAsync(current.Id, _transactionScope.Object), Times.Once);
+        _refreshTokenWriteDao.Verify(dao => dao.CreateAsync(rotated, _transactionScope.Object), Times.Once);
+        _transactionScope.Verify(scope => scope.CommitAsync(), Times.Once);
     }
 
     [Test]
     public async Task LogoutAsync_RevokesAllForUser()
     {
         Guid userId = Guid.NewGuid();
-        refreshTokenWriteDao
-            .Setup(dao => dao.RevokeAllForUserAsync(userId, transactionScope.Object))
+        _refreshTokenWriteDao
+            .Setup(dao => dao.RevokeAllForUserAsync(userId, _transactionScope.Object))
             .Returns(Task.CompletedTask);
-        transactionScope.Setup(scope => scope.CommitAsync()).Returns(Task.CompletedTask);
+        _transactionScope.Setup(scope => scope.CommitAsync()).Returns(Task.CompletedTask);
 
-        await sut.LogoutAsync(userId);
+        await _sut.LogoutAsync(userId);
 
-        refreshTokenWriteDao.Verify(dao => dao.RevokeAllForUserAsync(userId, transactionScope.Object), Times.Once);
-        transactionScope.Verify(scope => scope.CommitAsync(), Times.Once);
+        _refreshTokenWriteDao.Verify(dao => dao.RevokeAllForUserAsync(userId, _transactionScope.Object), Times.Once);
+        _transactionScope.Verify(scope => scope.CommitAsync(), Times.Once);
     }
 }

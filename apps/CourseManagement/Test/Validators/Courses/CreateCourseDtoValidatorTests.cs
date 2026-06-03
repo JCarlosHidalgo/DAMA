@@ -12,10 +12,10 @@ public class CreateCourseDtoValidatorTests
     private const string TooLongNameMessage = "Name no debe exceder 100 caracteres";
     private const string TooLongExternalReferenceMessage = "ExternalReference no debe exceder 128 caracteres";
 
-    private CreateCourseDtoValidator validator = null!;
+    private CreateCourseDtoValidator _validator = null!;
 
     [SetUp]
-    public void SetUp() => validator = new CreateCourseDtoValidator();
+    public void SetUp() => _validator = new CreateCourseDtoValidator();
 
     [Test]
     public async Task Validate_WithValidPayload_IsValid()
@@ -26,7 +26,7 @@ public class CreateCourseDtoValidatorTests
             ExternalReference = "ref-001"
         };
 
-        ValidationResult result = await validator.ValidateAsync(request);
+        ValidationResult result = await _validator.ValidateAsync(request);
 
         Assert.That(result.IsValid, Is.True);
     }
@@ -40,7 +40,7 @@ public class CreateCourseDtoValidatorTests
             ExternalReference = null
         };
 
-        ValidationResult result = await validator.ValidateAsync(request);
+        ValidationResult result = await _validator.ValidateAsync(request);
 
         Assert.That(result.IsValid, Is.True);
     }
@@ -53,7 +53,7 @@ public class CreateCourseDtoValidatorTests
             Name = string.Empty
         };
 
-        ValidationResult result = await validator.ValidateAsync(request);
+        ValidationResult result = await _validator.ValidateAsync(request);
 
         Assert.Multiple(() =>
         {
@@ -70,7 +70,7 @@ public class CreateCourseDtoValidatorTests
             Name = new string('a', 101)
         };
 
-        ValidationResult result = await validator.ValidateAsync(request);
+        ValidationResult result = await _validator.ValidateAsync(request);
 
         Assert.Multiple(() =>
         {
@@ -88,7 +88,7 @@ public class CreateCourseDtoValidatorTests
             ExternalReference = new string('x', 129)
         };
 
-        ValidationResult result = await validator.ValidateAsync(request);
+        ValidationResult result = await _validator.ValidateAsync(request);
 
         Assert.Multiple(() =>
         {

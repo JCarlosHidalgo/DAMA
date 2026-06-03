@@ -27,78 +27,78 @@ public class TodotixClientTests
         }
     }
 
-    private StubHandler handler = null!;
-    private HttpClient httpClient = null!;
-    private TodotixClient sut = null!;
+    private StubHandler _handler = null!;
+    private HttpClient _httpClient = null!;
+    private TodotixClient _sut = null!;
 
     [SetUp]
     public void Setup()
     {
-        handler = new StubHandler();
-        httpClient = new HttpClient(handler) { BaseAddress = new Uri("http://todotix.test") };
-        sut = new TodotixClient(httpClient, NullLogger<TodotixClient>.Instance);
+        _handler = new StubHandler();
+        _httpClient = new HttpClient(_handler) { BaseAddress = new Uri("http://todotix.test") };
+        _sut = new TodotixClient(_httpClient, NullLogger<TodotixClient>.Instance);
     }
 
     [TearDown]
     public void TearDown()
     {
-        httpClient.Dispose();
-        handler.Dispose();
+        _httpClient.Dispose();
+        _handler.Dispose();
     }
 
     [Test]
     public async Task RegisterDebtAsync_OnSuccess_ReturnsDeserializedBody()
     {
         var response = new RegisterDebtResponse { Error = 0, QrSimpleUrl = "http://q" };
-        handler.Responder = _ => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+        _handler.Responder = _ => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(JsonSerializer.Serialize(response), Encoding.UTF8, "application/json")
         });
 
-        RegisterDebtResponse body = await sut.RegisterDebtAsync(new RegisterDebtRequest { Appkey = "k" });
+        RegisterDebtResponse body = await _sut.RegisterDebtAsync(new RegisterDebtRequest { Appkey = "k" });
 
         Assert.Multiple(() =>
         {
             Assert.That(body.Error, Is.EqualTo(0));
             Assert.That(body.QrSimpleUrl, Is.EqualTo("http://q"));
-            Assert.That(handler.LastRequest!.RequestUri!.AbsolutePath, Is.EqualTo("/rest/deuda/registrar"));
+            Assert.That(_handler.LastRequest!.RequestUri!.AbsolutePath, Is.EqualTo("/rest/deuda/registrar"));
         });
     }
 
     [Test]
     public void RegisterDebtAsync_NonSuccessStatusCode_Throws()
     {
-        handler.Responder = _ => Task.FromResult(new HttpResponseMessage(HttpStatusCode.BadRequest));
+        _handler.Responder = _ => Task.FromResult(new HttpResponseMessage(HttpStatusCode.BadRequest));
 
-        Assert.ThrowsAsync<HttpRequestException>(() => sut.RegisterDebtAsync(new RegisterDebtRequest()));
+        Assert.ThrowsAsync<HttpRequestException>(() => _sut.RegisterDebtAsync(new RegisterDebtRequest()));
     }
 
     [Test]
     public void RegisterDebtAsync_EmptyBody_Throws()
     {
-        handler.Responder = _ => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+        _handler.Responder = _ => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent("null", Encoding.UTF8, "application/json")
         });
 
-        Assert.ThrowsAsync<InvalidOperationException>(() => sut.RegisterDebtAsync(new RegisterDebtRequest()));
+        Assert.ThrowsAsync<InvalidOperationException>(() => _sut.RegisterDebtAsync(new RegisterDebtRequest()));
     }
 
     [Test]
     public async Task DebtExistsAsync_WhenErrorZeroAndDatosPresent_ReturnsTrue()
     {
         var response = new ConsultDebtResponse { Error = 0, Existente = 1, Datos = new ConsultDebtData { Identificador = "x" } };
-        handler.Responder = _ => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+        _handler.Responder = _ => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(JsonSerializer.Serialize(response), Encoding.UTF8, "application/json")
         });
 
-        bool exists = await sut.DebtExistsAsync(Guid.NewGuid(), "k");
+        bool exists = await _sut.DebtExistsAsync(Guid.NewGuid(), "k");
 
         Assert.Multiple(() =>
         {
             Assert.That(exists, Is.True);
-            Assert.That(handler.LastRequest!.RequestUri!.AbsolutePath, Is.EqualTo("/rest/deuda/consultar_deudas/por_identificador"));
+            Assert.That(_handler.LastRequest!.RequestUri!.AbsolutePath, Is.EqualTo("/rest/deuda/consultar_deudas/por_identificador"));
         });
     }
 
@@ -106,12 +106,12 @@ public class TodotixClientTests
     public async Task DebtExistsAsync_WhenErrorNonZero_ReturnsFalse()
     {
         var response = new ConsultDebtResponse { Error = 5, Mensaje = "no encontrada", Datos = null };
-        handler.Responder = _ => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+        _handler.Responder = _ => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(JsonSerializer.Serialize(response), Encoding.UTF8, "application/json")
         });
 
-        bool exists = await sut.DebtExistsAsync(Guid.NewGuid(), "k");
+        bool exists = await _sut.DebtExistsAsync(Guid.NewGuid(), "k");
 
         Assert.That(exists, Is.False);
     }
@@ -120,12 +120,12 @@ public class TodotixClientTests
     public async Task DebtExistsAsync_WhenDatosNull_ReturnsFalse()
     {
         var response = new ConsultDebtResponse { Error = 0, Existente = 0, Datos = null };
-        handler.Responder = _ => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+        _handler.Responder = _ => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(JsonSerializer.Serialize(response), Encoding.UTF8, "application/json")
         });
 
-        bool exists = await sut.DebtExistsAsync(Guid.NewGuid(), "k");
+        bool exists = await _sut.DebtExistsAsync(Guid.NewGuid(), "k");
 
         Assert.That(exists, Is.False);
     }
@@ -133,24 +133,24 @@ public class TodotixClientTests
     [Test]
     public void DebtExistsAsync_EmptyBody_Throws()
     {
-        handler.Responder = _ => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+        _handler.Responder = _ => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent("null", Encoding.UTF8, "application/json")
         });
 
-        Assert.ThrowsAsync<InvalidOperationException>(() => sut.DebtExistsAsync(Guid.NewGuid(), "k"));
+        Assert.ThrowsAsync<InvalidOperationException>(() => _sut.DebtExistsAsync(Guid.NewGuid(), "k"));
     }
 
     [Test]
     public async Task ConsultDebtAsync_WhenPaid_ReturnsPaid()
     {
         var response = new ConsultDebtResponse { Error = 0, Existente = 1, Datos = new ConsultDebtData { Pagado = true, PagoAnulado = false } };
-        handler.Responder = _ => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+        _handler.Responder = _ => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(JsonSerializer.Serialize(response), Encoding.UTF8, "application/json")
         });
 
-        TodotixDebtState state = await sut.ConsultDebtAsync(Guid.NewGuid(), "k");
+        TodotixDebtState state = await _sut.ConsultDebtAsync(Guid.NewGuid(), "k");
 
         Assert.That(state, Is.EqualTo(TodotixDebtState.Paid));
     }
@@ -159,12 +159,12 @@ public class TodotixClientTests
     public async Task ConsultDebtAsync_WhenUnpaid_ReturnsUnpaid()
     {
         var response = new ConsultDebtResponse { Error = 0, Existente = 1, Datos = new ConsultDebtData { Pagado = false, PagoAnulado = false } };
-        handler.Responder = _ => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+        _handler.Responder = _ => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(JsonSerializer.Serialize(response), Encoding.UTF8, "application/json")
         });
 
-        TodotixDebtState state = await sut.ConsultDebtAsync(Guid.NewGuid(), "k");
+        TodotixDebtState state = await _sut.ConsultDebtAsync(Guid.NewGuid(), "k");
 
         Assert.That(state, Is.EqualTo(TodotixDebtState.Unpaid));
     }
@@ -173,12 +173,12 @@ public class TodotixClientTests
     public async Task ConsultDebtAsync_WhenPagoAnulado_ReturnsUnpaid()
     {
         var response = new ConsultDebtResponse { Error = 0, Existente = 1, Datos = new ConsultDebtData { Pagado = true, PagoAnulado = true } };
-        handler.Responder = _ => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+        _handler.Responder = _ => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(JsonSerializer.Serialize(response), Encoding.UTF8, "application/json")
         });
 
-        TodotixDebtState state = await sut.ConsultDebtAsync(Guid.NewGuid(), "k");
+        TodotixDebtState state = await _sut.ConsultDebtAsync(Guid.NewGuid(), "k");
 
         Assert.That(state, Is.EqualTo(TodotixDebtState.Unpaid));
     }
@@ -187,12 +187,12 @@ public class TodotixClientTests
     public async Task ConsultDebtAsync_WhenPaidAndExistenteZero_ReturnsPaid()
     {
         var response = new ConsultDebtResponse { Error = 0, Existente = 0, Datos = new ConsultDebtData { Pagado = true, PagoAnulado = false } };
-        handler.Responder = _ => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+        _handler.Responder = _ => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(JsonSerializer.Serialize(response), Encoding.UTF8, "application/json")
         });
 
-        TodotixDebtState state = await sut.ConsultDebtAsync(Guid.NewGuid(), "k");
+        TodotixDebtState state = await _sut.ConsultDebtAsync(Guid.NewGuid(), "k");
 
         Assert.That(state, Is.EqualTo(TodotixDebtState.Paid));
     }
@@ -201,12 +201,12 @@ public class TodotixClientTests
     public async Task ConsultDebtAsync_WhenErrorNonZero_ReturnsUnpaid()
     {
         var response = new ConsultDebtResponse { Error = 7, Existente = 1, Datos = new ConsultDebtData { Pagado = true, PagoAnulado = false } };
-        handler.Responder = _ => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+        _handler.Responder = _ => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(JsonSerializer.Serialize(response), Encoding.UTF8, "application/json")
         });
 
-        TodotixDebtState state = await sut.ConsultDebtAsync(Guid.NewGuid(), "k");
+        TodotixDebtState state = await _sut.ConsultDebtAsync(Guid.NewGuid(), "k");
 
         Assert.That(state, Is.EqualTo(TodotixDebtState.Unpaid));
     }
@@ -214,11 +214,11 @@ public class TodotixClientTests
     [Test]
     public void ConsultDebtAsync_EmptyBody_Throws()
     {
-        handler.Responder = _ => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+        _handler.Responder = _ => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent("null", Encoding.UTF8, "application/json")
         });
 
-        Assert.ThrowsAsync<InvalidOperationException>(() => sut.ConsultDebtAsync(Guid.NewGuid(), "k"));
+        Assert.ThrowsAsync<InvalidOperationException>(() => _sut.ConsultDebtAsync(Guid.NewGuid(), "k"));
     }
 }

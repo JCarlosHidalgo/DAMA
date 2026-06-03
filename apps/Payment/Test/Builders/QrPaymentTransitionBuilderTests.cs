@@ -10,10 +10,10 @@ namespace Test.Builders;
 [TestFixture]
 public class QrPaymentTransitionBuilderTests
 {
-    private QrPaymentTransitionBuilder sut = null!;
+    private QrPaymentTransitionBuilder _sut = null!;
 
     [SetUp]
-    public void Setup() => sut = new QrPaymentTransitionBuilder();
+    public void Setup() => _sut = new QrPaymentTransitionBuilder();
 
     private static PendingQrPayment NewPending()
     {
@@ -36,7 +36,7 @@ public class QrPaymentTransitionBuilderTests
         PendingQrPayment pending = NewPending();
         DateTime before = DateTime.UtcNow;
 
-        OutboxEvent outboxEvent = sut.BuildCapturedOutboxEvent(pending);
+        OutboxEvent outboxEvent = _sut.BuildCapturedOutboxEvent(pending);
 
         Assert.Multiple(() =>
         {
@@ -67,7 +67,7 @@ public class QrPaymentTransitionBuilderTests
         PendingQrPayment pending = NewPending();
         DateTime before = DateTime.UtcNow;
 
-        SuccessQrPayment success = sut.BuildSuccessPayment(pending);
+        SuccessQrPayment success = _sut.BuildSuccessPayment(pending);
 
         Assert.Multiple(() =>
         {
@@ -86,7 +86,7 @@ public class QrPaymentTransitionBuilderTests
         PendingQrPayment pending = NewPending();
         DateTime before = DateTime.UtcNow;
 
-        FailedQrPayment failed = sut.BuildFailedPayment(pending);
+        FailedQrPayment failed = _sut.BuildFailedPayment(pending);
 
         Assert.Multiple(() =>
         {

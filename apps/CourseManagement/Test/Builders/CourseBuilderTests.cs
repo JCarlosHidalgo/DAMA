@@ -7,10 +7,10 @@ namespace Test.Builders;
 [TestFixture]
 public class CourseBuilderTests
 {
-    private CourseBuilder builder = null!;
+    private CourseBuilder _builder = null!;
 
     [SetUp]
-    public void SetUp() => builder = new CourseBuilder();
+    public void SetUp() => _builder = new CourseBuilder();
 
     [Test]
     public void BuildCourse_CopiesNameAndAssignsTenantAndId()
@@ -18,7 +18,7 @@ public class CourseBuilderTests
         var tenantId = Guid.NewGuid();
         var payload = new CreateCourseDto { Name = "Curso Demo" };
 
-        Course result = builder.BuildCourse(tenantId, payload);
+        Course result = _builder.BuildCourse(tenantId, payload);
 
         Assert.Multiple(() =>
         {
@@ -33,8 +33,8 @@ public class CourseBuilderTests
     {
         var payload = new CreateCourseDto { Name = "Curso" };
 
-        Course first = builder.BuildCourse(Guid.NewGuid(), payload);
-        Course second = builder.BuildCourse(Guid.NewGuid(), payload);
+        Course first = _builder.BuildCourse(Guid.NewGuid(), payload);
+        Course second = _builder.BuildCourse(Guid.NewGuid(), payload);
 
         Assert.That(first.Id, Is.Not.EqualTo(second.Id));
     }

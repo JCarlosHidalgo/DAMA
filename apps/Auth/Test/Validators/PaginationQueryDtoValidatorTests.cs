@@ -10,17 +10,17 @@ public class PaginationQueryDtoValidatorTests
 {
     private const string InvalidPageIndexMessage = "pageIndex no válido";
 
-    private PaginationQueryDtoValidator sut = null!;
+    private PaginationQueryDtoValidator _sut = null!;
 
     [SetUp]
-    public void SetUp() => sut = new PaginationQueryDtoValidator();
+    public void SetUp() => _sut = new PaginationQueryDtoValidator();
 
     [Test]
     public async Task Validate_WithZeroPageIndex_IsValid()
     {
         PaginationQueryDto query = new() { PageIndex = 0 };
 
-        ValidationResult result = await sut.ValidateAsync(query);
+        ValidationResult result = await _sut.ValidateAsync(query);
 
         Assert.That(result.IsValid, Is.True);
     }
@@ -30,7 +30,7 @@ public class PaginationQueryDtoValidatorTests
     {
         PaginationQueryDto query = new() { PageIndex = 47 };
 
-        ValidationResult result = await sut.ValidateAsync(query);
+        ValidationResult result = await _sut.ValidateAsync(query);
 
         Assert.That(result.IsValid, Is.True);
     }
@@ -40,7 +40,7 @@ public class PaginationQueryDtoValidatorTests
     {
         PaginationQueryDto query = new() { PageIndex = -1 };
 
-        ValidationResult result = await sut.ValidateAsync(query);
+        ValidationResult result = await _sut.ValidateAsync(query);
 
         Assert.Multiple(() =>
         {

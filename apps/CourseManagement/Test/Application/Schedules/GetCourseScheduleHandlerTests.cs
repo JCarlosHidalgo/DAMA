@@ -16,18 +16,18 @@ public class GetCourseScheduleHandlerTests
     private static readonly Guid CourseId = Guid.Parse("22222222-2222-2222-2222-222222222222");
     private static readonly DateOnly CurrentDate = new(2025, 6, 1);
 
-    private Mock<IScheduledClassDao> scheduledClassDao = null!;
-    private Mock<IUniqueClassDao> uniqueClassDao = null!;
-    private Mock<IScheduleAssembler> scheduleAssembler = null!;
-    private GetCourseScheduleHandler handler = null!;
+    private Mock<IScheduledClassDao> _scheduledClassDao = null!;
+    private Mock<IUniqueClassDao> _uniqueClassDao = null!;
+    private Mock<IScheduleAssembler> _scheduleAssembler = null!;
+    private GetCourseScheduleHandler _handler = null!;
 
     [SetUp]
     public void SetUp()
     {
-        scheduledClassDao = new Mock<IScheduledClassDao>(MockBehavior.Strict);
-        uniqueClassDao = new Mock<IUniqueClassDao>(MockBehavior.Strict);
-        scheduleAssembler = new Mock<IScheduleAssembler>(MockBehavior.Strict);
-        handler = new GetCourseScheduleHandler(scheduledClassDao.Object, uniqueClassDao.Object, scheduleAssembler.Object);
+        _scheduledClassDao = new Mock<IScheduledClassDao>(MockBehavior.Strict);
+        _uniqueClassDao = new Mock<IUniqueClassDao>(MockBehavior.Strict);
+        _scheduleAssembler = new Mock<IScheduleAssembler>(MockBehavior.Strict);
+        _handler = new GetCourseScheduleHandler(_scheduledClassDao.Object, _uniqueClassDao.Object, _scheduleAssembler.Object);
     }
 
     [Test]
@@ -41,9 +41,9 @@ public class GetCourseScheduleHandlerTests
             UniqueClasses = []
         };
 
-        scheduledClassDao.Setup(dao => dao.GetScheduledClassesByCourseIdAsync(CourseId)).ReturnsAsync(scheduledClasses);
-        uniqueClassDao.Setup(dao => dao.GetUniqueClassesOnSameWeekByDateAsync(CourseId, CurrentDate)).ReturnsAsync(uniqueClasses);
-        scheduleAssembler
+        _scheduledClassDao.Setup(dao => dao.GetScheduledClassesByCourseIdAsync(CourseId)).ReturnsAsync(scheduledClasses);
+        _uniqueClassDao.Setup(dao => dao.GetUniqueClassesOnSameWeekByDateAsync(CourseId, CurrentDate)).ReturnsAsync(uniqueClasses);
+        _scheduleAssembler
             .Setup(assembler => assembler.AssembleAsync(
                 It.IsAny<Func<Task<List<ScheduledClass>>>>(),
                 It.IsAny<Func<Task<List<UniqueClass>>>>()))
@@ -59,7 +59,7 @@ public class GetCourseScheduleHandlerTests
                 return schedule;
             });
 
-        GetCourseScheduleResult result = await handler.Handle(new GetCourseScheduleQuery(CourseId, CurrentDate));
+        GetCourseScheduleResult result = await _handler.Handle(new GetCourseScheduleQuery(CourseId, CurrentDate));
 
         Assert.Multiple(() =>
         {

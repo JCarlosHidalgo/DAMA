@@ -23,31 +23,31 @@ public class CreateUniqueClassHandlerTests
     private static readonly Guid TenantId = Guid.Parse("33333333-3333-3333-3333-333333333333");
     private static readonly Guid GroupId = Guid.Parse("44444444-4444-4444-4444-444444444444");
 
-    private Mock<IUniqueClassDao> uniqueClassDao = null!;
-    private Mock<IClassGroupDao> classGroupDao = null!;
-    private Mock<IClassCreationCoordinator<UniqueClass>> coordinator = null!;
-    private Mock<IClaimContext> claimContext = null!;
-    private Mock<IClassBuilder> classBuilder = null!;
-    private Mock<IMapper> mapper = null!;
-    private CreateUniqueClassHandler handler = null!;
+    private Mock<IUniqueClassDao> _uniqueClassDao = null!;
+    private Mock<IClassGroupDao> _classGroupDao = null!;
+    private Mock<IClassCreationCoordinator<UniqueClass>> _coordinator = null!;
+    private Mock<IClaimContext> _claimContext = null!;
+    private Mock<IClassBuilder> _classBuilder = null!;
+    private Mock<IMapper> _mapper = null!;
+    private CreateUniqueClassHandler _handler = null!;
 
     [SetUp]
     public void SetUp()
     {
-        uniqueClassDao = new Mock<IUniqueClassDao>(MockBehavior.Strict);
-        classGroupDao = new Mock<IClassGroupDao>(MockBehavior.Strict);
-        coordinator = new Mock<IClassCreationCoordinator<UniqueClass>>(MockBehavior.Strict);
-        claimContext = new Mock<IClaimContext>(MockBehavior.Strict);
-        classBuilder = new Mock<IClassBuilder>(MockBehavior.Strict);
-        mapper = new Mock<IMapper>(MockBehavior.Strict);
-        claimContext.SetupGet(context => context.TenantId).Returns(TenantId);
-        handler = new CreateUniqueClassHandler(
-            uniqueClassDao.Object,
-            classGroupDao.Object,
-            coordinator.Object,
-            claimContext.Object,
-            classBuilder.Object,
-            mapper.Object);
+        _uniqueClassDao = new Mock<IUniqueClassDao>(MockBehavior.Strict);
+        _classGroupDao = new Mock<IClassGroupDao>(MockBehavior.Strict);
+        _coordinator = new Mock<IClassCreationCoordinator<UniqueClass>>(MockBehavior.Strict);
+        _claimContext = new Mock<IClaimContext>(MockBehavior.Strict);
+        _classBuilder = new Mock<IClassBuilder>(MockBehavior.Strict);
+        _mapper = new Mock<IMapper>(MockBehavior.Strict);
+        _claimContext.SetupGet(context => context.TenantId).Returns(TenantId);
+        _handler = new CreateUniqueClassHandler(
+            _uniqueClassDao.Object,
+            _classGroupDao.Object,
+            _coordinator.Object,
+            _claimContext.Object,
+            _classBuilder.Object,
+            _mapper.Object);
     }
 
     private static CreateUniqueClassDto ValidPayload(Guid teacherId) => new()
@@ -77,15 +77,15 @@ public class CreateUniqueClassHandlerTests
         CreateUniqueClassDto payload = ValidPayload(teacherId);
         List<ClassTeacher> teachers = TeacherEntities(teacherId);
 
-        mapper.Setup(map => map.Map<List<ClassTeacherDto>, List<ClassTeacher>>(payload.Teachers)).Returns(teachers);
-        classGroupDao.Setup(dao => dao.ExistsForTenantAsync(TenantId, GroupId)).ReturnsAsync(false);
+        _mapper.Setup(map => map.Map<List<ClassTeacherDto>, List<ClassTeacher>>(payload.Teachers)).Returns(teachers);
+        _classGroupDao.Setup(dao => dao.ExistsForTenantAsync(TenantId, GroupId)).ReturnsAsync(false);
 
-        CreateUniqueClassResult result = await handler.Handle(new CreateUniqueClassCommand(payload));
+        CreateUniqueClassResult result = await _handler.Handle(new CreateUniqueClassCommand(payload));
 
         Assert.That(result, Is.InstanceOf<CreateUniqueClassResult.GroupNotFound>());
-        uniqueClassDao.VerifyNoOtherCalls();
-        coordinator.VerifyNoOtherCalls();
-        classBuilder.VerifyNoOtherCalls();
+        _uniqueClassDao.VerifyNoOtherCalls();
+        _coordinator.VerifyNoOtherCalls();
+        _classBuilder.VerifyNoOtherCalls();
     }
 
     [Test]
@@ -95,17 +95,17 @@ public class CreateUniqueClassHandlerTests
         CreateUniqueClassDto payload = ValidPayload(teacherId);
         List<ClassTeacher> teachers = TeacherEntities(teacherId);
 
-        mapper.Setup(map => map.Map<List<ClassTeacherDto>, List<ClassTeacher>>(payload.Teachers)).Returns(teachers);
-        classGroupDao.Setup(dao => dao.ExistsForTenantAsync(TenantId, GroupId)).ReturnsAsync(true);
-        uniqueClassDao
+        _mapper.Setup(map => map.Map<List<ClassTeacherDto>, List<ClassTeacher>>(payload.Teachers)).Returns(teachers);
+        _classGroupDao.Setup(dao => dao.ExistsForTenantAsync(TenantId, GroupId)).ReturnsAsync(true);
+        _uniqueClassDao
             .Setup(dao => dao.HasGroupOverlapAsync(TenantId, GroupId, payload.Date, payload.StartTime, payload.EndTime, null))
             .ReturnsAsync(true);
 
-        CreateUniqueClassResult result = await handler.Handle(new CreateUniqueClassCommand(payload));
+        CreateUniqueClassResult result = await _handler.Handle(new CreateUniqueClassCommand(payload));
 
         Assert.That(result, Is.InstanceOf<CreateUniqueClassResult.GroupOverlapConflict>());
-        coordinator.VerifyNoOtherCalls();
-        classBuilder.VerifyNoOtherCalls();
+        _coordinator.VerifyNoOtherCalls();
+        _classBuilder.VerifyNoOtherCalls();
     }
 
     [Test]
@@ -128,18 +128,18 @@ public class CreateUniqueClassHandlerTests
             Teachers = []
         };
 
-        mapper.Setup(map => map.Map<List<ClassTeacherDto>, List<ClassTeacher>>(payload.Teachers)).Returns(teachers);
-        classGroupDao.Setup(dao => dao.ExistsForTenantAsync(TenantId, GroupId)).ReturnsAsync(true);
-        uniqueClassDao
+        _mapper.Setup(map => map.Map<List<ClassTeacherDto>, List<ClassTeacher>>(payload.Teachers)).Returns(teachers);
+        _classGroupDao.Setup(dao => dao.ExistsForTenantAsync(TenantId, GroupId)).ReturnsAsync(true);
+        _uniqueClassDao
             .Setup(dao => dao.HasGroupOverlapAsync(TenantId, GroupId, payload.Date, payload.StartTime, payload.EndTime, null))
             .ReturnsAsync(false);
-        classBuilder.Setup(builder => builder.BuildUniqueClass(TenantId, payload.CourseId, GroupId, payload, teachers)).Returns(built);
-        coordinator
+        _classBuilder.Setup(builder => builder.BuildUniqueClass(TenantId, payload.CourseId, GroupId, payload, teachers)).Returns(built);
+        _coordinator
             .Setup(coord => coord.CreateAsync(TenantId, payload.CourseId, "ref-1", "UniqueClass", built.Id, built, teachers))
             .ReturnsAsync(new ClassCreationOutcome<UniqueClass>.Created(built));
-        mapper.Setup(map => map.Map<GetUniqueClassDto>(built)).Returns(mapped);
+        _mapper.Setup(map => map.Map<GetUniqueClassDto>(built)).Returns(mapped);
 
-        CreateUniqueClassResult result = await handler.Handle(new CreateUniqueClassCommand(payload));
+        CreateUniqueClassResult result = await _handler.Handle(new CreateUniqueClassCommand(payload));
 
         Assert.Multiple(() =>
         {
@@ -169,18 +169,18 @@ public class CreateUniqueClassHandlerTests
             Teachers = []
         };
 
-        mapper.Setup(map => map.Map<List<ClassTeacherDto>, List<ClassTeacher>>(payload.Teachers)).Returns(teachers);
-        classGroupDao.Setup(dao => dao.ExistsForTenantAsync(TenantId, GroupId)).ReturnsAsync(true);
-        uniqueClassDao
+        _mapper.Setup(map => map.Map<List<ClassTeacherDto>, List<ClassTeacher>>(payload.Teachers)).Returns(teachers);
+        _classGroupDao.Setup(dao => dao.ExistsForTenantAsync(TenantId, GroupId)).ReturnsAsync(true);
+        _uniqueClassDao
             .Setup(dao => dao.HasGroupOverlapAsync(TenantId, GroupId, payload.Date, payload.StartTime, payload.EndTime, null))
             .ReturnsAsync(false);
-        classBuilder.Setup(builder => builder.BuildUniqueClass(TenantId, payload.CourseId, GroupId, payload, teachers)).Returns(built);
-        coordinator
+        _classBuilder.Setup(builder => builder.BuildUniqueClass(TenantId, payload.CourseId, GroupId, payload, teachers)).Returns(built);
+        _coordinator
             .Setup(coord => coord.CreateAsync(TenantId, payload.CourseId, "ref-1", "UniqueClass", built.Id, built, teachers))
             .ReturnsAsync(new ClassCreationOutcome<UniqueClass>.Replayed(prior));
-        mapper.Setup(map => map.Map<GetUniqueClassDto>(prior)).Returns(mappedPrior);
+        _mapper.Setup(map => map.Map<GetUniqueClassDto>(prior)).Returns(mappedPrior);
 
-        CreateUniqueClassResult result = await handler.Handle(new CreateUniqueClassCommand(payload));
+        CreateUniqueClassResult result = await _handler.Handle(new CreateUniqueClassCommand(payload));
 
         Assert.Multiple(() =>
         {
@@ -197,17 +197,17 @@ public class CreateUniqueClassHandlerTests
         List<ClassTeacher> teachers = TeacherEntities(teacherId);
         var built = new UniqueClass { Id = Guid.NewGuid(), TenantId = TenantId, GroupId = GroupId };
 
-        mapper.Setup(map => map.Map<List<ClassTeacherDto>, List<ClassTeacher>>(payload.Teachers)).Returns(teachers);
-        classGroupDao.Setup(dao => dao.ExistsForTenantAsync(TenantId, GroupId)).ReturnsAsync(true);
-        uniqueClassDao
+        _mapper.Setup(map => map.Map<List<ClassTeacherDto>, List<ClassTeacher>>(payload.Teachers)).Returns(teachers);
+        _classGroupDao.Setup(dao => dao.ExistsForTenantAsync(TenantId, GroupId)).ReturnsAsync(true);
+        _uniqueClassDao
             .Setup(dao => dao.HasGroupOverlapAsync(TenantId, GroupId, payload.Date, payload.StartTime, payload.EndTime, null))
             .ReturnsAsync(false);
-        classBuilder.Setup(builder => builder.BuildUniqueClass(TenantId, payload.CourseId, GroupId, payload, teachers)).Returns(built);
-        coordinator
+        _classBuilder.Setup(builder => builder.BuildUniqueClass(TenantId, payload.CourseId, GroupId, payload, teachers)).Returns(built);
+        _coordinator
             .Setup(coord => coord.CreateAsync(TenantId, payload.CourseId, "ref-1", "UniqueClass", built.Id, built, teachers))
             .ReturnsAsync(new ClassCreationOutcome<UniqueClass>.CourseMissing());
 
-        CreateUniqueClassResult result = await handler.Handle(new CreateUniqueClassCommand(payload));
+        CreateUniqueClassResult result = await _handler.Handle(new CreateUniqueClassCommand(payload));
 
         Assert.That(result, Is.InstanceOf<CreateUniqueClassResult.CourseNotFound>());
     }

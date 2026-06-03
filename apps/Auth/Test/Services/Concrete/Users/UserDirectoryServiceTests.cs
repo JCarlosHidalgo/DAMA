@@ -17,38 +17,38 @@ public class UserDirectoryServiceTests
     private static readonly Guid CallerTenantId = Guid.Parse("11111111-1111-1111-1111-111111111111");
     private static readonly Guid CallerUserId = Guid.Parse("22222222-2222-2222-2222-222222222222");
 
-    private Mock<IUserDirectoryDao> userDirectoryDao = null!;
-    private Mock<IClaimContext> claimContext = null!;
-    private Mock<IUserViewBuilder> userViewBuilder = null!;
+    private Mock<IUserDirectoryDao> _userDirectoryDao = null!;
+    private Mock<IClaimContext> _claimContext = null!;
+    private Mock<IUserViewBuilder> _userViewBuilder = null!;
 
-    private UserDirectoryService sut = null!;
+    private UserDirectoryService _sut = null!;
 
     [SetUp]
     public void SetUp()
     {
-        userDirectoryDao = new Mock<IUserDirectoryDao>(MockBehavior.Strict);
-        claimContext = new Mock<IClaimContext>(MockBehavior.Strict);
-        userViewBuilder = new Mock<IUserViewBuilder>(MockBehavior.Strict);
+        _userDirectoryDao = new Mock<IUserDirectoryDao>(MockBehavior.Strict);
+        _claimContext = new Mock<IClaimContext>(MockBehavior.Strict);
+        _userViewBuilder = new Mock<IUserViewBuilder>(MockBehavior.Strict);
 
-        claimContext.Setup(accessor => accessor.TenantId).Returns(CallerTenantId);
-        claimContext.Setup(accessor => accessor.UserId).Returns(CallerUserId);
+        _claimContext.Setup(accessor => accessor.TenantId).Returns(CallerTenantId);
+        _claimContext.Setup(accessor => accessor.UserId).Returns(CallerUserId);
 
-        sut = new UserDirectoryService(
-            userDirectoryDao.Object,
-            claimContext.Object,
-            userViewBuilder.Object);
+        _sut = new UserDirectoryService(
+            _userDirectoryDao.Object,
+            _claimContext.Object,
+            _userViewBuilder.Object);
     }
 
     [Test]
     public async Task DeleteUserAsync_WhenTargetIsCaller_ReturnsSelfDeleteForbidden()
     {
-        DeleteUserOutcome outcome = await sut.DeleteUserAsync(CallerUserId);
+        DeleteUserOutcome outcome = await _sut.DeleteUserAsync(CallerUserId);
 
         Assert.That(outcome, Is.InstanceOf<DeleteUserOutcome.SelfDeleteForbidden>());
-        userDirectoryDao.Verify(
+        _userDirectoryDao.Verify(
             dao => dao.GetByIdForTenantAsync(It.IsAny<Guid>(), It.IsAny<Guid>()),
             Times.Never);
-        userDirectoryDao.Verify(
+        _userDirectoryDao.Verify(
             dao => dao.SoftDeleteForTenantAsync(It.IsAny<Guid>(), It.IsAny<Guid>()),
             Times.Never);
     }
@@ -57,14 +57,14 @@ public class UserDirectoryServiceTests
     public async Task DeleteUserAsync_WhenTargetNotFound_ReturnsNotFound()
     {
         var targetUserId = Guid.NewGuid();
-        userDirectoryDao
+        _userDirectoryDao
             .Setup(dao => dao.GetByIdForTenantAsync(targetUserId, CallerTenantId))
             .ReturnsAsync((User?)null);
 
-        DeleteUserOutcome outcome = await sut.DeleteUserAsync(targetUserId);
+        DeleteUserOutcome outcome = await _sut.DeleteUserAsync(targetUserId);
 
         Assert.That(outcome, Is.InstanceOf<DeleteUserOutcome.NotFound>());
-        userDirectoryDao.Verify(
+        _userDirectoryDao.Verify(
             dao => dao.SoftDeleteForTenantAsync(It.IsAny<Guid>(), It.IsAny<Guid>()),
             Times.Never);
     }
@@ -79,14 +79,14 @@ public class UserDirectoryServiceTests
             UserName = "another_client",
             Role = UserRoles.Client
         };
-        userDirectoryDao
+        _userDirectoryDao
             .Setup(dao => dao.GetByIdForTenantAsync(targetUserId, CallerTenantId))
             .ReturnsAsync(clientUser);
 
-        DeleteUserOutcome outcome = await sut.DeleteUserAsync(targetUserId);
+        DeleteUserOutcome outcome = await _sut.DeleteUserAsync(targetUserId);
 
         Assert.That(outcome, Is.InstanceOf<DeleteUserOutcome.ClientDeleteForbidden>());
-        userDirectoryDao.Verify(
+        _userDirectoryDao.Verify(
             dao => dao.SoftDeleteForTenantAsync(It.IsAny<Guid>(), It.IsAny<Guid>()),
             Times.Never);
     }
@@ -96,14 +96,14 @@ public class UserDirectoryServiceTests
     {
         var targetUserId = Guid.NewGuid();
         User targetUser = new() { Id = targetUserId, UserName = "some_student", Role = UserRoles.Student };
-        userDirectoryDao
+        _userDirectoryDao
             .Setup(dao => dao.GetByIdForTenantAsync(targetUserId, CallerTenantId))
             .ReturnsAsync(targetUser);
-        userDirectoryDao
+        _userDirectoryDao
             .Setup(dao => dao.SoftDeleteForTenantAsync(targetUserId, CallerTenantId))
             .ReturnsAsync(1);
 
-        DeleteUserOutcome outcome = await sut.DeleteUserAsync(targetUserId);
+        DeleteUserOutcome outcome = await _sut.DeleteUserAsync(targetUserId);
 
         Assert.That(outcome, Is.InstanceOf<DeleteUserOutcome.Deleted>());
     }
@@ -113,14 +113,14 @@ public class UserDirectoryServiceTests
     {
         var targetUserId = Guid.NewGuid();
         User targetUser = new() { Id = targetUserId, UserName = "some_student", Role = UserRoles.Student };
-        userDirectoryDao
+        _userDirectoryDao
             .Setup(dao => dao.GetByIdForTenantAsync(targetUserId, CallerTenantId))
             .ReturnsAsync(targetUser);
-        userDirectoryDao
+        _userDirectoryDao
             .Setup(dao => dao.SoftDeleteForTenantAsync(targetUserId, CallerTenantId))
             .ReturnsAsync(0);
 
-        DeleteUserOutcome outcome = await sut.DeleteUserAsync(targetUserId);
+        DeleteUserOutcome outcome = await _sut.DeleteUserAsync(targetUserId);
 
         Assert.That(outcome, Is.InstanceOf<DeleteUserOutcome.NotFound>());
     }
@@ -129,14 +129,14 @@ public class UserDirectoryServiceTests
     public async Task RenameUserAsync_WhenUserNotFound_ReturnsNotFound()
     {
         var targetUserId = Guid.NewGuid();
-        userDirectoryDao
+        _userDirectoryDao
             .Setup(dao => dao.GetByIdForTenantAsync(targetUserId, CallerTenantId))
             .ReturnsAsync((User?)null);
 
-        RenameUserOutcome outcome = await sut.RenameUserAsync(targetUserId, "new_name");
+        RenameUserOutcome outcome = await _sut.RenameUserAsync(targetUserId, "new_name");
 
         Assert.That(outcome, Is.InstanceOf<RenameUserOutcome.NotFound>());
-        userDirectoryDao.Verify(
+        _userDirectoryDao.Verify(
             dao => dao.TryUpdateUserNameForTenantAsync(
                 It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<string>()),
             Times.Never);
@@ -147,14 +147,14 @@ public class UserDirectoryServiceTests
     {
         var targetUserId = Guid.NewGuid();
         User targetUser = new() { Id = targetUserId, UserName = "old_name", Role = UserRoles.Student };
-        userDirectoryDao
+        _userDirectoryDao
             .Setup(dao => dao.GetByIdForTenantAsync(targetUserId, CallerTenantId))
             .ReturnsAsync(targetUser);
-        userDirectoryDao
+        _userDirectoryDao
             .Setup(dao => dao.TryUpdateUserNameForTenantAsync(targetUserId, CallerTenantId, "taken_name"))
             .ReturnsAsync(-1);
 
-        RenameUserOutcome outcome = await sut.RenameUserAsync(targetUserId, "taken_name");
+        RenameUserOutcome outcome = await _sut.RenameUserAsync(targetUserId, "taken_name");
 
         Assert.That(outcome, Is.InstanceOf<RenameUserOutcome.DuplicateName>());
     }
@@ -164,14 +164,14 @@ public class UserDirectoryServiceTests
     {
         var targetUserId = Guid.NewGuid();
         User targetUser = new() { Id = targetUserId, UserName = "old_name", Role = UserRoles.Student };
-        userDirectoryDao
+        _userDirectoryDao
             .Setup(dao => dao.GetByIdForTenantAsync(targetUserId, CallerTenantId))
             .ReturnsAsync(targetUser);
-        userDirectoryDao
+        _userDirectoryDao
             .Setup(dao => dao.TryUpdateUserNameForTenantAsync(targetUserId, CallerTenantId, "new_name"))
             .ReturnsAsync(0);
 
-        RenameUserOutcome outcome = await sut.RenameUserAsync(targetUserId, "new_name");
+        RenameUserOutcome outcome = await _sut.RenameUserAsync(targetUserId, "new_name");
 
         Assert.That(outcome, Is.InstanceOf<RenameUserOutcome.NotFound>());
     }
@@ -181,14 +181,14 @@ public class UserDirectoryServiceTests
     {
         var targetUserId = Guid.NewGuid();
         User targetUser = new() { Id = targetUserId, UserName = "old_name", Role = UserRoles.Student };
-        userDirectoryDao
+        _userDirectoryDao
             .Setup(dao => dao.GetByIdForTenantAsync(targetUserId, CallerTenantId))
             .ReturnsAsync(targetUser);
-        userDirectoryDao
+        _userDirectoryDao
             .Setup(dao => dao.TryUpdateUserNameForTenantAsync(targetUserId, CallerTenantId, "new_name"))
             .ReturnsAsync(1);
 
-        RenameUserOutcome outcome = await sut.RenameUserAsync(targetUserId, "new_name");
+        RenameUserOutcome outcome = await _sut.RenameUserAsync(targetUserId, "new_name");
 
         Assert.That(outcome, Is.InstanceOf<RenameUserOutcome.Renamed>());
     }
@@ -203,14 +203,14 @@ public class UserDirectoryServiceTests
             Role = UserRoles.Student
         };
         UserListItemDto builtListItem = new() { Id = foundStudent.Id, Username = foundStudent.UserName };
-        userDirectoryDao
+        _userDirectoryDao
             .Setup(dao => dao.GetStudentByExactNameForTenantAsync(CallerTenantId, "exact_match_name"))
             .ReturnsAsync(foundStudent);
-        userViewBuilder
+        _userViewBuilder
             .Setup(builder => builder.BuildUserListItem(foundStudent))
             .Returns(builtListItem);
 
-        UserListItemDto? listItem = await sut.FindStudentByExactNameAsync("exact_match_name");
+        UserListItemDto? listItem = await _sut.FindStudentByExactNameAsync("exact_match_name");
 
         Assert.That(listItem, Is.SameAs(builtListItem));
     }
@@ -218,14 +218,14 @@ public class UserDirectoryServiceTests
     [Test]
     public async Task FindStudentByExactNameAsync_WhenStudentNotFound_ReturnsNull()
     {
-        userDirectoryDao
+        _userDirectoryDao
             .Setup(dao => dao.GetStudentByExactNameForTenantAsync(CallerTenantId, "no_such_name"))
             .ReturnsAsync((User?)null);
 
-        UserListItemDto? listItem = await sut.FindStudentByExactNameAsync("no_such_name");
+        UserListItemDto? listItem = await _sut.FindStudentByExactNameAsync("no_such_name");
 
         Assert.That(listItem, Is.Null);
-        userViewBuilder.Verify(builder => builder.BuildUserListItem(It.IsAny<User>()), Times.Never);
+        _userViewBuilder.Verify(builder => builder.BuildUserListItem(It.IsAny<User>()), Times.Never);
     }
 
     [Test]
@@ -240,18 +240,18 @@ public class UserDirectoryServiceTests
         ];
         PagedUsersResponseDto builtResponse = new() { Items = [], PageIndex = 0, MaxPageIndex = 2 };
 
-        userDirectoryDao
+        _userDirectoryDao
             .Setup(dao => dao.CountByRoleForTenantAsync(CallerTenantId, UserRoles.Student))
             .ReturnsAsync(totalCount);
-        userDirectoryDao
+        _userDirectoryDao
             .Setup(dao => dao.GetByRoleForTenantPagedAsync(
                 CallerTenantId, UserRoles.Student, 0, UserDirectoryService.UserListPageSize))
             .ReturnsAsync(fetchedUsers);
-        userViewBuilder
+        _userViewBuilder
             .Setup(builder => builder.BuildPagedUsersResponse(fetchedUsers, 0, 2))
             .Returns(builtResponse);
 
-        PagedUsersResponseDto response = await sut.GetStudentsPagedAsync(requestedPageIndex);
+        PagedUsersResponseDto response = await _sut.GetStudentsPagedAsync(requestedPageIndex);
 
         Assert.That(response, Is.SameAs(builtResponse));
     }
@@ -260,18 +260,18 @@ public class UserDirectoryServiceTests
     public async Task GetStudentsPagedAsync_WhenTotalCountZero_ReturnsEmptyPageWithoutFetching()
     {
         PagedUsersResponseDto builtResponse = new() { Items = [], PageIndex = 0, MaxPageIndex = 0 };
-        userDirectoryDao
+        _userDirectoryDao
             .Setup(dao => dao.CountByRoleForTenantAsync(CallerTenantId, UserRoles.Student))
             .ReturnsAsync(0L);
-        userViewBuilder
+        _userViewBuilder
             .Setup(builder => builder.BuildPagedUsersResponse(
                 It.Is<List<User>>(list => list.Count == 0), 0, 0))
             .Returns(builtResponse);
 
-        PagedUsersResponseDto response = await sut.GetStudentsPagedAsync(0);
+        PagedUsersResponseDto response = await _sut.GetStudentsPagedAsync(0);
 
         Assert.That(response, Is.SameAs(builtResponse));
-        userDirectoryDao.Verify(
+        _userDirectoryDao.Verify(
             dao => dao.GetByRoleForTenantPagedAsync(
                 It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<int>()),
             Times.Never);
@@ -288,18 +288,18 @@ public class UserDirectoryServiceTests
         ];
         PagedUsersResponseDto builtResponse = new() { Items = [], PageIndex = 1, MaxPageIndex = 1 };
 
-        userDirectoryDao
+        _userDirectoryDao
             .Setup(dao => dao.CountByRoleForTenantAsync(CallerTenantId, UserRoles.Teacher))
             .ReturnsAsync(totalCount);
-        userDirectoryDao
+        _userDirectoryDao
             .Setup(dao => dao.GetByRoleForTenantPagedAsync(
                 CallerTenantId, UserRoles.Teacher, UserDirectoryService.UserListPageSize, UserDirectoryService.UserListPageSize))
             .ReturnsAsync(fetchedUsers);
-        userViewBuilder
+        _userViewBuilder
             .Setup(builder => builder.BuildPagedUsersResponse(fetchedUsers, 1, 1))
             .Returns(builtResponse);
 
-        PagedUsersResponseDto response = await sut.GetTeachersPagedAsync(requestedPageIndex);
+        PagedUsersResponseDto response = await _sut.GetTeachersPagedAsync(requestedPageIndex);
 
         Assert.That(response, Is.SameAs(builtResponse));
     }

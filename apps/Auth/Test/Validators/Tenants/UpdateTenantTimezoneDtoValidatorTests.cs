@@ -10,17 +10,17 @@ public class UpdateTenantTimezoneDtoValidatorTests
 {
     private const string InvalidTimezoneMessage = "Timezone IANA inválido";
 
-    private UpdateTenantTimezoneDtoValidator sut = null!;
+    private UpdateTenantTimezoneDtoValidator _sut = null!;
 
     [SetUp]
-    public void SetUp() => sut = new UpdateTenantTimezoneDtoValidator();
+    public void SetUp() => _sut = new UpdateTenantTimezoneDtoValidator();
 
     [Test]
     public async Task Validate_WithValidIanaIdentifier_IsValid()
     {
         UpdateTenantTimezoneDto request = new() { Timezone = "America/La_Paz" };
 
-        ValidationResult result = await sut.ValidateAsync(request);
+        ValidationResult result = await _sut.ValidateAsync(request);
 
         Assert.That(result.IsValid, Is.True);
     }
@@ -30,7 +30,7 @@ public class UpdateTenantTimezoneDtoValidatorTests
     {
         UpdateTenantTimezoneDto request = new() { Timezone = string.Empty };
 
-        ValidationResult result = await sut.ValidateAsync(request);
+        ValidationResult result = await _sut.ValidateAsync(request);
 
         Assert.Multiple(() =>
         {
@@ -44,7 +44,7 @@ public class UpdateTenantTimezoneDtoValidatorTests
     {
         UpdateTenantTimezoneDto request = new() { Timezone = "   " };
 
-        ValidationResult result = await sut.ValidateAsync(request);
+        ValidationResult result = await _sut.ValidateAsync(request);
 
         Assert.Multiple(() =>
         {
@@ -58,7 +58,7 @@ public class UpdateTenantTimezoneDtoValidatorTests
     {
         UpdateTenantTimezoneDto request = new() { Timezone = "Continent/NonExistent" };
 
-        ValidationResult result = await sut.ValidateAsync(request);
+        ValidationResult result = await _sut.ValidateAsync(request);
 
         Assert.Multiple(() =>
         {

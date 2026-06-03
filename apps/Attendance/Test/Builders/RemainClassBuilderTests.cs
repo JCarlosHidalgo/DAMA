@@ -6,10 +6,10 @@ namespace Test.Builders;
 [TestFixture]
 public class RemainClassBuilderTests
 {
-    private RemainClassBuilder sut = null!;
+    private RemainClassBuilder _sut = null!;
 
     [SetUp]
-    public void SetUp() => sut = new RemainClassBuilder();
+    public void SetUp() => _sut = new RemainClassBuilder();
 
     [Test]
     public void BuildEmptyRemain_ReturnsZeroClassesAndNullName()
@@ -17,7 +17,7 @@ public class RemainClassBuilderTests
         var tenantId = Guid.NewGuid();
         var studentId = Guid.NewGuid();
 
-        StudentRemainClasses remain = sut.BuildEmptyRemain(tenantId, studentId);
+        StudentRemainClasses remain = _sut.BuildEmptyRemain(tenantId, studentId);
 
         Assert.Multiple(() =>
         {

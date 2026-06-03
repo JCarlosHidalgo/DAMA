@@ -16,23 +16,23 @@ public class ClassCreationCoordinatorTests
     private static readonly Guid TenantId = Guid.Parse("22222222-2222-2222-2222-222222222222");
     private static readonly Guid CourseId = Guid.Parse("33333333-3333-3333-3333-333333333333");
 
-    private Mock<ICourseDao> courseDao = null!;
-    private Mock<IIdempotentTransactionExecutor> idempotentExecutor = null!;
+    private Mock<ICourseDao> _courseDao = null!;
+    private Mock<IIdempotentTransactionExecutor> _idempotentExecutor = null!;
 
     [SetUp]
     public void SetUp()
     {
-        courseDao = new Mock<ICourseDao>(MockBehavior.Strict);
-        idempotentExecutor = new Mock<IIdempotentTransactionExecutor>(MockBehavior.Strict);
+        _courseDao = new Mock<ICourseDao>(MockBehavior.Strict);
+        _idempotentExecutor = new Mock<IIdempotentTransactionExecutor>(MockBehavior.Strict);
     }
 
     [Test]
     public async Task CreateAsync_WhenCourseDoesNotExist_ReturnsCourseMissingAndSkipsExecutor()
     {
         var writer = new Mock<IClassAggregateWriter<ScheduledClass>>(MockBehavior.Strict);
-        courseDao.Setup(dao => dao.ExistsForTenantAsync(TenantId, CourseId)).ReturnsAsync(false);
+        _courseDao.Setup(dao => dao.ExistsForTenantAsync(TenantId, CourseId)).ReturnsAsync(false);
         var coordinator =
-            new ClassCreationCoordinator<ScheduledClass>(courseDao.Object, idempotentExecutor.Object, writer.Object);
+            new ClassCreationCoordinator<ScheduledClass>(_courseDao.Object, _idempotentExecutor.Object, writer.Object);
 
         ClassCreationOutcome<ScheduledClass> outcome = await coordinator.CreateAsync(
             TenantId, CourseId, externalReference: null, "ScheduledClass",
@@ -41,7 +41,7 @@ public class ClassCreationCoordinatorTests
             teachers: new List<ClassTeacher>());
 
         Assert.That(outcome, Is.InstanceOf<ClassCreationOutcome<ScheduledClass>.CourseMissing>());
-        idempotentExecutor.VerifyNoOtherCalls();
+        _idempotentExecutor.VerifyNoOtherCalls();
     }
 
     [Test]
@@ -50,8 +50,8 @@ public class ClassCreationCoordinatorTests
         var candidate = new ScheduledClass { Id = Guid.NewGuid() };
         var writer = new Mock<IClassAggregateWriter<ScheduledClass>>(MockBehavior.Strict);
 
-        courseDao.Setup(dao => dao.ExistsForTenantAsync(TenantId, CourseId)).ReturnsAsync(true);
-        idempotentExecutor
+        _courseDao.Setup(dao => dao.ExistsForTenantAsync(TenantId, CourseId)).ReturnsAsync(true);
+        _idempotentExecutor
             .Setup(executor => executor.ExecuteAsync<ScheduledClass>(
                 TenantId, "ref-1", "ScheduledClass", candidate.Id,
                 It.IsAny<Func<ITransactionContext, Task<ScheduledClass?>>>(),
@@ -59,7 +59,7 @@ public class ClassCreationCoordinatorTests
             .ReturnsAsync(new IdempotentInsertOutcome<ScheduledClass>.Inserted(candidate));
 
         var coordinator =
-            new ClassCreationCoordinator<ScheduledClass>(courseDao.Object, idempotentExecutor.Object, writer.Object);
+            new ClassCreationCoordinator<ScheduledClass>(_courseDao.Object, _idempotentExecutor.Object, writer.Object);
 
         ClassCreationOutcome<ScheduledClass> outcome = await coordinator.CreateAsync(
             TenantId, CourseId, "ref-1", "ScheduledClass", candidate.Id, candidate, new List<ClassTeacher>());
@@ -77,8 +77,8 @@ public class ClassCreationCoordinatorTests
         var prior = new UniqueClass { Id = Guid.NewGuid() };
         var writer = new Mock<IClassAggregateWriter<UniqueClass>>(MockBehavior.Strict);
 
-        courseDao.Setup(dao => dao.ExistsForTenantAsync(TenantId, CourseId)).ReturnsAsync(true);
-        idempotentExecutor
+        _courseDao.Setup(dao => dao.ExistsForTenantAsync(TenantId, CourseId)).ReturnsAsync(true);
+        _idempotentExecutor
             .Setup(executor => executor.ExecuteAsync<UniqueClass>(
                 TenantId, "ref-dup", "UniqueClass", It.IsAny<Guid>(),
                 It.IsAny<Func<ITransactionContext, Task<UniqueClass?>>>(),
@@ -86,7 +86,7 @@ public class ClassCreationCoordinatorTests
             .ReturnsAsync(new IdempotentInsertOutcome<UniqueClass>.Replayed(prior));
 
         var coordinator =
-            new ClassCreationCoordinator<UniqueClass>(courseDao.Object, idempotentExecutor.Object, writer.Object);
+            new ClassCreationCoordinator<UniqueClass>(_courseDao.Object, _idempotentExecutor.Object, writer.Object);
 
         ClassCreationOutcome<UniqueClass> outcome = await coordinator.CreateAsync(
             TenantId, CourseId, "ref-dup", "UniqueClass",
@@ -106,8 +106,8 @@ public class ClassCreationCoordinatorTests
     {
         var writer = new Mock<IClassAggregateWriter<ScheduledClass>>(MockBehavior.Strict);
 
-        courseDao.Setup(dao => dao.ExistsForTenantAsync(TenantId, CourseId)).ReturnsAsync(true);
-        idempotentExecutor
+        _courseDao.Setup(dao => dao.ExistsForTenantAsync(TenantId, CourseId)).ReturnsAsync(true);
+        _idempotentExecutor
             .Setup(executor => executor.ExecuteAsync<ScheduledClass>(
                 TenantId, null, "ScheduledClass", It.IsAny<Guid>(),
                 It.IsAny<Func<ITransactionContext, Task<ScheduledClass?>>>(),
@@ -115,7 +115,7 @@ public class ClassCreationCoordinatorTests
             .ReturnsAsync(new IdempotentInsertOutcome<ScheduledClass>.InsertFailed());
 
         var coordinator =
-            new ClassCreationCoordinator<ScheduledClass>(courseDao.Object, idempotentExecutor.Object, writer.Object);
+            new ClassCreationCoordinator<ScheduledClass>(_courseDao.Object, _idempotentExecutor.Object, writer.Object);
 
         Assert.ThrowsAsync<System.Diagnostics.UnreachableException>(async () =>
         {
@@ -143,9 +143,9 @@ public class ClassCreationCoordinatorTests
         writer.Setup(w => w.InsertTeacherAsync(entityId, It.IsAny<ClassTeacher>(), TenantId, transactionContext.Object))
               .Returns(Task.CompletedTask);
 
-        courseDao.Setup(dao => dao.ExistsForTenantAsync(TenantId, CourseId)).ReturnsAsync(true);
+        _courseDao.Setup(dao => dao.ExistsForTenantAsync(TenantId, CourseId)).ReturnsAsync(true);
         Func<ITransactionContext, Task<ScheduledClass?>>? capturedInsert = null;
-        idempotentExecutor
+        _idempotentExecutor
             .Setup(executor => executor.ExecuteAsync<ScheduledClass>(
                 TenantId, null, "ScheduledClass", entityId,
                 It.IsAny<Func<ITransactionContext, Task<ScheduledClass?>>>(),
@@ -155,7 +155,7 @@ public class ClassCreationCoordinatorTests
             .ReturnsAsync(new IdempotentInsertOutcome<ScheduledClass>.Inserted(entity));
 
         var coordinator =
-            new ClassCreationCoordinator<ScheduledClass>(courseDao.Object, idempotentExecutor.Object, writer.Object);
+            new ClassCreationCoordinator<ScheduledClass>(_courseDao.Object, _idempotentExecutor.Object, writer.Object);
 
         await coordinator.CreateAsync(TenantId, CourseId, null, "ScheduledClass", entityId, entity, teachers);
         ScheduledClass? insertResult = await capturedInsert!(transactionContext.Object);
@@ -175,9 +175,9 @@ public class ClassCreationCoordinatorTests
         var transactionContext = new Mock<ITransactionContext>(MockBehavior.Strict);
         writer.Setup(w => w.CreateForTenantAsync(entity, TenantId, transactionContext.Object)).ReturnsAsync(false);
 
-        courseDao.Setup(dao => dao.ExistsForTenantAsync(TenantId, CourseId)).ReturnsAsync(true);
+        _courseDao.Setup(dao => dao.ExistsForTenantAsync(TenantId, CourseId)).ReturnsAsync(true);
         Func<ITransactionContext, Task<ScheduledClass?>>? capturedInsert = null;
-        idempotentExecutor
+        _idempotentExecutor
             .Setup(executor => executor.ExecuteAsync<ScheduledClass>(
                 TenantId, null, "ScheduledClass", entityId,
                 It.IsAny<Func<ITransactionContext, Task<ScheduledClass?>>>(),
@@ -187,7 +187,7 @@ public class ClassCreationCoordinatorTests
             .ReturnsAsync(new IdempotentInsertOutcome<ScheduledClass>.Inserted(entity));
 
         var coordinator =
-            new ClassCreationCoordinator<ScheduledClass>(courseDao.Object, idempotentExecutor.Object, writer.Object);
+            new ClassCreationCoordinator<ScheduledClass>(_courseDao.Object, _idempotentExecutor.Object, writer.Object);
 
         await coordinator.CreateAsync(TenantId, CourseId, null, "ScheduledClass", entityId,
             entity, new List<ClassTeacher>());

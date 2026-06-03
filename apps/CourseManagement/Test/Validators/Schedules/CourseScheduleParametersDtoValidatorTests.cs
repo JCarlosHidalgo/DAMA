@@ -11,10 +11,10 @@ public class CourseScheduleParametersDtoValidatorTests
     private const string InvalidCourseIdMessage = "CourseId es requerido";
     private const string InvalidIndexMessage = "WeekPaginationIndex fuera de rango razonable";
 
-    private CourseScheduleParametersDtoValidator validator = null!;
+    private CourseScheduleParametersDtoValidator _validator = null!;
 
     [SetUp]
-    public void SetUp() => validator = new CourseScheduleParametersDtoValidator();
+    public void SetUp() => _validator = new CourseScheduleParametersDtoValidator();
 
     [Test]
     public async Task Validate_WithValidPayload_IsValid()
@@ -25,7 +25,7 @@ public class CourseScheduleParametersDtoValidatorTests
             WeekPaginationIndex = 0
         };
 
-        ValidationResult result = await validator.ValidateAsync(request);
+        ValidationResult result = await _validator.ValidateAsync(request);
 
         Assert.That(result.IsValid, Is.True);
     }
@@ -39,7 +39,7 @@ public class CourseScheduleParametersDtoValidatorTests
             WeekPaginationIndex = 0
         };
 
-        ValidationResult result = await validator.ValidateAsync(request);
+        ValidationResult result = await _validator.ValidateAsync(request);
 
         Assert.Multiple(() =>
         {
@@ -58,7 +58,7 @@ public class CourseScheduleParametersDtoValidatorTests
             WeekPaginationIndex = weekPaginationIndex
         };
 
-        ValidationResult result = await validator.ValidateAsync(request);
+        ValidationResult result = await _validator.ValidateAsync(request);
 
         Assert.Multiple(() =>
         {
@@ -77,7 +77,7 @@ public class CourseScheduleParametersDtoValidatorTests
             WeekPaginationIndex = weekPaginationIndex
         };
 
-        ValidationResult result = await validator.ValidateAsync(request);
+        ValidationResult result = await _validator.ValidateAsync(request);
 
         Assert.That(result.IsValid, Is.True);
     }

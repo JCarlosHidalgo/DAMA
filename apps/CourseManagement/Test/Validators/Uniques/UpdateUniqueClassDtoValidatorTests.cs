@@ -14,10 +14,10 @@ public class UpdateUniqueClassDtoValidatorTests
     private const string InvalidDateMessage = "Date fuera de rango razonable";
     private const string EmptyTeachersMessage = "Teachers debe contener al menos un docente";
 
-    private UpdateUniqueClassDtoValidator validator = null!;
+    private UpdateUniqueClassDtoValidator _validator = null!;
 
     [SetUp]
-    public void SetUp() => validator = new UpdateUniqueClassDtoValidator();
+    public void SetUp() => _validator = new UpdateUniqueClassDtoValidator();
 
     private static UpdateUniqueClassDto ValidPayload() => new()
     {
@@ -34,7 +34,7 @@ public class UpdateUniqueClassDtoValidatorTests
     [Test]
     public async Task Validate_WithValidPayload_IsValid()
     {
-        ValidationResult result = await validator.ValidateAsync(ValidPayload());
+        ValidationResult result = await _validator.ValidateAsync(ValidPayload());
 
         Assert.That(result.IsValid, Is.True);
     }
@@ -46,7 +46,7 @@ public class UpdateUniqueClassDtoValidatorTests
         UpdateUniqueClassDto request = ValidPayload();
         request.MaxStudentLimit = maxStudentLimit;
 
-        ValidationResult result = await validator.ValidateAsync(request);
+        ValidationResult result = await _validator.ValidateAsync(request);
 
         Assert.Multiple(() =>
         {
@@ -62,7 +62,7 @@ public class UpdateUniqueClassDtoValidatorTests
         UpdateUniqueClassDto request = ValidPayload();
         request.MaxStudentLimit = maxStudentLimit;
 
-        ValidationResult result = await validator.ValidateAsync(request);
+        ValidationResult result = await _validator.ValidateAsync(request);
 
         Assert.That(result.IsValid, Is.True);
     }
@@ -74,7 +74,7 @@ public class UpdateUniqueClassDtoValidatorTests
         request.StartTime = new TimeOnly(11, 0);
         request.EndTime = new TimeOnly(10, 0);
 
-        ValidationResult result = await validator.ValidateAsync(request);
+        ValidationResult result = await _validator.ValidateAsync(request);
 
         Assert.Multiple(() =>
         {
@@ -90,7 +90,7 @@ public class UpdateUniqueClassDtoValidatorTests
         request.StartTime = new TimeOnly(0, 30);
         request.EndTime = new TimeOnly(2, 0);
 
-        ValidationResult result = await validator.ValidateAsync(request);
+        ValidationResult result = await _validator.ValidateAsync(request);
 
         Assert.Multiple(() =>
         {
@@ -105,7 +105,7 @@ public class UpdateUniqueClassDtoValidatorTests
         UpdateUniqueClassDto request = ValidPayload();
         request.Date = new DateOnly(1999, 1, 1);
 
-        ValidationResult result = await validator.ValidateAsync(request);
+        ValidationResult result = await _validator.ValidateAsync(request);
 
         Assert.Multiple(() =>
         {
@@ -120,7 +120,7 @@ public class UpdateUniqueClassDtoValidatorTests
         UpdateUniqueClassDto request = ValidPayload();
         request.Teachers = [];
 
-        ValidationResult result = await validator.ValidateAsync(request);
+        ValidationResult result = await _validator.ValidateAsync(request);
 
         Assert.Multiple(() =>
         {

@@ -26,57 +26,57 @@ namespace Test.Services.Concrete.QrPayments;
 [TestFixture]
 public class CreateClassQrDebtCommandHandlerTests
 {
-    private Mock<IDebtTemplateDao> debtTemplateDao = null!;
-    private Mock<IPendingQrPaymentDao> pendingDao = null!;
-    private Mock<ITodotixOutboxDao> todotixOutboxDao = null!;
-    private Mock<IExpirationOutboxDao> expirationOutboxDao = null!;
-    private Mock<IUnitOfWork> unitOfWork = null!;
-    private Mock<ITransactionScope> transactionScope = null!;
-    private Mock<IClaimContext> claimContext = null!;
-    private Mock<IQrPaymentCreationBuilder> creationBuilder = null!;
-    private Mock<Backend.Services.Abstract.Todotix.ITodotixAppKeyResolver> appKeyResolver = null!;
-    private CreateClassQrDebtCommandHandler sut = null!;
-    private Guid tenantId;
-    private Guid studentId;
+    private Mock<IDebtTemplateDao> _debtTemplateDao = null!;
+    private Mock<IPendingQrPaymentDao> _pendingDao = null!;
+    private Mock<ITodotixOutboxDao> _todotixOutboxDao = null!;
+    private Mock<IExpirationOutboxDao> _expirationOutboxDao = null!;
+    private Mock<IUnitOfWork> _unitOfWork = null!;
+    private Mock<ITransactionScope> _transactionScope = null!;
+    private Mock<IClaimContext> _claimContext = null!;
+    private Mock<IQrPaymentCreationBuilder> _creationBuilder = null!;
+    private Mock<Backend.Services.Abstract.Todotix.ITodotixAppKeyResolver> _appKeyResolver = null!;
+    private CreateClassQrDebtCommandHandler _sut = null!;
+    private Guid _tenantId;
+    private Guid _studentId;
 
     [SetUp]
     public void Setup()
     {
-        debtTemplateDao = new Mock<IDebtTemplateDao>(MockBehavior.Strict);
-        pendingDao = new Mock<IPendingQrPaymentDao>(MockBehavior.Strict);
-        todotixOutboxDao = new Mock<ITodotixOutboxDao>(MockBehavior.Strict);
-        expirationOutboxDao = new Mock<IExpirationOutboxDao>(MockBehavior.Strict);
-        (unitOfWork, transactionScope) = UnitOfWorkMockHelper.BuildCommittingMocks();
-        claimContext = new Mock<IClaimContext>(MockBehavior.Strict);
-        creationBuilder = new Mock<IQrPaymentCreationBuilder>(MockBehavior.Strict);
-        appKeyResolver = new Mock<Backend.Services.Abstract.Todotix.ITodotixAppKeyResolver>(MockBehavior.Strict);
-        appKeyResolver.Setup(r => r.ResolveAsync(It.IsAny<Guid>())).ReturnsAsync("tenant-app-key");
+        _debtTemplateDao = new Mock<IDebtTemplateDao>(MockBehavior.Strict);
+        _pendingDao = new Mock<IPendingQrPaymentDao>(MockBehavior.Strict);
+        _todotixOutboxDao = new Mock<ITodotixOutboxDao>(MockBehavior.Strict);
+        _expirationOutboxDao = new Mock<IExpirationOutboxDao>(MockBehavior.Strict);
+        (_unitOfWork, _transactionScope) = UnitOfWorkMockHelper.BuildCommittingMocks();
+        _claimContext = new Mock<IClaimContext>(MockBehavior.Strict);
+        _creationBuilder = new Mock<IQrPaymentCreationBuilder>(MockBehavior.Strict);
+        _appKeyResolver = new Mock<Backend.Services.Abstract.Todotix.ITodotixAppKeyResolver>(MockBehavior.Strict);
+        _appKeyResolver.Setup(r => r.ResolveAsync(It.IsAny<Guid>())).ReturnsAsync("tenant-app-key");
 
-        tenantId = Guid.NewGuid();
-        studentId = Guid.NewGuid();
-        claimContext.Setup(c => c.TenantId).Returns(tenantId);
-        claimContext.Setup(c => c.UserId).Returns(studentId);
-        claimContext.Setup(c => c.TenantTimezone).Returns("America/La_Paz");
-        claimContext.Setup(c => c.TenantName).Returns("Acme");
+        _tenantId = Guid.NewGuid();
+        _studentId = Guid.NewGuid();
+        _claimContext.Setup(c => c.TenantId).Returns(_tenantId);
+        _claimContext.Setup(c => c.UserId).Returns(_studentId);
+        _claimContext.Setup(c => c.TenantTimezone).Returns("America/La_Paz");
+        _claimContext.Setup(c => c.TenantName).Returns("Acme");
 
-        sut = new CreateClassQrDebtCommandHandler(
-            debtTemplateDao.Object,
-            pendingDao.Object,
-            todotixOutboxDao.Object,
-            expirationOutboxDao.Object,
-            unitOfWork.Object,
-            claimContext.Object,
-            creationBuilder.Object,
-            appKeyResolver.Object);
+        _sut = new CreateClassQrDebtCommandHandler(
+            _debtTemplateDao.Object,
+            _pendingDao.Object,
+            _todotixOutboxDao.Object,
+            _expirationOutboxDao.Object,
+            _unitOfWork.Object,
+            _claimContext.Object,
+            _creationBuilder.Object,
+            _appKeyResolver.Object);
     }
 
     [Test]
     public async Task CreateDebtAsync_WhenTemplateMissing_ReturnsTemplateNotFound()
     {
         var templateId = Guid.NewGuid();
-        debtTemplateDao.Setup(d => d.GetByIdForTenantAsync(tenantId, templateId)).ReturnsAsync((DebtTemplate?)null);
+        _debtTemplateDao.Setup(d => d.GetByIdForTenantAsync(_tenantId, templateId)).ReturnsAsync((DebtTemplate?)null);
 
-        CreateQrDebtOutcome outcome = await sut.Handle(new CreateClassQrDebtCommand(templateId, "a@b.com", new CreateQrDebtDto()));
+        CreateQrDebtOutcome outcome = await _sut.Handle(new CreateClassQrDebtCommand(templateId, "a@b.com", new CreateQrDebtDto()));
 
         Assert.That(outcome, Is.TypeOf<CreateQrDebtOutcome.TemplateNotFound>());
     }
@@ -86,13 +86,13 @@ public class CreateClassQrDebtCommandHandlerTests
     {
         var templateId = Guid.NewGuid();
         var existingDebtId = Guid.NewGuid();
-        var template = new DebtTemplate { Id = templateId, TenantId = tenantId, Description = "d", ClassQuantity = 1, Cost = 10 };
-        debtTemplateDao.Setup(d => d.GetByIdForTenantAsync(tenantId, templateId)).ReturnsAsync(template);
-        pendingDao.Setup(d => d.GetActiveForTemplateAsync(tenantId, studentId, templateId, It.IsAny<DateTime>())).ReturnsAsync(existingDebtId);
-        creationBuilder.Setup(b => b.BuildPendingDebtDto(existingDebtId, true))
+        var template = new DebtTemplate { Id = templateId, TenantId = _tenantId, Description = "d", ClassQuantity = 1, Cost = 10 };
+        _debtTemplateDao.Setup(d => d.GetByIdForTenantAsync(_tenantId, templateId)).ReturnsAsync(template);
+        _pendingDao.Setup(d => d.GetActiveForTemplateAsync(_tenantId, _studentId, templateId, It.IsAny<DateTime>())).ReturnsAsync(existingDebtId);
+        _creationBuilder.Setup(b => b.BuildPendingDebtDto(existingDebtId, true))
             .Returns(new QrDebtPendingDto { IdentificadorDeuda = existingDebtId, Status = "Pending", AlreadyGenerated = true });
 
-        CreateQrDebtOutcome outcome = await sut.Handle(new CreateClassQrDebtCommand(templateId, "a@b.com", new CreateQrDebtDto()));
+        CreateQrDebtOutcome outcome = await _sut.Handle(new CreateClassQrDebtCommand(templateId, "a@b.com", new CreateQrDebtDto()));
 
         Assert.That(outcome, Is.TypeOf<CreateQrDebtOutcome.Success>());
         var success = (CreateQrDebtOutcome.Success)outcome;
@@ -107,12 +107,12 @@ public class CreateClassQrDebtCommandHandlerTests
     public async Task CreateDebtAsync_WhenTenantHasNoCredential_ReturnsPaymentNotConfigured()
     {
         var templateId = Guid.NewGuid();
-        var template = new DebtTemplate { Id = templateId, TenantId = tenantId, Description = "d", ClassQuantity = 1, Cost = 10 };
-        debtTemplateDao.Setup(d => d.GetByIdForTenantAsync(tenantId, templateId)).ReturnsAsync(template);
-        pendingDao.Setup(d => d.GetActiveForTemplateAsync(tenantId, studentId, templateId, It.IsAny<DateTime>())).ReturnsAsync((Guid?)null);
-        appKeyResolver.Setup(r => r.ResolveAsync(It.IsAny<Guid>())).ReturnsAsync((string?)null);
+        var template = new DebtTemplate { Id = templateId, TenantId = _tenantId, Description = "d", ClassQuantity = 1, Cost = 10 };
+        _debtTemplateDao.Setup(d => d.GetByIdForTenantAsync(_tenantId, templateId)).ReturnsAsync(template);
+        _pendingDao.Setup(d => d.GetActiveForTemplateAsync(_tenantId, _studentId, templateId, It.IsAny<DateTime>())).ReturnsAsync((Guid?)null);
+        _appKeyResolver.Setup(r => r.ResolveAsync(It.IsAny<Guid>())).ReturnsAsync((string?)null);
 
-        CreateQrDebtOutcome outcome = await sut.Handle(new CreateClassQrDebtCommand(templateId, "a@b.com", new CreateQrDebtDto()));
+        CreateQrDebtOutcome outcome = await _sut.Handle(new CreateClassQrDebtCommand(templateId, "a@b.com", new CreateQrDebtDto()));
 
         Assert.That(outcome, Is.TypeOf<CreateQrDebtOutcome.PaymentNotConfigured>());
     }
@@ -121,29 +121,29 @@ public class CreateClassQrDebtCommandHandlerTests
     public async Task CreateDebtAsync_HappyPath_ReturnsSuccessAndCommits()
     {
         var templateId = Guid.NewGuid();
-        var template = new DebtTemplate { Id = templateId, TenantId = tenantId, Description = "d", ClassQuantity = 1, Cost = 10 };
-        debtTemplateDao.Setup(d => d.GetByIdForTenantAsync(tenantId, templateId)).ReturnsAsync(template);
-        pendingDao.Setup(d => d.GetActiveForTemplateAsync(tenantId, studentId, templateId, It.IsAny<DateTime>())).ReturnsAsync((Guid?)null);
+        var template = new DebtTemplate { Id = templateId, TenantId = _tenantId, Description = "d", ClassQuantity = 1, Cost = 10 };
+        _debtTemplateDao.Setup(d => d.GetByIdForTenantAsync(_tenantId, templateId)).ReturnsAsync(template);
+        _pendingDao.Setup(d => d.GetActiveForTemplateAsync(_tenantId, _studentId, templateId, It.IsAny<DateTime>())).ReturnsAsync((Guid?)null);
 
-        var pending = new PendingQrPayment { Id = Guid.NewGuid(), TenantId = tenantId, StudentId = studentId };
+        var pending = new PendingQrPayment { Id = Guid.NewGuid(), TenantId = _tenantId, StudentId = _studentId };
         var todotixRequest = new RegisterDebtRequest();
-        var todotixEvent = new TodotixOutboxEvent { Id = Guid.NewGuid(), PendingId = pending.Id, TenantId = tenantId };
+        var todotixEvent = new TodotixOutboxEvent { Id = Guid.NewGuid(), PendingId = pending.Id, TenantId = _tenantId };
         var expirationEvent = new ExpirationOutboxEvent { Id = Guid.NewGuid(), AggregateId = pending.Id };
         var pendingDto = new QrDebtPendingDto { IdentificadorDeuda = pending.Id, Status = "Pending" };
 
-        creationBuilder.Setup(b => b.BuildPendingPayment(It.IsAny<Guid>(), tenantId, studentId, templateId, template, It.IsAny<DateTime>())).Returns(pending);
-        creationBuilder.Setup(b => b.BuildTodotixRequest(It.IsAny<Guid>(), "a@b.com", template, "America/La_Paz", It.IsAny<string>(), It.IsAny<DateTime>(), It.IsAny<string>())).Returns(todotixRequest);
-        creationBuilder.Setup(b => b.BuildOutboxEvent(It.IsAny<Guid>(), tenantId, todotixRequest)).Returns(todotixEvent);
-        creationBuilder.Setup(b => b.BuildExpirationOutboxEvent(It.IsAny<Guid>(), tenantId, studentId, It.IsAny<DateTime>())).Returns(expirationEvent);
-        creationBuilder.Setup(b => b.BuildPendingDebtDto(It.IsAny<Guid>(), false)).Returns(pendingDto);
+        _creationBuilder.Setup(b => b.BuildPendingPayment(It.IsAny<Guid>(), _tenantId, _studentId, templateId, template, It.IsAny<DateTime>())).Returns(pending);
+        _creationBuilder.Setup(b => b.BuildTodotixRequest(It.IsAny<Guid>(), "a@b.com", template, "America/La_Paz", It.IsAny<string>(), It.IsAny<DateTime>(), It.IsAny<string>())).Returns(todotixRequest);
+        _creationBuilder.Setup(b => b.BuildOutboxEvent(It.IsAny<Guid>(), _tenantId, todotixRequest)).Returns(todotixEvent);
+        _creationBuilder.Setup(b => b.BuildExpirationOutboxEvent(It.IsAny<Guid>(), _tenantId, _studentId, It.IsAny<DateTime>())).Returns(expirationEvent);
+        _creationBuilder.Setup(b => b.BuildPendingDebtDto(It.IsAny<Guid>(), false)).Returns(pendingDto);
 
-        pendingDao.Setup(d => d.CreateAsync(pending, transactionScope.Object)).Returns(Task.CompletedTask);
-        todotixOutboxDao.Setup(d => d.InsertAsync(todotixEvent, transactionScope.Object)).Returns(Task.CompletedTask);
-        expirationOutboxDao.Setup(d => d.InsertAsync(expirationEvent, transactionScope.Object)).Returns(Task.CompletedTask);
+        _pendingDao.Setup(d => d.CreateAsync(pending, _transactionScope.Object)).Returns(Task.CompletedTask);
+        _todotixOutboxDao.Setup(d => d.InsertAsync(todotixEvent, _transactionScope.Object)).Returns(Task.CompletedTask);
+        _expirationOutboxDao.Setup(d => d.InsertAsync(expirationEvent, _transactionScope.Object)).Returns(Task.CompletedTask);
 
-        CreateQrDebtOutcome outcome = await sut.Handle(new CreateClassQrDebtCommand(templateId, "a@b.com", new CreateQrDebtDto()));
+        CreateQrDebtOutcome outcome = await _sut.Handle(new CreateClassQrDebtCommand(templateId, "a@b.com", new CreateQrDebtDto()));
 
         Assert.That(outcome, Is.TypeOf<CreateQrDebtOutcome.Success>());
-        transactionScope.Verify(s => s.CommitAsync(), Times.Once);
+        _transactionScope.Verify(s => s.CommitAsync(), Times.Once);
     }
 }

@@ -8,17 +8,17 @@ namespace Test.Validators.Users;
 [TestFixture]
 public class LoginCredentialsDtoValidatorTests
 {
-    private LoginCredentialsDtoValidator sut = null!;
+    private LoginCredentialsDtoValidator _sut = null!;
 
     [SetUp]
-    public void SetUp() => sut = new LoginCredentialsDtoValidator();
+    public void SetUp() => _sut = new LoginCredentialsDtoValidator();
 
     [Test]
     public async Task Validate_WithValidCredentials_IsValid()
     {
         LoginCredentialsDto credentials = new() { Username = "validUserName", Password = "12345" };
 
-        ValidationResult result = await sut.ValidateAsync(credentials);
+        ValidationResult result = await _sut.ValidateAsync(credentials);
 
         Assert.That(result.IsValid, Is.True);
     }
@@ -28,7 +28,7 @@ public class LoginCredentialsDtoValidatorTests
     {
         LoginCredentialsDto credentials = new() { Username = "abc", Password = "12345" };
 
-        ValidationResult result = await sut.ValidateAsync(credentials);
+        ValidationResult result = await _sut.ValidateAsync(credentials);
 
         Assert.Multiple(() =>
         {
@@ -46,7 +46,7 @@ public class LoginCredentialsDtoValidatorTests
             Password = new string('x', RegisterCredentialsDtoValidator.MaxPasswordLength + 1)
         };
 
-        ValidationResult result = await sut.ValidateAsync(credentials);
+        ValidationResult result = await _sut.ValidateAsync(credentials);
 
         Assert.Multiple(() =>
         {
@@ -60,7 +60,7 @@ public class LoginCredentialsDtoValidatorTests
     {
         LoginCredentialsDto credentials = new() { Username = "user_with_underscore", Password = "12345" };
 
-        ValidationResult result = await sut.ValidateAsync(credentials);
+        ValidationResult result = await _sut.ValidateAsync(credentials);
 
         Assert.That(result.IsValid, Is.True);
     }

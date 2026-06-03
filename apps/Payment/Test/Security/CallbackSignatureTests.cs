@@ -8,15 +8,15 @@ namespace Test.Security;
 [TestFixture]
 public class CallbackSignatureTests
 {
-    private CallbackSignature sut = null!;
+    private CallbackSignature _sut = null!;
 
     [SetUp]
-    public void Setup() => sut = new CallbackSignature(Options.Create(new PaymentCallbackOptions { Secret = "super-secret-key" }));
+    public void Setup() => _sut = new CallbackSignature(Options.Create(new PaymentCallbackOptions { Secret = "super-secret-key" }));
 
     [Test]
     public void Sign_ProducesBase64UrlWithoutPadding()
     {
-        string signature = sut.Sign("payload-1");
+        string signature = _sut.Sign("payload-1");
 
         Assert.That(signature, Is.Not.Empty);
         Assert.That(signature, Does.Not.Contain("="));
@@ -29,17 +29,17 @@ public class CallbackSignatureTests
     {
         string payload = "tx-id-abc";
 
-        string signature = sut.Sign(payload);
+        string signature = _sut.Sign(payload);
 
-        Assert.That(sut.Verify(payload, signature), Is.True);
+        Assert.That(_sut.Verify(payload, signature), Is.True);
     }
 
     [Test]
     public void Verify_WithDifferentPayload_Fails()
     {
-        string signature = sut.Sign("p1");
+        string signature = _sut.Sign("p1");
 
-        Assert.That(sut.Verify("p2", signature), Is.False);
+        Assert.That(_sut.Verify("p2", signature), Is.False);
     }
 
     [Test]
@@ -47,24 +47,24 @@ public class CallbackSignatureTests
     {
         Assert.Multiple(() =>
         {
-            Assert.That(sut.Verify(string.Empty, "sig"), Is.False);
-            Assert.That(sut.Verify("payload", string.Empty), Is.False);
+            Assert.That(_sut.Verify(string.Empty, "sig"), Is.False);
+            Assert.That(_sut.Verify("payload", string.Empty), Is.False);
         });
     }
 
     [Test]
-    public void Verify_WithMalformedBase64Url_Fails() => Assert.That(sut.Verify("payload", "%%%not-base64%%%"), Is.False);
+    public void Verify_WithMalformedBase64Url_Fails() => Assert.That(_sut.Verify("payload", "%%%not-base64%%%"), Is.False);
 
     [Test]
     public void Verify_WithBase64UrlPaddingVariants_HandlesAllRemainders()
     {
-        string signature = sut.Sign("payload-X");
+        string signature = _sut.Sign("payload-X");
         string twoCharPadded = signature.Length >= 2 ? signature[..^2] : signature;
         string threeCharPadded = signature.Length >= 1 ? signature[..^1] : signature;
 
-        bool oneCharResult = sut.Verify("payload-X", signature + "A");
-        bool twoCharResult = sut.Verify("payload-X", twoCharPadded);
-        bool threeCharResult = sut.Verify("payload-X", threeCharPadded);
+        bool oneCharResult = _sut.Verify("payload-X", signature + "A");
+        bool twoCharResult = _sut.Verify("payload-X", twoCharPadded);
+        bool threeCharResult = _sut.Verify("payload-X", threeCharPadded);
 
         Assert.Multiple(() =>
         {
@@ -75,5 +75,5 @@ public class CallbackSignatureTests
     }
 
     [Test]
-    public void Sign_WithNullPayload_Throws() => Assert.Throws<ArgumentNullException>(() => sut.Sign(null!));
+    public void Sign_WithNullPayload_Throws() => Assert.Throws<ArgumentNullException>(() => _sut.Sign(null!));
 }

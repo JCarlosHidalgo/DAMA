@@ -9,10 +9,10 @@ namespace Test.Builders;
 [TestFixture]
 public class StudentRegisteredEventBuilderTests
 {
-    private StudentRegisteredEventBuilder sut = null!;
+    private StudentRegisteredEventBuilder _sut = null!;
 
     [SetUp]
-    public void SetUp() => sut = new StudentRegisteredEventBuilder();
+    public void SetUp() => _sut = new StudentRegisteredEventBuilder();
 
     [Test]
     public void Build_AssignsCanonicalEventMetadata()
@@ -26,7 +26,7 @@ public class StudentRegisteredEventBuilderTests
         var tenantId = Guid.NewGuid();
         DateTime utcBeforeBuild = DateTime.UtcNow;
 
-        OutboxEvent outboxEvent = sut.Build(student, tenantId);
+        OutboxEvent outboxEvent = _sut.Build(student, tenantId);
 
         Assert.Multiple(() =>
         {
@@ -50,7 +50,7 @@ public class StudentRegisteredEventBuilderTests
         User student = new() { Id = Guid.NewGuid(), UserName = "fresh_student" };
         var tenantId = Guid.NewGuid();
 
-        OutboxEvent outboxEvent = sut.Build(student, tenantId);
+        OutboxEvent outboxEvent = _sut.Build(student, tenantId);
 
         using var document = JsonDocument.Parse(outboxEvent.Payload);
         Guid payloadEventId = document.RootElement.GetProperty("EventId").GetGuid();
@@ -69,7 +69,7 @@ public class StudentRegisteredEventBuilderTests
         User student = new() { Id = Guid.NewGuid(), UserName = "fresh_student" };
         var tenantId = Guid.Parse("dddddddd-dddd-dddd-dddd-dddddddddddd");
 
-        OutboxEvent outboxEvent = sut.Build(student, tenantId);
+        OutboxEvent outboxEvent = _sut.Build(student, tenantId);
 
         using var document = JsonDocument.Parse(outboxEvent.Payload);
         JsonElement data = document.RootElement.GetProperty("Data");
@@ -88,8 +88,8 @@ public class StudentRegisteredEventBuilderTests
         User student = new() { Id = Guid.NewGuid(), UserName = "fresh_student" };
         var tenantId = Guid.NewGuid();
 
-        OutboxEvent first = sut.Build(student, tenantId);
-        OutboxEvent second = sut.Build(student, tenantId);
+        OutboxEvent first = _sut.Build(student, tenantId);
+        OutboxEvent second = _sut.Build(student, tenantId);
 
         Assert.That(first.Id, Is.Not.EqualTo(second.Id));
     }

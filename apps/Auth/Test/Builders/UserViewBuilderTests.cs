@@ -8,10 +8,10 @@ namespace Test.Builders;
 [TestFixture]
 public class UserViewBuilderTests
 {
-    private UserViewBuilder sut = null!;
+    private UserViewBuilder _sut = null!;
 
     [SetUp]
-    public void SetUp() => sut = new UserViewBuilder();
+    public void SetUp() => _sut = new UserViewBuilder();
 
     [Test]
     public void BuildUserListItem_MapsIdAndUserName()
@@ -23,7 +23,7 @@ public class UserViewBuilderTests
             Role = UserRoles.Student
         };
 
-        UserListItemDto listItem = sut.BuildUserListItem(user);
+        UserListItemDto listItem = _sut.BuildUserListItem(user);
 
         Assert.Multiple(() =>
         {
@@ -41,7 +41,7 @@ public class UserViewBuilderTests
             new() { Id = Guid.NewGuid(), UserName = "second_user", Role = UserRoles.Student }
         ];
 
-        PagedUsersResponseDto response = sut.BuildPagedUsersResponse(users, pageIndex: 2, maxPageIndex: 5);
+        PagedUsersResponseDto response = _sut.BuildPagedUsersResponse(users, pageIndex: 2, maxPageIndex: 5);
 
         Assert.That(response.Items, Has.Count.EqualTo(2));
         Assert.Multiple(() =>
@@ -58,7 +58,7 @@ public class UserViewBuilderTests
     [Test]
     public void BuildPagedUsersResponse_WithEmptyUserList_ReturnsEmptyItems()
     {
-        PagedUsersResponseDto response = sut.BuildPagedUsersResponse([], pageIndex: 0, maxPageIndex: 0);
+        PagedUsersResponseDto response = _sut.BuildPagedUsersResponse([], pageIndex: 0, maxPageIndex: 0);
 
         Assert.Multiple(() =>
         {

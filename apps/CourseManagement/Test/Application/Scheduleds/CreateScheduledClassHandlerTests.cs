@@ -23,31 +23,31 @@ public class CreateScheduledClassHandlerTests
     private static readonly Guid TenantId = Guid.Parse("22222222-2222-2222-2222-222222222222");
     private static readonly Guid GroupId = Guid.Parse("33333333-3333-3333-3333-333333333333");
 
-    private Mock<IScheduledClassDao> scheduledClassDao = null!;
-    private Mock<IClassGroupDao> classGroupDao = null!;
-    private Mock<IClassCreationCoordinator<ScheduledClass>> coordinator = null!;
-    private Mock<IClaimContext> claimContext = null!;
-    private Mock<IClassBuilder> classBuilder = null!;
-    private Mock<IMapper> mapper = null!;
-    private CreateScheduledClassHandler handler = null!;
+    private Mock<IScheduledClassDao> _scheduledClassDao = null!;
+    private Mock<IClassGroupDao> _classGroupDao = null!;
+    private Mock<IClassCreationCoordinator<ScheduledClass>> _coordinator = null!;
+    private Mock<IClaimContext> _claimContext = null!;
+    private Mock<IClassBuilder> _classBuilder = null!;
+    private Mock<IMapper> _mapper = null!;
+    private CreateScheduledClassHandler _handler = null!;
 
     [SetUp]
     public void SetUp()
     {
-        scheduledClassDao = new Mock<IScheduledClassDao>(MockBehavior.Strict);
-        classGroupDao = new Mock<IClassGroupDao>(MockBehavior.Strict);
-        coordinator = new Mock<IClassCreationCoordinator<ScheduledClass>>(MockBehavior.Strict);
-        claimContext = new Mock<IClaimContext>(MockBehavior.Strict);
-        classBuilder = new Mock<IClassBuilder>(MockBehavior.Strict);
-        mapper = new Mock<IMapper>(MockBehavior.Strict);
-        claimContext.SetupGet(context => context.TenantId).Returns(TenantId);
-        handler = new CreateScheduledClassHandler(
-            scheduledClassDao.Object,
-            classGroupDao.Object,
-            coordinator.Object,
-            claimContext.Object,
-            classBuilder.Object,
-            mapper.Object);
+        _scheduledClassDao = new Mock<IScheduledClassDao>(MockBehavior.Strict);
+        _classGroupDao = new Mock<IClassGroupDao>(MockBehavior.Strict);
+        _coordinator = new Mock<IClassCreationCoordinator<ScheduledClass>>(MockBehavior.Strict);
+        _claimContext = new Mock<IClaimContext>(MockBehavior.Strict);
+        _classBuilder = new Mock<IClassBuilder>(MockBehavior.Strict);
+        _mapper = new Mock<IMapper>(MockBehavior.Strict);
+        _claimContext.SetupGet(context => context.TenantId).Returns(TenantId);
+        _handler = new CreateScheduledClassHandler(
+            _scheduledClassDao.Object,
+            _classGroupDao.Object,
+            _coordinator.Object,
+            _claimContext.Object,
+            _classBuilder.Object,
+            _mapper.Object);
     }
 
     private static CreateScheduledClassDto ValidPayload(Guid teacherId) => new()
@@ -77,15 +77,15 @@ public class CreateScheduledClassHandlerTests
         CreateScheduledClassDto payload = ValidPayload(teacherId);
         List<ClassTeacher> teachers = TeacherEntities(teacherId);
 
-        mapper.Setup(map => map.Map<List<ClassTeacherDto>, List<ClassTeacher>>(payload.Teachers)).Returns(teachers);
-        classGroupDao.Setup(dao => dao.ExistsForTenantAsync(TenantId, GroupId)).ReturnsAsync(false);
+        _mapper.Setup(map => map.Map<List<ClassTeacherDto>, List<ClassTeacher>>(payload.Teachers)).Returns(teachers);
+        _classGroupDao.Setup(dao => dao.ExistsForTenantAsync(TenantId, GroupId)).ReturnsAsync(false);
 
-        CreateScheduledClassResult result = await handler.Handle(new CreateScheduledClassCommand(payload));
+        CreateScheduledClassResult result = await _handler.Handle(new CreateScheduledClassCommand(payload));
 
         Assert.That(result, Is.InstanceOf<CreateScheduledClassResult.GroupNotFound>());
-        scheduledClassDao.VerifyNoOtherCalls();
-        coordinator.VerifyNoOtherCalls();
-        classBuilder.VerifyNoOtherCalls();
+        _scheduledClassDao.VerifyNoOtherCalls();
+        _coordinator.VerifyNoOtherCalls();
+        _classBuilder.VerifyNoOtherCalls();
     }
 
     [Test]
@@ -95,17 +95,17 @@ public class CreateScheduledClassHandlerTests
         CreateScheduledClassDto payload = ValidPayload(teacherId);
         List<ClassTeacher> teachers = TeacherEntities(teacherId);
 
-        mapper.Setup(map => map.Map<List<ClassTeacherDto>, List<ClassTeacher>>(payload.Teachers)).Returns(teachers);
-        classGroupDao.Setup(dao => dao.ExistsForTenantAsync(TenantId, GroupId)).ReturnsAsync(true);
-        scheduledClassDao
+        _mapper.Setup(map => map.Map<List<ClassTeacherDto>, List<ClassTeacher>>(payload.Teachers)).Returns(teachers);
+        _classGroupDao.Setup(dao => dao.ExistsForTenantAsync(TenantId, GroupId)).ReturnsAsync(true);
+        _scheduledClassDao
             .Setup(dao => dao.HasGroupOverlapAsync(TenantId, GroupId, payload.DayOfWeekIndex, payload.StartTime, payload.EndTime, null))
             .ReturnsAsync(true);
 
-        CreateScheduledClassResult result = await handler.Handle(new CreateScheduledClassCommand(payload));
+        CreateScheduledClassResult result = await _handler.Handle(new CreateScheduledClassCommand(payload));
 
         Assert.That(result, Is.InstanceOf<CreateScheduledClassResult.GroupOverlapConflict>());
-        coordinator.VerifyNoOtherCalls();
-        classBuilder.VerifyNoOtherCalls();
+        _coordinator.VerifyNoOtherCalls();
+        _classBuilder.VerifyNoOtherCalls();
     }
 
     [Test]
@@ -128,18 +128,18 @@ public class CreateScheduledClassHandlerTests
             Teachers = []
         };
 
-        mapper.Setup(map => map.Map<List<ClassTeacherDto>, List<ClassTeacher>>(payload.Teachers)).Returns(teachers);
-        classGroupDao.Setup(dao => dao.ExistsForTenantAsync(TenantId, GroupId)).ReturnsAsync(true);
-        scheduledClassDao
+        _mapper.Setup(map => map.Map<List<ClassTeacherDto>, List<ClassTeacher>>(payload.Teachers)).Returns(teachers);
+        _classGroupDao.Setup(dao => dao.ExistsForTenantAsync(TenantId, GroupId)).ReturnsAsync(true);
+        _scheduledClassDao
             .Setup(dao => dao.HasGroupOverlapAsync(TenantId, GroupId, payload.DayOfWeekIndex, payload.StartTime, payload.EndTime, null))
             .ReturnsAsync(false);
-        classBuilder.Setup(builder => builder.BuildScheduledClass(TenantId, payload.CourseId, GroupId, payload, teachers)).Returns(built);
-        coordinator
+        _classBuilder.Setup(builder => builder.BuildScheduledClass(TenantId, payload.CourseId, GroupId, payload, teachers)).Returns(built);
+        _coordinator
             .Setup(coord => coord.CreateAsync(TenantId, payload.CourseId, "ref-1", "ScheduledClass", built.Id, built, teachers))
             .ReturnsAsync(new ClassCreationOutcome<ScheduledClass>.Created(built));
-        mapper.Setup(map => map.Map<GetScheduledClassDto>(built)).Returns(mapped);
+        _mapper.Setup(map => map.Map<GetScheduledClassDto>(built)).Returns(mapped);
 
-        CreateScheduledClassResult result = await handler.Handle(new CreateScheduledClassCommand(payload));
+        CreateScheduledClassResult result = await _handler.Handle(new CreateScheduledClassCommand(payload));
 
         Assert.Multiple(() =>
         {
@@ -169,18 +169,18 @@ public class CreateScheduledClassHandlerTests
             Teachers = []
         };
 
-        mapper.Setup(map => map.Map<List<ClassTeacherDto>, List<ClassTeacher>>(payload.Teachers)).Returns(teachers);
-        classGroupDao.Setup(dao => dao.ExistsForTenantAsync(TenantId, GroupId)).ReturnsAsync(true);
-        scheduledClassDao
+        _mapper.Setup(map => map.Map<List<ClassTeacherDto>, List<ClassTeacher>>(payload.Teachers)).Returns(teachers);
+        _classGroupDao.Setup(dao => dao.ExistsForTenantAsync(TenantId, GroupId)).ReturnsAsync(true);
+        _scheduledClassDao
             .Setup(dao => dao.HasGroupOverlapAsync(TenantId, GroupId, payload.DayOfWeekIndex, payload.StartTime, payload.EndTime, null))
             .ReturnsAsync(false);
-        classBuilder.Setup(builder => builder.BuildScheduledClass(TenantId, payload.CourseId, GroupId, payload, teachers)).Returns(built);
-        coordinator
+        _classBuilder.Setup(builder => builder.BuildScheduledClass(TenantId, payload.CourseId, GroupId, payload, teachers)).Returns(built);
+        _coordinator
             .Setup(coord => coord.CreateAsync(TenantId, payload.CourseId, "ref-1", "ScheduledClass", built.Id, built, teachers))
             .ReturnsAsync(new ClassCreationOutcome<ScheduledClass>.Replayed(prior));
-        mapper.Setup(map => map.Map<GetScheduledClassDto>(prior)).Returns(mappedPrior);
+        _mapper.Setup(map => map.Map<GetScheduledClassDto>(prior)).Returns(mappedPrior);
 
-        CreateScheduledClassResult result = await handler.Handle(new CreateScheduledClassCommand(payload));
+        CreateScheduledClassResult result = await _handler.Handle(new CreateScheduledClassCommand(payload));
 
         Assert.Multiple(() =>
         {
@@ -197,17 +197,17 @@ public class CreateScheduledClassHandlerTests
         List<ClassTeacher> teachers = TeacherEntities(teacherId);
         var built = new ScheduledClass { Id = Guid.NewGuid(), TenantId = TenantId, GroupId = GroupId };
 
-        mapper.Setup(map => map.Map<List<ClassTeacherDto>, List<ClassTeacher>>(payload.Teachers)).Returns(teachers);
-        classGroupDao.Setup(dao => dao.ExistsForTenantAsync(TenantId, GroupId)).ReturnsAsync(true);
-        scheduledClassDao
+        _mapper.Setup(map => map.Map<List<ClassTeacherDto>, List<ClassTeacher>>(payload.Teachers)).Returns(teachers);
+        _classGroupDao.Setup(dao => dao.ExistsForTenantAsync(TenantId, GroupId)).ReturnsAsync(true);
+        _scheduledClassDao
             .Setup(dao => dao.HasGroupOverlapAsync(TenantId, GroupId, payload.DayOfWeekIndex, payload.StartTime, payload.EndTime, null))
             .ReturnsAsync(false);
-        classBuilder.Setup(builder => builder.BuildScheduledClass(TenantId, payload.CourseId, GroupId, payload, teachers)).Returns(built);
-        coordinator
+        _classBuilder.Setup(builder => builder.BuildScheduledClass(TenantId, payload.CourseId, GroupId, payload, teachers)).Returns(built);
+        _coordinator
             .Setup(coord => coord.CreateAsync(TenantId, payload.CourseId, "ref-1", "ScheduledClass", built.Id, built, teachers))
             .ReturnsAsync(new ClassCreationOutcome<ScheduledClass>.CourseMissing());
 
-        CreateScheduledClassResult result = await handler.Handle(new CreateScheduledClassCommand(payload));
+        CreateScheduledClassResult result = await _handler.Handle(new CreateScheduledClassCommand(payload));
 
         Assert.That(result, Is.InstanceOf<CreateScheduledClassResult.CourseNotFound>());
     }

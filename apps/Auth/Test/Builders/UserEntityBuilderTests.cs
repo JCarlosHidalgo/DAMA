@@ -12,26 +12,26 @@ namespace Test.Builders;
 [TestFixture]
 public class UserEntityBuilderTests
 {
-    private Mock<IPasswordHasher<User>> passwordHasher = null!;
+    private Mock<IPasswordHasher<User>> _passwordHasher = null!;
 
-    private UserEntityBuilder sut = null!;
+    private UserEntityBuilder _sut = null!;
 
     [SetUp]
     public void SetUp()
     {
-        passwordHasher = new Mock<IPasswordHasher<User>>(MockBehavior.Strict);
-        sut = new UserEntityBuilder(passwordHasher.Object);
+        _passwordHasher = new Mock<IPasswordHasher<User>>(MockBehavior.Strict);
+        _sut = new UserEntityBuilder(_passwordHasher.Object);
     }
 
     [Test]
     public void BuildUser_WithGivenRequestAndRole_AssignsHashedPasswordAndFreshIdentity()
     {
         RegisterCredentialsDto request = new() { Username = "any_username", Password = "plain_pass" };
-        passwordHasher
+        _passwordHasher
             .Setup(hasher => hasher.HashPassword(It.IsAny<User>(), request.Password))
             .Returns("hashed_value");
 
-        User user = sut.BuildUser(request, UserRole.Student);
+        User user = _sut.BuildUser(request, UserRole.Student);
 
         Assert.Multiple(() =>
         {
@@ -41,7 +41,7 @@ public class UserEntityBuilderTests
             Assert.That(user.Role, Is.EqualTo(UserRole.Student.Value));
             Assert.That(user.IsDeleted, Is.False);
         });
-        passwordHasher.Verify(
+        _passwordHasher.Verify(
             hasher => hasher.HashPassword(It.IsAny<User>(), request.Password),
             Times.Once);
     }
@@ -50,11 +50,11 @@ public class UserEntityBuilderTests
     public void BuildUser_AssignsRoleValueMatchingProvidedRole()
     {
         RegisterCredentialsDto request = new() { Username = "teach_one", Password = "plain_pass" };
-        passwordHasher
+        _passwordHasher
             .Setup(hasher => hasher.HashPassword(It.IsAny<User>(), request.Password))
             .Returns("hashed_value");
 
-        User user = sut.BuildUser(request, UserRole.Teacher);
+        User user = _sut.BuildUser(request, UserRole.Teacher);
 
         Assert.That(user.Role, Is.EqualTo(UserRole.Teacher.Value));
     }
@@ -63,12 +63,12 @@ public class UserEntityBuilderTests
     public void BuildUser_CalledTwice_ProducesDistinctIds()
     {
         RegisterCredentialsDto request = new() { Username = "user_one", Password = "plain_pass" };
-        passwordHasher
+        _passwordHasher
             .Setup(hasher => hasher.HashPassword(It.IsAny<User>(), request.Password))
             .Returns("hashed_value");
 
-        User first = sut.BuildUser(request, UserRole.Student);
-        User second = sut.BuildUser(request, UserRole.Student);
+        User first = _sut.BuildUser(request, UserRole.Student);
+        User second = _sut.BuildUser(request, UserRole.Student);
 
         Assert.That(first.Id, Is.Not.EqualTo(second.Id));
     }
@@ -79,7 +79,7 @@ public class UserEntityBuilderTests
         var userId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
         var tenantId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
 
-        TenantDomain tenantDomain = sut.BuildTenantDomain(userId, tenantId);
+        TenantDomain tenantDomain = _sut.BuildTenantDomain(userId, tenantId);
 
         Assert.Multiple(() =>
         {

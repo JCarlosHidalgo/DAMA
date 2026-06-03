@@ -12,17 +12,17 @@ namespace Test.Services.Concrete.Todotix;
 [TestFixture]
 public class TodotixDebtPublisherTests
 {
-    private Mock<ITodotixClient> todotixClient = null!;
-    private Mock<IQrImageUrlUpdater> qrImageUrlUpdater = null!;
-    private TodotixDebtPublisher sut = null!;
+    private Mock<ITodotixClient> _todotixClient = null!;
+    private Mock<IQrImageUrlUpdater> _qrImageUrlUpdater = null!;
+    private TodotixDebtPublisher _sut = null!;
 
     [SetUp]
     public void Setup()
     {
-        todotixClient = new Mock<ITodotixClient>(MockBehavior.Strict);
-        qrImageUrlUpdater = new Mock<IQrImageUrlUpdater>(MockBehavior.Strict);
-        qrImageUrlUpdater.Setup(updater => updater.Kind).Returns(DebtKind.ClassPurchase);
-        sut = new TodotixDebtPublisher(todotixClient.Object, new[] { qrImageUrlUpdater.Object });
+        _todotixClient = new Mock<ITodotixClient>(MockBehavior.Strict);
+        _qrImageUrlUpdater = new Mock<IQrImageUrlUpdater>(MockBehavior.Strict);
+        _qrImageUrlUpdater.Setup(updater => updater.Kind).Returns(DebtKind.ClassPurchase);
+        _sut = new TodotixDebtPublisher(_todotixClient.Object, new[] { _qrImageUrlUpdater.Object });
     }
 
     private const string ValidPayload = "{\"appkey\":\"k\",\"identificador_deuda\":\"x\",\"descripcion\":\"d\",\"callback_url\":\"u\",\"lineas_detalle_deuda\":[]}";
@@ -36,13 +36,13 @@ public class TodotixDebtPublisherTests
     {
         TodotixOutboxEvent outboxEvent = NewEvent("{\"appkey\":\"k\",\"identificador_deuda\":\"x\",\"descripcion\":\"d\",\"callback_url\":\"u\",\"lineas_detalle_deuda\":[]}");
         var response = new RegisterDebtResponse { Error = 0, QrSimpleUrl = "http://qr" };
-        todotixClient.Setup(c => c.RegisterDebtAsync(It.IsAny<RegisterDebtRequest>())).ReturnsAsync(response);
-        qrImageUrlUpdater.Setup(u => u.UpdateAsync(outboxEvent.PendingId, "http://qr")).Returns(Task.CompletedTask);
+        _todotixClient.Setup(c => c.RegisterDebtAsync(It.IsAny<RegisterDebtRequest>())).ReturnsAsync(response);
+        _qrImageUrlUpdater.Setup(u => u.UpdateAsync(outboxEvent.PendingId, "http://qr")).Returns(Task.CompletedTask);
 
-        PublishOutcome outcome = await sut.PublishAsync(outboxEvent);
+        PublishOutcome outcome = await _sut.PublishAsync(outboxEvent);
 
         Assert.That(outcome, Is.TypeOf<PublishOutcome.Success>());
-        qrImageUrlUpdater.Verify(u => u.UpdateAsync(outboxEvent.PendingId, "http://qr"), Times.Once);
+        _qrImageUrlUpdater.Verify(u => u.UpdateAsync(outboxEvent.PendingId, "http://qr"), Times.Once);
     }
 
     [Test]
@@ -50,7 +50,7 @@ public class TodotixDebtPublisherTests
     {
         TodotixOutboxEvent outboxEvent = NewEvent("not-json{");
 
-        PublishOutcome outcome = await sut.PublishAsync(outboxEvent);
+        PublishOutcome outcome = await _sut.PublishAsync(outboxEvent);
 
         Assert.That(outcome, Is.TypeOf<PublishOutcome.PermanentFailure>());
     }
@@ -60,7 +60,7 @@ public class TodotixDebtPublisherTests
     {
         TodotixOutboxEvent outboxEvent = NewEvent("null");
 
-        PublishOutcome outcome = await sut.PublishAsync(outboxEvent);
+        PublishOutcome outcome = await _sut.PublishAsync(outboxEvent);
 
         Assert.That(outcome, Is.TypeOf<PublishOutcome.PermanentFailure>());
     }
@@ -69,9 +69,9 @@ public class TodotixDebtPublisherTests
     public async Task PublishAsync_WhenClientThrows_ReturnsTransientFailure()
     {
         TodotixOutboxEvent outboxEvent = NewEvent("{\"appkey\":\"k\",\"identificador_deuda\":\"x\",\"descripcion\":\"d\",\"callback_url\":\"u\",\"lineas_detalle_deuda\":[]}");
-        todotixClient.Setup(c => c.RegisterDebtAsync(It.IsAny<RegisterDebtRequest>())).ThrowsAsync(new HttpRequestException("network down"));
+        _todotixClient.Setup(c => c.RegisterDebtAsync(It.IsAny<RegisterDebtRequest>())).ThrowsAsync(new HttpRequestException("network down"));
 
-        PublishOutcome outcome = await sut.PublishAsync(outboxEvent);
+        PublishOutcome outcome = await _sut.PublishAsync(outboxEvent);
 
         var transient = (PublishOutcome.TransientFailure)outcome;
         Assert.That(transient.Reason, Does.Contain("network down"));
@@ -81,10 +81,10 @@ public class TodotixDebtPublisherTests
     public async Task PublishAsync_WhenTodotixReportsError_ReturnsTransientFailure()
     {
         TodotixOutboxEvent outboxEvent = NewEvent("{\"appkey\":\"k\",\"identificador_deuda\":\"x\",\"descripcion\":\"d\",\"callback_url\":\"u\",\"lineas_detalle_deuda\":[]}");
-        todotixClient.Setup(c => c.RegisterDebtAsync(It.IsAny<RegisterDebtRequest>()))
+        _todotixClient.Setup(c => c.RegisterDebtAsync(It.IsAny<RegisterDebtRequest>()))
                      .ReturnsAsync(new RegisterDebtResponse { Error = 7, Mensaje = "err", Existente = 0 });
 
-        PublishOutcome outcome = await sut.PublishAsync(outboxEvent);
+        PublishOutcome outcome = await _sut.PublishAsync(outboxEvent);
 
         Assert.That(outcome, Is.TypeOf<PublishOutcome.TransientFailure>());
     }
@@ -93,76 +93,76 @@ public class TodotixDebtPublisherTests
     public void PublishAsync_WhenCancelled_RethrowsOperationCanceledException()
     {
         TodotixOutboxEvent outboxEvent = NewEvent(ValidPayload);
-        todotixClient.Setup(c => c.RegisterDebtAsync(It.IsAny<RegisterDebtRequest>())).ThrowsAsync(new OperationCanceledException());
+        _todotixClient.Setup(c => c.RegisterDebtAsync(It.IsAny<RegisterDebtRequest>())).ThrowsAsync(new OperationCanceledException());
 
-        Assert.ThrowsAsync<OperationCanceledException>(() => sut.PublishAsync(outboxEvent));
+        Assert.ThrowsAsync<OperationCanceledException>(() => _sut.PublishAsync(outboxEvent));
     }
 
     [Test]
     public async Task PublishAsync_OnRetryWhenDebtAlreadyExists_ReturnsPermanentFailureWithoutRegistering()
     {
         TodotixOutboxEvent outboxEvent = NewRetryEvent(ValidPayload);
-        todotixClient.Setup(c => c.DebtExistsAsync(outboxEvent.PendingId, It.IsAny<string>())).ReturnsAsync(true);
+        _todotixClient.Setup(c => c.DebtExistsAsync(outboxEvent.PendingId, It.IsAny<string>())).ReturnsAsync(true);
 
-        PublishOutcome outcome = await sut.PublishAsync(outboxEvent);
+        PublishOutcome outcome = await _sut.PublishAsync(outboxEvent);
 
         Assert.That(outcome, Is.TypeOf<PublishOutcome.PermanentFailure>());
-        todotixClient.Verify(c => c.RegisterDebtAsync(It.IsAny<RegisterDebtRequest>()), Times.Never);
-        qrImageUrlUpdater.Verify(u => u.UpdateAsync(It.IsAny<Guid>(), It.IsAny<string>()), Times.Never);
+        _todotixClient.Verify(c => c.RegisterDebtAsync(It.IsAny<RegisterDebtRequest>()), Times.Never);
+        _qrImageUrlUpdater.Verify(u => u.UpdateAsync(It.IsAny<Guid>(), It.IsAny<string>()), Times.Never);
     }
 
     [Test]
     public async Task PublishAsync_OnRetryWhenDebtNotFound_ProceedsToRegister()
     {
         TodotixOutboxEvent outboxEvent = NewRetryEvent(ValidPayload);
-        todotixClient.Setup(c => c.DebtExistsAsync(outboxEvent.PendingId, It.IsAny<string>())).ReturnsAsync(false);
-        todotixClient.Setup(c => c.RegisterDebtAsync(It.IsAny<RegisterDebtRequest>()))
+        _todotixClient.Setup(c => c.DebtExistsAsync(outboxEvent.PendingId, It.IsAny<string>())).ReturnsAsync(false);
+        _todotixClient.Setup(c => c.RegisterDebtAsync(It.IsAny<RegisterDebtRequest>()))
                      .ReturnsAsync(new RegisterDebtResponse { Error = 0, QrSimpleUrl = "http://qr" });
-        qrImageUrlUpdater.Setup(u => u.UpdateAsync(outboxEvent.PendingId, "http://qr")).Returns(Task.CompletedTask);
+        _qrImageUrlUpdater.Setup(u => u.UpdateAsync(outboxEvent.PendingId, "http://qr")).Returns(Task.CompletedTask);
 
-        PublishOutcome outcome = await sut.PublishAsync(outboxEvent);
+        PublishOutcome outcome = await _sut.PublishAsync(outboxEvent);
 
         Assert.That(outcome, Is.TypeOf<PublishOutcome.Success>());
-        todotixClient.Verify(c => c.RegisterDebtAsync(It.IsAny<RegisterDebtRequest>()), Times.Once);
+        _todotixClient.Verify(c => c.RegisterDebtAsync(It.IsAny<RegisterDebtRequest>()), Times.Once);
     }
 
     [Test]
     public async Task PublishAsync_OnRetryWhenExistenceCheckThrows_ReturnsTransientFailureWithoutRegistering()
     {
         TodotixOutboxEvent outboxEvent = NewRetryEvent(ValidPayload);
-        todotixClient.Setup(c => c.DebtExistsAsync(outboxEvent.PendingId, It.IsAny<string>())).ThrowsAsync(new HttpRequestException("consult down"));
+        _todotixClient.Setup(c => c.DebtExistsAsync(outboxEvent.PendingId, It.IsAny<string>())).ThrowsAsync(new HttpRequestException("consult down"));
 
-        PublishOutcome outcome = await sut.PublishAsync(outboxEvent);
+        PublishOutcome outcome = await _sut.PublishAsync(outboxEvent);
 
         var transient = (PublishOutcome.TransientFailure)outcome;
         Assert.That(transient.Reason, Does.Contain("existence check failed"));
-        todotixClient.Verify(c => c.RegisterDebtAsync(It.IsAny<RegisterDebtRequest>()), Times.Never);
+        _todotixClient.Verify(c => c.RegisterDebtAsync(It.IsAny<RegisterDebtRequest>()), Times.Never);
     }
 
     [Test]
     public async Task PublishAsync_WhenRegisterReportsAlreadyExistsWithoutQr_ReturnsPermanentFailure()
     {
         TodotixOutboxEvent outboxEvent = NewEvent(ValidPayload);
-        todotixClient.Setup(c => c.RegisterDebtAsync(It.IsAny<RegisterDebtRequest>()))
+        _todotixClient.Setup(c => c.RegisterDebtAsync(It.IsAny<RegisterDebtRequest>()))
                      .ReturnsAsync(new RegisterDebtResponse { Error = 0, QrSimpleUrl = null, Existente = 1 });
 
-        PublishOutcome outcome = await sut.PublishAsync(outboxEvent);
+        PublishOutcome outcome = await _sut.PublishAsync(outboxEvent);
 
         Assert.That(outcome, Is.TypeOf<PublishOutcome.PermanentFailure>());
-        qrImageUrlUpdater.Verify(u => u.UpdateAsync(It.IsAny<Guid>(), It.IsAny<string>()), Times.Never);
+        _qrImageUrlUpdater.Verify(u => u.UpdateAsync(It.IsAny<Guid>(), It.IsAny<string>()), Times.Never);
     }
 
     [Test]
     public async Task PublishAsync_WhenRegisterReturnsQrEvenIfExistente_PersistsQrAndReturnsSuccess()
     {
         TodotixOutboxEvent outboxEvent = NewEvent(ValidPayload);
-        todotixClient.Setup(c => c.RegisterDebtAsync(It.IsAny<RegisterDebtRequest>()))
+        _todotixClient.Setup(c => c.RegisterDebtAsync(It.IsAny<RegisterDebtRequest>()))
                      .ReturnsAsync(new RegisterDebtResponse { Error = 0, QrSimpleUrl = "http://qr", Existente = 1 });
-        qrImageUrlUpdater.Setup(u => u.UpdateAsync(outboxEvent.PendingId, "http://qr")).Returns(Task.CompletedTask);
+        _qrImageUrlUpdater.Setup(u => u.UpdateAsync(outboxEvent.PendingId, "http://qr")).Returns(Task.CompletedTask);
 
-        PublishOutcome outcome = await sut.PublishAsync(outboxEvent);
+        PublishOutcome outcome = await _sut.PublishAsync(outboxEvent);
 
         Assert.That(outcome, Is.TypeOf<PublishOutcome.Success>());
-        qrImageUrlUpdater.Verify(u => u.UpdateAsync(outboxEvent.PendingId, "http://qr"), Times.Once);
+        _qrImageUrlUpdater.Verify(u => u.UpdateAsync(outboxEvent.PendingId, "http://qr"), Times.Once);
     }
 }
