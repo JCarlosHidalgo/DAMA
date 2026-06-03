@@ -25,11 +25,17 @@ import { Icon } from '@shared/components/icon';
 import { NoPasswordManager } from '@shared/directives';
 
 import { groupNameDialogStyles, groupSelectStyles } from './group-select.variants';
+import {
+  GROUPS_QUERY_KEY,
+  GroupSource,
+  findSelectedGroup,
+  groupsQueryKey,
+  resolveGroupCreate,
+  resolveGroupRename,
+} from './group-select.logic';
 
-export const GROUPS_QUERY_KEY = ['class-groups'] as const;
-export const TEACHER_GROUPS_QUERY_KEY = ['teacher-class-groups'] as const;
-
-export type GroupSource = 'tenant' | 'teacher';
+export { GROUPS_QUERY_KEY, TEACHER_GROUPS_QUERY_KEY } from './group-select.logic';
+export type { GroupSource } from './group-select.logic';
 
 interface GroupNameDialogData {
   mode: 'create' | 'rename';
@@ -159,7 +165,7 @@ export class GroupSelect {
   protected readonly styles = groupSelectStyles();
 
   protected readonly groupsQuery = injectQuery(() => ({
-    queryKey: this.source() === 'teacher' ? TEACHER_GROUPS_QUERY_KEY : GROUPS_QUERY_KEY,
+    queryKey: groupsQueryKey(this.source()),
     queryFn: () =>
       firstValueFrom(
         this.source() === 'teacher'
@@ -170,7 +176,7 @@ export class GroupSelect {
 
   protected readonly groups = computed<ClassGroup[]>(() => this.groupsQuery.data() ?? []);
   protected readonly selectedGroup = computed<ClassGroup | undefined>(() =>
-    this.groups().find((group) => group.id === this.selectedGroupId()),
+    findSelectedGroup(this.groups(), this.selectedGroupId()),
   );
 
   private readonly createGroup = injectMutation(() => ({
@@ -218,10 +224,11 @@ export class GroupSelect {
 
   async onCreate(): Promise<void> {
     const name = await this.openNameDialog({ mode: 'create', name: '' });
-    if (!name) {
+    const outcome = resolveGroupCreate(name);
+    if (outcome.kind === 'skip') {
       return;
     }
-    this.createGroup.mutate(name);
+    this.createGroup.mutate(outcome.name);
   }
 
   async onRename(): Promise<void> {
@@ -230,10 +237,11 @@ export class GroupSelect {
       return;
     }
     const name = await this.openNameDialog({ mode: 'rename', name: current.name });
-    if (!name || name === current.name) {
+    const outcome = resolveGroupRename(current.name, name);
+    if (outcome.kind === 'skip') {
       return;
     }
-    this.renameGroup.mutate({ id: current.id, name });
+    this.renameGroup.mutate({ id: current.id, name: outcome.name });
   }
 
   async onDelete(): Promise<void> {
