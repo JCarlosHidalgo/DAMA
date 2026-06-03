@@ -26,22 +26,14 @@ import {
   subscriptionPayDialogStyles,
   subscriptionQrImageDialogStyles,
 } from './subscription.variants';
-
-const LEVEL_LABELS: Record<number, string> = {
-  1: 'Base — cursos y clases',
-  2: 'Intermedio — + estudiantes, profesores y asistencia',
-  3: 'Completo — + gestión de pagos',
-};
-
-const DURATION_UNIT_LABELS: Record<string, string> = {
-  Day: 'día(s)',
-  Week: 'semana(s)',
-  Month: 'mes(es)',
-};
-
-function describePlanDuration(plan: SubscriptionPlan): string {
-  return `${plan.durationAmount} ${DURATION_UNIT_LABELS[plan.durationUnit] ?? plan.durationUnit}`;
-}
+import {
+  describePlanDuration,
+  resolveSubscriptionQrOutcome,
+  sortPlansByLevel,
+  subscriptionExpiresLabel,
+  subscriptionLevelLabel,
+  subscriptionPayConfirmMessage,
+} from './subscription.logic';
 
 interface SubscriptionQrImageDialogData {
   debtId: string;
@@ -241,24 +233,16 @@ export class ClientSubscription {
   protected readonly paying = signal(false);
 
   protected readonly effectiveIndex = computed(() => this.authService.effectiveSubscriptionIndex());
-  protected readonly expiresLabel = computed(() => {
-    const expiresAt = this.authService.claims()?.subscriptionExpiresAt ?? 0;
-    if (expiresAt <= 0) {
-      return '—';
-    }
-    return new Date(expiresAt * 1000).toLocaleDateString('es', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
-  });
+  protected readonly expiresLabel = computed(() =>
+    subscriptionExpiresLabel(this.authService.claims()?.subscriptionExpiresAt ?? 0),
+  );
 
   constructor() {
     this.load();
   }
 
   protected levelLabel(level: number): string {
-    return LEVEL_LABELS[level] ?? `Nivel ${level}`;
+    return subscriptionLevelLabel(level);
   }
 
   protected planDuration(plan: SubscriptionPlan): string {
@@ -269,7 +253,7 @@ export class ClientSubscription {
     this.loading.set(true);
     try {
       const plans = await firstValueFrom(this.paymentApi.listSubscriptionPlans());
-      this.plans.set([...(plans ?? [])].sort((first, second) => first.level - second.level));
+      this.plans.set(sortPlansByLevel(plans));
     } catch {
       this.notifications.error('Error al cargar los planes de suscripción.');
     } finally {
@@ -289,7 +273,7 @@ export class ClientSubscription {
 
     const confirmed = await this.dialogs.confirm({
       title: 'Confirmar pago de suscripción',
-      message: `¿Registrar la deuda para el nivel ${result.level}?`,
+      message: subscriptionPayConfirmMessage(result.level),
       confirmLabel: 'Registrar deuda',
     });
     if (!confirmed) {
@@ -304,14 +288,17 @@ export class ClientSubscription {
       }
       const finalStatus = await this.pollUntilSettled(queued.identificadorDeuda);
 
-      if (finalStatus.status === 'Ready' && finalStatus.qrSimpleUrl) {
-        this.openQrDialog(finalStatus.identificadorDeuda, finalStatus.qrSimpleUrl);
-      } else if (finalStatus.status === 'Failed') {
-        this.notifications.error(
-          `Error al generar QR: ${finalStatus.error ?? 'reintente más tarde.'}`,
-        );
-      } else {
-        this.notifications.info('Generación en curso. Vuelve a intentar en unos segundos.');
+      const outcome = resolveSubscriptionQrOutcome(finalStatus);
+      switch (outcome.kind) {
+        case 'qr':
+          this.openQrDialog(outcome.debtId, outcome.qrUrl);
+          break;
+        case 'failed':
+          this.notifications.error(outcome.message);
+          break;
+        case 'pending':
+          this.notifications.info(outcome.message);
+          break;
       }
     } catch {
       this.notifications.error('Error al registrar la deuda. Intenta de nuevo.');
