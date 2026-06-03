@@ -1,6 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { MatCardModule } from '@angular/material/card';
@@ -13,6 +12,7 @@ import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 
 import { AuthService } from '@core/auth';
 import { defaultRouteForRole } from '@core/router';
+import { HttpErrorMapper } from '@core/services';
 
 import { ThemeToggle } from '@shared/components';
 
@@ -38,6 +38,7 @@ export class Login {
   private readonly formBuilder = inject(FormBuilder);
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly errorMapper = inject(HttpErrorMapper);
 
   protected readonly styles = loginStyles();
 
@@ -78,24 +79,14 @@ export class Login {
       const destinationUrl = role ? defaultRouteForRole(role) : '/yo';
       this.router.navigateByUrl(destinationUrl);
     } catch (error) {
-      this.errorMessage.set(this.describeLoginError(error));
+      this.errorMessage.set(
+        this.errorMapper.mapError(error, {
+          fallback: 'No se pudo iniciar sesión. Intenta nuevamente.',
+          byStatus: { 400: 'Credenciales inválidas', 401: 'Credenciales inválidas' },
+        }),
+      );
     } finally {
       this.loading.set(false);
     }
-  }
-
-  private describeLoginError(error: unknown): string {
-    if (error instanceof HttpErrorResponse) {
-      if (error.status === 0) {
-        return 'No se pudo conectar al servidor. Revisa tu conexión.';
-      }
-      if (error.status === 400 || error.status === 401) {
-        return 'Credenciales inválidas';
-      }
-      if (error.status >= 500) {
-        return 'Error del servidor. Intenta nuevamente en unos momentos.';
-      }
-    }
-    return 'No se pudo iniciar sesión. Intenta nuevamente.';
   }
 }

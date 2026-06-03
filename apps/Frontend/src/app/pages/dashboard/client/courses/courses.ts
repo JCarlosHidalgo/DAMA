@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, effect, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { AbstractControl, FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -16,6 +16,7 @@ import { DialogService, NotificationService } from '@core/services';
 import {
   CourseColorChip,
   EmptyState,
+  ErrorState,
   Icon,
   LoadingSkeleton,
   PageHead,
@@ -24,6 +25,7 @@ import {
   TableCell,
 } from '@shared/components';
 import { NoPasswordManager } from '@shared/directives';
+import { FieldError } from '@shared/forms';
 
 import { courseDialogStyles, coursesStyles } from './courses.variants';
 
@@ -43,6 +45,7 @@ interface CourseDialogData {
     MatInputModule,
     MatButtonModule,
     NoPasswordManager,
+    FieldError,
   ],
   template: `
     <h2 mat-dialog-title>{{ data.mode === 'create' ? 'Nuevo curso' : 'Editar curso' }}</h2>
@@ -51,15 +54,7 @@ interface CourseDialogData {
         <mat-form-field appearance="outline" [class]="styles.field()">
           <mat-label>Nombre</mat-label>
           <input matInput formControlName="name" autocomplete="off" />
-          @if (form.controls.name.hasError('required')) {
-            <mat-error>Requerido</mat-error>
-          }
-          @if (form.controls.name.hasError('maxlength')) {
-            <mat-error>Máximo 128 caracteres</mat-error>
-          }
-          @if (form.controls.name.hasError('hasDot')) {
-            <mat-error>No se permiten puntos (.)</mat-error>
-          }
+          <mat-error><app-field-error [control]="form.controls.name" /></mat-error>
         </mat-form-field>
       </form>
     </mat-dialog-content>
@@ -106,6 +101,7 @@ export class CourseDialog {
     PageHead,
     LoadingSkeleton,
     EmptyState,
+    ErrorState,
     CourseColorChip,
     ResponsiveTable,
     TableCell,
@@ -125,6 +121,10 @@ export class CourseDialog {
             <app-loading-skeleton [height]="40" />
             <app-loading-skeleton [height]="40" />
           </div>
+        } @else if (coursesQuery.isError()) {
+          <app-error-state message="No se pudieron cargar los cursos.">
+            <button action mat-stroked-button (click)="coursesQuery.refetch()">Reintentar</button>
+          </app-error-state>
         } @else if (courses().length === 0) {
           <app-empty-state icon="chalkboard" message="No hay cursos." />
         } @else {
@@ -179,7 +179,7 @@ export class Courses {
       this.notifications.success('Curso creado.');
       this.queryClient.invalidateQueries({ queryKey: COURSES_QUERY_KEY });
     },
-    onError: () => this.notifications.error('Error al crear curso.'),
+    onError: (error) => this.notifications.errorFrom(error, 'Error al crear curso.'),
   }));
 
   private readonly updateCourse = injectMutation(() => ({
@@ -189,7 +189,7 @@ export class Courses {
       this.notifications.success('Curso actualizado.');
       this.queryClient.invalidateQueries({ queryKey: COURSES_QUERY_KEY });
     },
-    onError: () => this.notifications.error('Error al actualizar curso.'),
+    onError: (error) => this.notifications.errorFrom(error, 'Error al actualizar curso.'),
   }));
 
   private readonly deleteCourse = injectMutation(() => ({
@@ -198,16 +198,8 @@ export class Courses {
       this.notifications.success('Curso eliminado.');
       this.queryClient.invalidateQueries({ queryKey: COURSES_QUERY_KEY });
     },
-    onError: () => this.notifications.error('Error al eliminar curso.'),
+    onError: (error) => this.notifications.errorFrom(error, 'Error al eliminar curso.'),
   }));
-
-  constructor() {
-    effect(() => {
-      if (this.coursesQuery.isError()) {
-        this.notifications.error('Error al cargar cursos.');
-      }
-    });
-  }
 
   async onCreate(): Promise<void> {
     const name = await this.openCourseDialog({ mode: 'create', name: '' });

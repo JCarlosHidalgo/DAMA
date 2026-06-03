@@ -171,10 +171,10 @@ describe('Login', () => {
       expect(component.errorMessage()).toContain('No se pudo iniciar sesión');
     });
 
-    it("falls back to generic on Http status that doesn't match the known buckets (e.g. 404)", async () => {
+    it('uses the centralized not-found message on status 404', async () => {
       authStub.login.mockReturnValueOnce(throwError(() => new HttpErrorResponse({ status: 404 })));
       await component.onSubmit();
-      expect(component.errorMessage()).toContain('No se pudo iniciar sesión');
+      expect(component.errorMessage()).toContain('No se encontró');
     });
   });
 });

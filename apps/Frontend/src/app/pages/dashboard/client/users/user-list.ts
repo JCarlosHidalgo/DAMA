@@ -1,12 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  effect,
-  inject,
-  input,
-  signal,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -28,6 +20,7 @@ import { UserListItem } from '@core/models';
 import { DialogService, NotificationService } from '@core/services';
 import {
   EmptyState,
+  ErrorState,
   Icon,
   LoadingSkeleton,
   PageHead,
@@ -208,6 +201,7 @@ export class RenameUserDialog {
     Paginator,
     LoadingSkeleton,
     EmptyState,
+    ErrorState,
     ResponsiveTable,
     TableCell,
   ],
@@ -228,6 +222,10 @@ export class RenameUserDialog {
             <app-loading-skeleton [height]="40" />
             <app-loading-skeleton [height]="40" />
           </div>
+        } @else if (usersQuery.isError()) {
+          <app-error-state message="No se pudo cargar la lista.">
+            <button action mat-stroked-button (click)="usersQuery.refetch()">Reintentar</button>
+          </app-error-state>
         } @else if (users().length === 0) {
           <app-empty-state icon="users" message="No hay usuarios." />
         } @else {
@@ -313,7 +311,7 @@ export class UserList {
       this.notifications.success('Usuario registrado.');
       this.invalidateCurrentRoleList();
     },
-    onError: () => this.notifications.error('Error al registrar.'),
+    onError: (error) => this.notifications.errorFrom(error, 'Error al registrar.'),
   }));
 
   private readonly renameUser = injectMutation(() => ({
@@ -323,7 +321,7 @@ export class UserList {
       this.notifications.success('Usuario renombrado.');
       this.invalidateCurrentRoleList();
     },
-    onError: () => this.notifications.error('Error al renombrar.'),
+    onError: (error) => this.notifications.errorFrom(error, 'Error al renombrar.'),
   }));
 
   private readonly deleteUser = injectMutation(() => ({
@@ -332,16 +330,8 @@ export class UserList {
       this.notifications.success('Usuario eliminado.');
       this.invalidateCurrentRoleList();
     },
-    onError: () => this.notifications.error('Error al eliminar.'),
+    onError: (error) => this.notifications.errorFrom(error, 'Error al eliminar.'),
   }));
-
-  constructor() {
-    effect(() => {
-      if (this.usersQuery.isError()) {
-        this.notifications.error('Error al cargar lista.');
-      }
-    });
-  }
 
   protected isSelf(user: UserListItem): boolean {
     return this.authService.claims()?.userId === user.id;
