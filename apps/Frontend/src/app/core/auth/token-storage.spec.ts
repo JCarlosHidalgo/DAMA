@@ -4,6 +4,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { SessionStorageTokenStorage } from './token-storage';
 
 const STORAGE_KEY = 'dama.accessToken';
+const REFRESH_KEY = 'dama.refreshToken';
 
 describe('SessionStorageTokenStorage', () => {
   let tokenStorage: SessionStorageTokenStorage;
@@ -38,12 +39,26 @@ describe('SessionStorageTokenStorage', () => {
       expect(tokenStorage.read()).toBe('second');
     });
 
-    it('removes the entry from sessionStorage on clear', () => {
+    it('returns null on readRefresh when no refresh token has been written', () => {
+      expect(tokenStorage.readRefresh()).toBeNull();
+    });
+
+    it('persists and reads back the refresh token via sessionStorage', () => {
+      tokenStorage.writeRefresh('refresh-token-xyz');
+
+      expect(sessionStorage.getItem(REFRESH_KEY)).toBe('refresh-token-xyz');
+      expect(tokenStorage.readRefresh()).toBe('refresh-token-xyz');
+    });
+
+    it('removes both the access and refresh entries on clear', () => {
       tokenStorage.write('to-be-cleared');
+      tokenStorage.writeRefresh('refresh-to-be-cleared');
       tokenStorage.clear();
 
       expect(sessionStorage.getItem(STORAGE_KEY)).toBeNull();
+      expect(sessionStorage.getItem(REFRESH_KEY)).toBeNull();
       expect(tokenStorage.read()).toBeNull();
+      expect(tokenStorage.readRefresh()).toBeNull();
     });
   });
 

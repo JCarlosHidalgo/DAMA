@@ -5,7 +5,12 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 
 import { AuthService } from './auth-service';
 import { SessionStorageTokenStorage } from './token-storage';
-import { InMemoryTokenStorage, buildJwtClaims, buildJwtToken } from '@testing';
+import {
+  InMemoryTokenStorage,
+  buildJwtClaims,
+  buildJwtToken,
+  buildRawPayloadToken,
+} from '@testing';
 import { environment } from '@env/environment';
 
 describe('AuthService', () => {
@@ -145,6 +150,71 @@ describe('AuthService', () => {
       authService.refreshAccessToken().subscribe({ error: () => (errored = true) });
 
       expect(errored).toBe(true);
+    });
+
+    it('returns the in-flight observable instead of issuing a second request', () => {
+      const initial = buildJwtToken(buildJwtClaims({ role: 'Client' }));
+      inMemoryStorage = new InMemoryTokenStorage(initial, 'refresh-old');
+      TestBed.configureTestingModule({
+        providers: [
+          provideHttpClient(),
+          provideHttpClientTesting(),
+          { provide: SessionStorageTokenStorage, useValue: inMemoryStorage },
+        ],
+      });
+      httpController = TestBed.inject(HttpTestingController);
+      const authService = TestBed.inject(AuthService);
+      const rotated = buildJwtToken(buildJwtClaims({ role: 'Client' }));
+
+      const firstCall = authService.refreshAccessToken();
+      const secondCall = authService.refreshAccessToken();
+      expect(secondCall).toBe(firstCall);
+
+      let firstEmit: string | undefined;
+      let secondEmit: string | undefined;
+      firstCall.subscribe((accessToken) => (firstEmit = accessToken));
+      secondCall.subscribe((accessToken) => (secondEmit = accessToken));
+
+      const pending = httpController.expectOne(`${environment.apiBaseUrl}/api/auth/refresh`);
+      pending.flush({ accessToken: rotated, refreshToken: 'refresh-new' });
+
+      expect(firstEmit).toBe(rotated);
+      expect(secondEmit).toBe(rotated);
+    });
+  });
+
+  describe('effectiveSubscriptionIndex', () => {
+    it('is 0 when there are no claims', () => {
+      const authService = instantiate();
+      expect(authService.effectiveSubscriptionIndex()).toBe(0);
+    });
+
+    it('exposes the pyramid index while the subscription is active', () => {
+      const nowSeconds = Math.floor(Date.now() / 1000);
+      const token = buildRawPayloadToken({
+        role: 'Client',
+        exp: nowSeconds + 60 * 60,
+        index_core_services_pyramid: 3,
+        subscription_expires_at: nowSeconds + 60 * 60,
+      });
+
+      const authService = instantiate(token);
+
+      expect(authService.effectiveSubscriptionIndex()).toBe(3);
+    });
+
+    it('falls back to 0 once the subscription has expired', () => {
+      const nowSeconds = Math.floor(Date.now() / 1000);
+      const token = buildRawPayloadToken({
+        role: 'Client',
+        exp: nowSeconds + 60 * 60,
+        index_core_services_pyramid: 3,
+        subscription_expires_at: nowSeconds - 60 * 60,
+      });
+
+      const authService = instantiate(token);
+
+      expect(authService.effectiveSubscriptionIndex()).toBe(0);
     });
   });
 
