@@ -5,8 +5,8 @@ export type Theme = 'light' | 'dark';
 const THEME_STORAGE_KEY = 'dama.theme';
 
 const SURFACE_COLOR: Record<Theme, string> = {
-  light: '#ffffff',
-  dark: '#2c2733',
+  light: '#fffdfb',
+  dark: '#2a2521',
 };
 
 @Injectable({ providedIn: 'root' })

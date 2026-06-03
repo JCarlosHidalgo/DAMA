@@ -9,7 +9,7 @@ export const confirmationDialogStyles = tv({
     destructive: {
       true: {
         confirmButton:
-          '[--mdc-filled-button-container-color:var(--dama-danger)] [--mdc-filled-button-label-text-color:#fff] hover:[--mdc-filled-button-container-color:color-mix(in_oklab,var(--dama-danger)_85%,black)]',
+          '[--mdc-filled-button-container-color:var(--dama-danger)] [--mdc-filled-button-label-text-color:var(--dama-primary-fg)] hover:[--mdc-filled-button-container-color:color-mix(in_oklab,var(--dama-danger)_85%,black)]',
       },
     },
   },

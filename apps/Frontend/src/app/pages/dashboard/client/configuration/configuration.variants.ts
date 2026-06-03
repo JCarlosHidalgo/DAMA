@@ -7,7 +7,7 @@ export const clientConfigurationStyles = tv({
     field: 'min-w-[320px]',
     statusRow: 'mb-3 flex items-center gap-4',
     keyValue: 't-body-md tabular-nums',
-    errorText: 't-body-sm text-[var(--dama-error,#b3261e)]',
+    errorText: 't-body-sm text-danger',
     editForm: 'mt-4 flex flex-wrap items-start gap-4',
   },
 });

@@ -5,40 +5,40 @@
 @import './app/shared/design/fullcalendar-overrides.css';
 
 :root {
-  --dama-bg: oklch(0.984 0.004 268);
-  --dama-bg-2: oklch(0.972 0.005 268);
+  --dama-bg: oklch(0.985 0.006 70);
+  --dama-bg-2: oklch(0.97 0.008 70);
   --dama-surface: oklch(1 0 0);
-  --dama-surface-2: oklch(0.975 0.005 268);
-  --dama-surface-hover: oklch(0.96 0.006 268);
-  --dama-sidenav: oklch(0.99 0.003 268);
+  --dama-surface-2: oklch(0.975 0.007 70);
+  --dama-surface-hover: oklch(0.96 0.01 65);
+  --dama-sidenav: oklch(0.99 0.005 70);
 
-  --dama-border: oklch(0.92 0.008 268);
-  --dama-border-strong: oklch(0.86 0.012 268);
-  --dama-divider: oklch(0.945 0.008 268);
+  --dama-border: oklch(0.915 0.012 65);
+  --dama-border-strong: oklch(0.85 0.018 60);
+  --dama-divider: oklch(0.94 0.012 65);
 
-  --dama-text: oklch(0.2 0.016 268);
-  --dama-text-strong: oklch(0.14 0.018 268);
-  --dama-text-muted: oklch(0.5 0.014 268);
-  --dama-text-faint: oklch(0.65 0.012 268);
+  --dama-text: oklch(0.23 0.02 55);
+  --dama-text-strong: oklch(0.16 0.022 55);
+  --dama-text-muted: oklch(0.5 0.018 55);
+  --dama-text-faint: oklch(0.64 0.016 58);
 
-  --dama-primary: oklch(0.5 0.176 282);
-  --dama-primary-hover: oklch(0.44 0.19 282);
-  --dama-primary-soft: oklch(0.955 0.035 282);
-  --dama-primary-border: oklch(0.88 0.06 282);
-  --dama-primary-fg: oklch(0.99 0.005 268);
+  --dama-primary: oklch(0.6 0.18 38);
+  --dama-primary-hover: oklch(0.54 0.185 36);
+  --dama-primary-soft: oklch(0.955 0.045 55);
+  --dama-primary-border: oklch(0.85 0.085 48);
+  --dama-primary-fg: oklch(0.99 0.012 85);
 
   --dama-success: oklch(0.62 0.14 155);
   --dama-success-soft: oklch(0.95 0.04 155);
-  --dama-warning: oklch(0.72 0.16 75);
-  --dama-warning-soft: oklch(0.97 0.04 75);
-  --dama-danger: oklch(0.55 0.21 25);
-  --dama-danger-soft: oklch(0.96 0.04 25);
+  --dama-warning: oklch(0.74 0.15 85);
+  --dama-warning-soft: oklch(0.96 0.05 85);
+  --dama-danger: oklch(0.55 0.21 22);
+  --dama-danger-soft: oklch(0.96 0.04 22);
 
-  --dama-shadow-xs: 0 1px 2px rgba(15, 23, 42, 0.04);
-  --dama-shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.05), 0 1px 3px rgba(15, 23, 42, 0.05);
-  --dama-shadow: 0 1px 2px rgba(15, 23, 42, 0.05), 0 4px 10px rgba(15, 23, 42, 0.05);
-  --dama-shadow-md: 0 1px 2px rgba(15, 23, 42, 0.06), 0 8px 20px rgba(15, 23, 42, 0.06);
-  --dama-shadow-lg: 0 1px 2px rgba(15, 23, 42, 0.06), 0 16px 40px rgba(15, 23, 42, 0.1);
+  --dama-shadow-xs: 0 1px 2px rgba(60, 40, 30, 0.05);
+  --dama-shadow-sm: 0 1px 2px rgba(60, 40, 30, 0.06), 0 1px 3px rgba(60, 40, 30, 0.05);
+  --dama-shadow: 0 1px 2px rgba(60, 40, 30, 0.06), 0 4px 10px rgba(60, 40, 30, 0.06);
+  --dama-shadow-md: 0 1px 2px rgba(60, 40, 30, 0.07), 0 8px 20px rgba(60, 40, 30, 0.07);
+  --dama-shadow-lg: 0 1px 2px rgba(60, 40, 30, 0.07), 0 16px 40px rgba(60, 40, 30, 0.12);
 
   --dama-radius-xs: 4px;
   --dama-radius-sm: 6px;
@@ -62,7 +62,7 @@
   --dama-z-dialog: 60;
   --dama-z-snackbar: 70;
 
-  --dama-ring: 0 0 0 4px oklch(0.5 0.176 282 / 0.18);
+  --dama-ring: 0 0 0 4px oklch(0.6 0.18 38 / 0.22);
   --dama-easing: cubic-bezier(0.2, 0.7, 0.3, 1);
 
   --dama-sidenav-w: 240px;
@@ -74,34 +74,34 @@
 }
 
 html.dark {
-  --dama-bg: oklch(0.176 0.014 268);
-  --dama-bg-2: oklch(0.21 0.016 268);
-  --dama-surface: oklch(0.225 0.018 268);
-  --dama-surface-2: oklch(0.26 0.018 268);
-  --dama-surface-hover: oklch(0.29 0.018 268);
-  --dama-sidenav: oklch(0.2 0.018 268);
+  --dama-bg: oklch(0.19 0.012 50);
+  --dama-bg-2: oklch(0.225 0.013 50);
+  --dama-surface: oklch(0.245 0.014 50);
+  --dama-surface-2: oklch(0.28 0.015 50);
+  --dama-surface-hover: oklch(0.31 0.016 50);
+  --dama-sidenav: oklch(0.215 0.013 50);
 
-  --dama-border: oklch(0.3 0.018 268);
-  --dama-border-strong: oklch(0.38 0.02 268);
-  --dama-divider: oklch(0.27 0.018 268);
+  --dama-border: oklch(0.32 0.015 50);
+  --dama-border-strong: oklch(0.4 0.018 50);
+  --dama-divider: oklch(0.29 0.014 50);
 
-  --dama-text: oklch(0.97 0.005 268);
+  --dama-text: oklch(0.97 0.006 75);
   --dama-text-strong: oklch(1 0 0);
-  --dama-text-muted: oklch(0.72 0.013 268);
-  --dama-text-faint: oklch(0.56 0.014 268);
+  --dama-text-muted: oklch(0.72 0.014 70);
+  --dama-text-faint: oklch(0.56 0.015 62);
 
-  --dama-primary: oklch(0.74 0.16 282);
-  --dama-primary-hover: oklch(0.8 0.17 282);
-  --dama-primary-soft: oklch(0.32 0.1 282 / 0.6);
-  --dama-primary-border: oklch(0.45 0.12 282);
-  --dama-primary-fg: oklch(0.14 0.018 268);
+  --dama-primary: oklch(0.74 0.15 45);
+  --dama-primary-hover: oklch(0.8 0.15 48);
+  --dama-primary-soft: oklch(0.38 0.09 40 / 0.5);
+  --dama-primary-border: oklch(0.5 0.11 42);
+  --dama-primary-fg: oklch(0.18 0.02 50);
 
   --dama-success: oklch(0.74 0.14 155);
   --dama-success-soft: oklch(0.3 0.1 155 / 0.5);
-  --dama-warning: oklch(0.8 0.16 75);
-  --dama-warning-soft: oklch(0.32 0.1 75 / 0.5);
-  --dama-danger: oklch(0.72 0.19 25);
-  --dama-danger-soft: oklch(0.34 0.1 25 / 0.5);
+  --dama-warning: oklch(0.82 0.15 85);
+  --dama-warning-soft: oklch(0.34 0.1 85 / 0.5);
+  --dama-danger: oklch(0.72 0.19 22);
+  --dama-danger-soft: oklch(0.34 0.1 22 / 0.5);
 
   --dama-shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.4);
   --dama-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4), 0 1px 3px rgba(0, 0, 0, 0.3);
