@@ -4,7 +4,7 @@ export const dashboardStyles = tv({
   slots: {
     container: 'h-dvh bg-bg',
     brand:
-      'mb-2 flex items-center gap-3 border-b border-divider px-4 py-[18px] text-[16px] font-bold tracking-[-0.01em] text-text-strong',
+      'mb-2 flex items-center gap-3 border-b border-border px-4 h-[var(--dama-toolbar-h)] text-[16px] font-bold tracking-[-0.01em] text-text-strong',
     brandIcon:
       'grid h-8 w-8 place-items-center rounded-[var(--dama-radius-sm)] bg-primary text-[14px] text-primary-fg shadow-[var(--dama-shadow-xs)]',
     brandText: '',

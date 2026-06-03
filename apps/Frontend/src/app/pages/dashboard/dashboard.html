@@ -1,4 +1,4 @@
-<mat-sidenav-container [class]="styles().container()">
+<mat-sidenav-container [class]="styles().container()" [class.collapsed]="collapsed()">
   <mat-sidenav
     #sidenav
     [mode]="isHandset() ? 'over' : 'side'"

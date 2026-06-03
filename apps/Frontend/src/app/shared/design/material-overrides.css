@@ -151,6 +151,14 @@
   }
 }
 
+.mat-drawer-content {
+  transition: margin-left 200ms var(--dama-easing);
+}
+
+.mat-drawer-container.collapsed .mat-drawer-content {
+  margin-left: var(--dama-sidenav-w-collapsed) !important;
+}
+
 .mat-mdc-nav-list .mat-mdc-list-item {
   height: 44px;
   border-radius: 8px;
