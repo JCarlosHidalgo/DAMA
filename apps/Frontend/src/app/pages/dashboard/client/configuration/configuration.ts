@@ -7,35 +7,19 @@ import { MatSelectModule } from '@angular/material/select';
 
 import { PaymentApi, AuthApi } from '@core/api';
 import { AuthService } from '@core/auth';
-import { TodotixAppKeyStatus } from '@core/models';
 import { NotificationService } from '@core/services';
 import { PageHead } from '@shared/components';
 import { NoPasswordManager } from '@shared/directives';
 
+import {
+  AppKeyState,
+  asReadyAppKey,
+  shouldUpdateTimezone,
+  subscriptionAllowsTodotix,
+  TIMEZONE_OPTIONS,
+} from './configuration.logic';
+import { appKeyValidator } from './configuration.validators';
 import { clientConfigurationStyles } from './configuration.variants';
-
-type AppKeyState =
-  | { kind: 'loading' }
-  | { kind: 'ready'; status: TodotixAppKeyStatus }
-  | { kind: 'error' };
-
-const TIMEZONE_OPTIONS = [
-  'America/La_Paz',
-  'America/Lima',
-  'America/Bogota',
-  'America/Mexico_City',
-  'America/Argentina/Buenos_Aires',
-  'America/Sao_Paulo',
-  'America/Santiago',
-  'America/New_York',
-  'America/Los_Angeles',
-  'Europe/Madrid',
-  'Europe/London',
-  'Europe/Paris',
-  'Asia/Tokyo',
-] as const;
-
-const APP_KEY_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 
 @Component({
   selector: 'app-client-configuration',
@@ -160,8 +144,8 @@ export class ClientConfiguration {
 
   protected readonly timezoneOptions = TIMEZONE_OPTIONS;
   protected readonly selectedTimezone = signal(this.authService.tenantTimezone());
-  protected readonly canManageTodotix = computed(
-    () => this.authService.effectiveSubscriptionIndex() >= 3,
+  protected readonly canManageTodotix = computed(() =>
+    subscriptionAllowsTodotix(this.authService.effectiveSubscriptionIndex()),
   );
 
   readonly appKeyState = signal<AppKeyState>({ kind: 'loading' });
@@ -170,7 +154,7 @@ export class ClientConfiguration {
   readonly testing = signal(false);
 
   readonly form = this.formBuilder.nonNullable.group({
-    appKey: ['', [Validators.required, Validators.pattern(APP_KEY_PATTERN)]],
+    appKey: ['', [Validators.required, appKeyValidator]],
   });
 
   constructor() {
@@ -179,12 +163,12 @@ export class ClientConfiguration {
     }
   }
 
-  protected asReady(state: AppKeyState): { status: TodotixAppKeyStatus } | null {
-    return state.kind === 'ready' ? state : null;
+  protected asReady(state: AppKeyState): ReturnType<typeof asReadyAppKey> {
+    return asReadyAppKey(state);
   }
 
   onTimezoneChange(timezone: string): void {
-    if (timezone === this.selectedTimezone()) {
+    if (!shouldUpdateTimezone(timezone, this.selectedTimezone())) {
       return;
     }
     this.authApi.updateTenantTimezone(this.tenantId, { timezone }).subscribe({
