@@ -5,7 +5,6 @@ import { MatCardModule } from '@angular/material/card';
 import { MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { QueryClient } from '@tanstack/query-core';
 import { injectMutation, injectQuery } from '@tanstack/angular-query-experimental';
@@ -14,7 +13,16 @@ import { firstValueFrom } from 'rxjs';
 import { CourseApi } from '@core/api';
 import { Course } from '@core/models';
 import { DialogService, NotificationService } from '@core/services';
-import { CourseColorChip, EmptyState, Icon, LoadingSkeleton, PageHead } from '@shared/components';
+import {
+  CourseColorChip,
+  EmptyState,
+  Icon,
+  LoadingSkeleton,
+  PageHead,
+  ResponsiveTable,
+  type ResponsiveTableColumn,
+  TableCell,
+} from '@shared/components';
 import { NoPasswordManager } from '@shared/directives';
 
 import { courseDialogStyles, coursesStyles } from './courses.variants';
@@ -92,7 +100,6 @@ export class CourseDialog {
   selector: 'app-courses',
   imports: [
     MatCardModule,
-    MatTableModule,
     MatButtonModule,
     MatTooltipModule,
     Icon,
@@ -100,6 +107,8 @@ export class CourseDialog {
     LoadingSkeleton,
     EmptyState,
     CourseColorChip,
+    ResponsiveTable,
+    TableCell,
   ],
   template: `
     <app-page-head title="Cursos" [subtitle]="subtitle()">
@@ -119,34 +128,24 @@ export class CourseDialog {
         } @else if (courses().length === 0) {
           <app-empty-state icon="chalkboard" message="No hay cursos." />
         } @else {
-          <div [class]="styles.tableWrap()">
-            <table mat-table [dataSource]="courses()" [class]="styles.table()">
-              <ng-container matColumnDef="name">
-                <th mat-header-cell *matHeaderCellDef>Nombre</th>
-                <td mat-cell *matCellDef="let course">
-                  <app-course-color-chip [courseId]="course.id" [name]="course.name" />
-                </td>
-              </ng-container>
-              <ng-container matColumnDef="actions">
-                <th mat-header-cell *matHeaderCellDef class="mat-column-actions">Acciones</th>
-                <td mat-cell *matCellDef="let course" class="mat-column-actions">
-                  <button mat-icon-button matTooltip="Editar" (click)="onEdit(course)">
-                    <app-icon name="edit" />
-                  </button>
-                  <button
-                    mat-icon-button
-                    matTooltip="Eliminar"
-                    [class]="styles.dangerButton()"
-                    (click)="onDelete(course)"
-                  >
-                    <app-icon name="trash" />
-                  </button>
-                </td>
-              </ng-container>
-              <tr mat-header-row *matHeaderRowDef="columns"></tr>
-              <tr mat-row *matRowDef="let row; columns: columns"></tr>
-            </table>
-          </div>
+          <app-responsive-table [columns]="tableColumns" [rows]="courses()">
+            <ng-template appTableCell="name" let-course>
+              <app-course-color-chip [courseId]="course.id" [name]="course.name" />
+            </ng-template>
+            <ng-template appTableCell="actions" let-course>
+              <button mat-icon-button matTooltip="Editar" (click)="onEdit(course)">
+                <app-icon name="edit" />
+              </button>
+              <button
+                mat-icon-button
+                matTooltip="Eliminar"
+                [class]="styles.dangerButton()"
+                (click)="onDelete(course)"
+              >
+                <app-icon name="trash" />
+              </button>
+            </ng-template>
+          </app-responsive-table>
         }
       </mat-card-content>
     </mat-card>
@@ -161,7 +160,10 @@ export class Courses {
   private readonly queryClient = inject(QueryClient);
 
   protected readonly styles = coursesStyles();
-  protected readonly columns = ['name', 'actions'];
+  protected readonly tableColumns: ResponsiveTableColumn[] = [
+    { key: 'name', header: 'Nombre' },
+    { key: 'actions', header: 'Acciones', mobileLayout: 'block' },
+  ];
 
   protected readonly coursesQuery = injectQuery(() => ({
     queryKey: COURSES_QUERY_KEY,

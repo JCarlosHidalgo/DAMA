@@ -1,8 +1,8 @@
-import { tv } from 'tailwind-variants';
+import { tv } from '@shared/design';
 
 export const courseDialogStyles = tv({
   slots: {
-    field: 'w-full min-w-[320px]',
+    field: 'w-full min-w-dialog',
   },
 });
 
@@ -11,8 +11,6 @@ export const coursesStyles = tv({
     listCard: 'p-0',
     cardContent: 'p-0',
     skelStack: 'flex flex-col gap-3 p-5',
-    tableWrap: 'overflow-x-auto',
-    table: 'w-full',
     dangerButton: 'text-danger',
     buttonLabel: 'ml-1.5',
   },

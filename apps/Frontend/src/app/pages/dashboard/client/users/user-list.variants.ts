@@ -1,8 +1,8 @@
-import { tv } from 'tailwind-variants';
+import { tv } from '@shared/design';
 
 export const userDialogStyles = tv({
   slots: {
-    form: 'flex flex-col gap-3 min-w-[320px]',
+    form: 'flex flex-col gap-form min-w-dialog',
     field: 'w-full',
   },
 });
@@ -12,8 +12,6 @@ export const userListStyles = tv({
     listCard: 'p-0',
     cardContent: 'p-0',
     skelStack: 'flex flex-col gap-3 p-5',
-    tableWrap: 'overflow-x-auto',
-    table: 'w-full',
     dangerButton: 'text-danger disabled:text-text-faint',
     userCell: 'inline-flex items-center gap-3 max-w-full',
     avatar:

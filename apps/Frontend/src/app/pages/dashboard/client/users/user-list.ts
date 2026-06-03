@@ -13,7 +13,6 @@ import { MatCardModule } from '@angular/material/card';
 import { MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { QueryClient } from '@tanstack/query-core';
 import {
@@ -27,7 +26,16 @@ import { AuthApi } from '@core/api';
 import { AuthService } from '@core/auth';
 import { UserListItem } from '@core/models';
 import { DialogService, NotificationService } from '@core/services';
-import { EmptyState, Icon, LoadingSkeleton, PageHead, Paginator } from '@shared/components';
+import {
+  EmptyState,
+  Icon,
+  LoadingSkeleton,
+  PageHead,
+  Paginator,
+  ResponsiveTable,
+  type ResponsiveTableColumn,
+  TableCell,
+} from '@shared/components';
 import { NoPasswordManager } from '@shared/directives';
 
 import { userDialogStyles, userListStyles } from './user-list.variants';
@@ -193,7 +201,6 @@ export class RenameUserDialog {
   selector: 'app-user-list',
   imports: [
     MatCardModule,
-    MatTableModule,
     MatButtonModule,
     MatTooltipModule,
     Icon,
@@ -201,6 +208,8 @@ export class RenameUserDialog {
     Paginator,
     LoadingSkeleton,
     EmptyState,
+    ResponsiveTable,
+    TableCell,
   ],
   template: `
     <app-page-head [title]="title()" [subtitle]="subtitle()">
@@ -222,40 +231,30 @@ export class RenameUserDialog {
         } @else if (users().length === 0) {
           <app-empty-state icon="users" message="No hay usuarios." />
         } @else {
-          <div [class]="styles.tableWrap()">
-            <table mat-table [dataSource]="users()" [class]="styles.table()">
-              <ng-container matColumnDef="username">
-                <th mat-header-cell *matHeaderCellDef>Nombre</th>
-                <td mat-cell *matCellDef="let user">
-                  <span [class]="styles.userCell()">
-                    <span [class]="styles.avatar()" [style.background]="avatarColor(user.username)">
-                      {{ initials(user.username) }}
-                    </span>
-                    <span class="truncate">{{ user.username }}</span>
-                  </span>
-                </td>
-              </ng-container>
-              <ng-container matColumnDef="actions">
-                <th mat-header-cell *matHeaderCellDef class="mat-column-actions">Acciones</th>
-                <td mat-cell *matCellDef="let user" class="mat-column-actions">
-                  <button mat-icon-button matTooltip="Renombrar" (click)="onRename(user)">
-                    <app-icon name="edit" />
-                  </button>
-                  <button
-                    mat-icon-button
-                    matTooltip="Eliminar"
-                    (click)="onDelete(user)"
-                    [disabled]="isSelf(user)"
-                    [class]="styles.dangerButton()"
-                  >
-                    <app-icon name="trash" />
-                  </button>
-                </td>
-              </ng-container>
-              <tr mat-header-row *matHeaderRowDef="columns"></tr>
-              <tr mat-row *matRowDef="let row; columns: columns"></tr>
-            </table>
-          </div>
+          <app-responsive-table [columns]="tableColumns" [rows]="users()">
+            <ng-template appTableCell="username" let-user>
+              <span [class]="styles.userCell()">
+                <span [class]="styles.avatar()" [style.background]="avatarColor(user.username)">
+                  {{ initials(user.username) }}
+                </span>
+                <span class="truncate">{{ user.username }}</span>
+              </span>
+            </ng-template>
+            <ng-template appTableCell="actions" let-user>
+              <button mat-icon-button matTooltip="Renombrar" (click)="onRename(user)">
+                <app-icon name="edit" />
+              </button>
+              <button
+                mat-icon-button
+                matTooltip="Eliminar"
+                (click)="onDelete(user)"
+                [disabled]="isSelf(user)"
+                [class]="styles.dangerButton()"
+              >
+                <app-icon name="trash" />
+              </button>
+            </ng-template>
+          </app-responsive-table>
 
           <div [class]="styles.paginatorWrap()">
             <app-paginator
@@ -281,7 +280,10 @@ export class UserList {
 
   protected readonly styles = userListStyles();
   protected readonly pageIndex = signal(0);
-  protected readonly columns = ['username', 'actions'];
+  protected readonly tableColumns: ResponsiveTableColumn[] = [
+    { key: 'username', header: 'Nombre' },
+    { key: 'actions', header: 'Acciones', mobileLayout: 'block' },
+  ];
 
   protected readonly usersQuery = injectQuery(() => ({
     queryKey: [USERS_QUERY_KEY_ROOT, this.kind(), this.pageIndex()] as const,
