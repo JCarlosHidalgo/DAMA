@@ -66,6 +66,8 @@
   --dama-easing: cubic-bezier(0.2, 0.7, 0.3, 1);
 
   --dama-sidenav-w: 240px;
+  --dama-sidenav-w-min: 200px;
+  --dama-sidenav-w-max: 300px;
   --dama-sidenav-w-collapsed: 72px;
   --dama-toolbar-h: 60px;
   --dama-content-pad-d: 24px;

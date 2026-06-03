@@ -16,7 +16,7 @@ export const dashboardStyles = tv({
   },
   variants: {
     collapsed: {
-      true: { brandText: 'hidden', navLabel: 'hidden' },
+      true: { brand: 'justify-center px-0', brandText: 'hidden', navLabel: 'hidden' },
     },
   },
 });
