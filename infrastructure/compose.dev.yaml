@@ -21,6 +21,7 @@ services:
       dockerfile: ./infrastructure/environments/frontend/Dockerfile
       args:
         API_BASE_URL: ${FRONTEND_API_BASE_URL}
+        CSP_INLINE_SCRIPT_HASH: ${FRONTEND_CSP_INLINE_SCRIPT_HASH}
     ports:
       - "${FRONTEND_HOST_PORT}:80"
     mem_limit: 256m
