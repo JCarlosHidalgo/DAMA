@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -62,76 +62,85 @@ const APP_KEY_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-
       </mat-form-field>
     </section>
 
-    <section class="config-card">
-      <h2 class="t-title-sm">App-key de Todotix</h2>
-      <p class="t-body-sm hint">
-        Clave de tu canal de cobro Todotix. Sin una credencial configurada y válida no podrás
-        recibir pagos.
-      </p>
+    @if (canManageTodotix()) {
+      <section class="config-card">
+        <h2 class="t-title-sm">App-key de Todotix</h2>
+        <p class="t-body-sm hint">
+          Clave de tu canal de cobro Todotix. Sin una credencial configurada y válida no podrás
+          recibir pagos.
+        </p>
 
-      @switch (appKeyState().kind) {
-        @case ('loading') {
-          <p class="t-body-sm">Cargando…</p>
-        }
-        @case ('error') {
-          <p class="t-body-sm error-text">No se pudo cargar la app-key.</p>
-        }
-        @case ('ready') {
-          @if (asReady(appKeyState()); as state) {
-            <div class="status-row">
-              <span class="t-label-up">Estado</span>
-              <span class="t-body-md">
-                {{ state.status.hasCustomKey ? 'Configurada' : 'No configurada' }}
-              </span>
-            </div>
-            <div class="status-row">
-              <span class="t-label-up">App-key</span>
-              <span class="t-body-md key-value">
-                {{ revealedKey() ?? state.status.maskedAppKey ?? '—' }}
-              </span>
-              <button mat-stroked-button type="button" (click)="toggleReveal()">
-                {{ revealedKey() ? 'Ocultar' : 'Mostrar' }}
-              </button>
-            </div>
-            @if (state.status.hasCustomKey) {
+        @switch (appKeyState().kind) {
+          @case ('loading') {
+            <p class="t-body-sm">Cargando…</p>
+          }
+          @case ('error') {
+            <p class="t-body-sm error-text">No se pudo cargar la app-key.</p>
+          }
+          @case ('ready') {
+            @if (asReady(appKeyState()); as state) {
               <div class="status-row">
-                <button
-                  mat-stroked-button
-                  type="button"
-                  [disabled]="testing()"
-                  (click)="testCredential()"
-                >
-                  Probar Credencial
+                <span class="t-label-up">Estado</span>
+                <span class="t-body-md">
+                  {{ state.status.hasCustomKey ? 'Configurada' : 'No configurada' }}
+                </span>
+              </div>
+              <div class="status-row">
+                <span class="t-label-up">App-key</span>
+                <span class="t-body-md key-value">
+                  {{ revealedKey() ?? state.status.maskedAppKey ?? '—' }}
+                </span>
+                <button mat-stroked-button type="button" (click)="toggleReveal()">
+                  {{ revealedKey() ? 'Ocultar' : 'Mostrar' }}
                 </button>
               </div>
-            }
-          }
-
-          <form [formGroup]="form" (ngSubmit)="saveAppKey()" class="edit-form">
-            <mat-form-field appearance="outline" class="field">
-              <mat-label>Nueva app-key</mat-label>
-              <input
-                matInput
-                formControlName="appKey"
-                autocomplete="off"
-                placeholder="00000000-0000-0000-0000-000000000000"
-              />
-              @if (form.controls.appKey.invalid && form.controls.appKey.touched) {
-                <mat-error>Debe ser un GUID válido (formato 8-4-4-4-12 en minúsculas).</mat-error>
+              @if (state.status.hasCustomKey) {
+                <div class="status-row">
+                  <button
+                    mat-stroked-button
+                    type="button"
+                    [disabled]="testing()"
+                    (click)="testCredential()"
+                  >
+                    Probar Credencial
+                  </button>
+                </div>
               }
-            </mat-form-field>
-            <button
-              mat-flat-button
-              color="primary"
-              type="submit"
-              [disabled]="form.invalid || saving()"
-            >
-              Guardar app-key
-            </button>
-          </form>
+            }
+
+            <form [formGroup]="form" (ngSubmit)="saveAppKey()" class="edit-form">
+              <mat-form-field appearance="outline" class="field">
+                <mat-label>Nueva app-key</mat-label>
+                <input
+                  matInput
+                  formControlName="appKey"
+                  autocomplete="off"
+                  placeholder="00000000-0000-0000-0000-000000000000"
+                />
+                @if (form.controls.appKey.invalid && form.controls.appKey.touched) {
+                  <mat-error>Debe ser un GUID válido (formato 8-4-4-4-12 en minúsculas).</mat-error>
+                }
+              </mat-form-field>
+              <button
+                mat-flat-button
+                color="primary"
+                type="submit"
+                [disabled]="form.invalid || saving()"
+              >
+                Guardar app-key
+              </button>
+            </form>
+          }
         }
-      }
-    </section>
+      </section>
+    } @else {
+      <section class="config-card">
+        <h2 class="t-title-sm">App-key de Todotix</h2>
+        <p class="t-body-sm hint">
+          Disponible al activar la gestión de pagos (suscripción nivel 3).
+        </p>
+      </section>
+    }
   `,
   styles: `
     :host {
@@ -185,6 +194,9 @@ export class ClientConfiguration {
 
   protected readonly timezoneOptions = TIMEZONE_OPTIONS;
   protected readonly selectedTimezone = signal(this.authService.tenantTimezone());
+  protected readonly canManageTodotix = computed(
+    () => this.authService.effectiveSubscriptionIndex() >= 3,
+  );
 
   readonly appKeyState = signal<AppKeyState>({ kind: 'loading' });
   readonly revealedKey = signal<string | null>(null);
@@ -196,7 +208,9 @@ export class ClientConfiguration {
   });
 
   constructor() {
-    this.loadAppKeyStatus();
+    if (this.canManageTodotix()) {
+      this.loadAppKeyStatus();
+    }
   }
 
   protected asReady(state: AppKeyState): { status: TodotixAppKeyStatus } | null {

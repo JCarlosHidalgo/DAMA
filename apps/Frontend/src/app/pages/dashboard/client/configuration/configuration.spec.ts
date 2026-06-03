@@ -50,6 +50,7 @@ describe('ClientConfiguration', () => {
           useValue: {
             tenantTimezone: signal('America/La_Paz'),
             claims: signal(buildJwtClaims()),
+            effectiveSubscriptionIndex: signal(3),
           },
         },
       ],

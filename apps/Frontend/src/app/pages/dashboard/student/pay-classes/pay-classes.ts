@@ -44,7 +44,12 @@ interface QrImageDialogData {
   template: `
     <h2 mat-dialog-title>QR generado</h2>
     <mat-dialog-content class="qr-content">
-      <img class="qr-image" [src]="data.qrUrl" [alt]="'QR de pago ' + data.debtId" loading="lazy" />
+      <img
+        class="qr-image"
+        [src]="data.qrUrl"
+        [alt]="'QR de pago ' + data.debtId"
+        referrerpolicy="no-referrer"
+      />
       <p class="hint t-small">Escanea el QR desde tu app bancaria para completar el pago.</p>
     </mat-dialog-content>
     <mat-dialog-actions align="end">

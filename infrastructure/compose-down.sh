@@ -18,8 +18,12 @@ if [[ -z "$CONTEXT_VALUE" || ! -d "$CONTEXT_VALUE" ]]; then
 fi
 
 ARGS=("$@")
-if [[ ${#ARGS[@]} -eq 0 ]]; then
-    ARGS=("down")
+# Default teardown removes volumes (-v) and orphan containers as well; `docker
+# compose down` already drops the compose-defined networks. Applies when called
+# with no args or with a bare `down`; any explicit args are respected verbatim
+# (e.g. `down auth-service` or `down --rmi all` will NOT auto-add -v).
+if [[ ${#ARGS[@]} -eq 0 || ( ${#ARGS[@]} -eq 1 && "${ARGS[0]}" == "down" ) ]]; then
+    ARGS=("down" "-v" "--remove-orphans")
 fi
 
 exec docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" "${ARGS[@]}"

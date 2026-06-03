@@ -49,7 +49,7 @@ The dev stack runs via `compose.dev.yaml`. Use the wrapper, which bootstraps `in
 ```bash
 ./infrastructure/compose-up.sh --bootstrap   # first time on a fresh clone
 ./infrastructure/compose-up.sh up --build     # start everything
-./infrastructure/compose-down.sh down -v      # tear down + drop volumes
+./infrastructure/compose-down.sh              # tear down + drop volumes & orphans (default)
 ```
 
 Service URLs once up (dev ports are offset **+100** from prod so dev can run alongside prod on one host):

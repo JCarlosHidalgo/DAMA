@@ -3,6 +3,7 @@ export * from './auth-interceptor';
 export * from './auth-service';
 export * from './jwt.model';
 export * from './role-guard';
+export * from './subscription-access-guard';
 export * from './subscription-guard';
 export * from './token-decoder';
 export * from './token-storage';

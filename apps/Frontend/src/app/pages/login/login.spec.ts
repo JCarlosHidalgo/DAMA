@@ -96,10 +96,10 @@ describe('Login', () => {
       expect(navigateSpy).toHaveBeenCalledWith('/yo/resumen');
     });
 
-    it('navigates to /yo/resumen for Student role', async () => {
+    it('navigates to /yo/horario for Student role', async () => {
       authStub.currentRole.set('Student');
       await component.onSubmit();
-      expect(navigateSpy).toHaveBeenCalledWith('/yo/resumen');
+      expect(navigateSpy).toHaveBeenCalledWith('/yo/horario');
     });
 
     it('navigates to /yo/horario for Teacher role', async () => {

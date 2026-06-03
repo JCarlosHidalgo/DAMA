@@ -7,7 +7,7 @@ export function defaultRouteForRole(role: UserRole): string {
     case 'Teacher':
       return '/yo/horario';
     case 'Student':
-      return '/yo/resumen';
+      return '/yo/horario';
     case 'Admin':
       return '/yo/tenants';
   }

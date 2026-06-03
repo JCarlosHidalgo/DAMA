@@ -52,7 +52,7 @@ interface SubscriptionQrImageDialogData {
         class="qr-image"
         [src]="data.qrUrl"
         [alt]="'QR de suscripción ' + data.debtId"
-        loading="lazy"
+        referrerpolicy="no-referrer"
       />
       <p class="hint t-small">Escanea el QR desde tu app bancaria para completar el pago.</p>
     </mat-dialog-content>
