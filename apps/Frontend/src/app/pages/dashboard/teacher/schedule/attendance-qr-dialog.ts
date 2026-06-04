@@ -22,6 +22,11 @@ import { encodeQr } from '@core/utils';
 import { LoadingSkeleton } from '@shared/components';
 import { QrCard } from '@shared/components/qr-card/qr-card';
 
+import {
+  attendanceEntrySubtitle,
+  newRosterAdditions,
+  qrKindFromClassKind,
+} from './attendance-qr-dialog.logic';
 import { attendanceQrDialogStyles } from './attendance-qr-dialog.variants';
 
 export interface AttendanceQrDialogData {
@@ -66,9 +71,7 @@ type ActiveView = 'qr' | 'roster';
             <app-qr-card
               [payload]="qrData"
               [title]="data.entry.courseName"
-              [subtitle]="
-                data.entry.date + ' · ' + data.entry.startTime + ' – ' + data.entry.endTime
-              "
+              [subtitle]="subtitle"
               [size]="260"
             />
           } @placeholder {
@@ -133,9 +136,11 @@ export class AttendanceQrDialog implements OnInit, OnDestroy {
   protected readonly qrData = encodeQr({
     tenantId: this.authService.claims()?.tenantId ?? '',
     courseName: this.data.entry.courseName,
-    kind: this.data.entry.classKind === 'Scheduled' ? 'SCHEDULED' : 'UNIQUE',
+    kind: qrKindFromClassKind(this.data.entry.classKind),
     classId: this.data.entry.classId,
   });
+
+  protected readonly subtitle = attendanceEntrySubtitle(this.data.entry);
 
   protected readonly roster = signal<RosterEntry[]>([]);
   protected readonly isHandset = signal(false);
@@ -195,16 +200,11 @@ export class AttendanceQrDialog implements OnInit, OnDestroy {
   }
 
   private mergeRoster(rows: RosterEntry[], markAsNew: boolean): void {
-    if (rows.length === 0) {
-      return;
-    }
-    const current = this.roster();
-    const knownIds = new Set(current.map((row) => row.studentId));
-    const additions = rows.filter((row) => !knownIds.has(row.studentId));
+    const additions = newRosterAdditions(this.roster(), rows);
     if (additions.length === 0) {
       return;
     }
-    this.roster.set([...current, ...additions]);
+    this.roster.set([...this.roster(), ...additions]);
 
     if (markAsNew) {
       const recents = new Set(this.recentIds());
