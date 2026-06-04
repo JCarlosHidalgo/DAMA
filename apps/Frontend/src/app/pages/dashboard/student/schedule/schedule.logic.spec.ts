@@ -14,7 +14,10 @@ import {
   subscriptionAllowsScheduleInteraction,
 } from './schedule.logic';
 
-function makeEntry(groupId: string, classKind: 'Scheduled' | 'Unique' = 'Scheduled'): CourseScheduleEntry {
+function makeEntry(
+  groupId: string,
+  classKind: 'Scheduled' | 'Unique' = 'Scheduled',
+): CourseScheduleEntry {
   return {
     classId: 'cls-1',
     classKind,

@@ -13,6 +13,17 @@ import { Calendar } from '@shared/components/calendar';
 import { GroupSelect } from '@shared/components/group-select/group-select';
 
 import { ConfirmAttendanceDialog, ConfirmAttendanceDialogData } from './confirm-attendance-dialog';
+import {
+  filterEntriesByGroup,
+  isEntryAlreadyMarked,
+  mergeCourses,
+  missingCourseIds,
+  nextWeekIndex,
+  resolveSelectedGroupId,
+  scheduledAttendanceKey,
+  studentScheduleSubtitle,
+  subscriptionAllowsScheduleInteraction,
+} from './schedule.logic';
 import { studentScheduleStyles } from './schedule.variants';
 
 @Component({
@@ -70,20 +81,16 @@ export class StudentSchedule {
   private readonly markedScheduledKeys = signal<Set<string>>(new Set());
   private readonly markedUniqueIds = signal<Set<string>>(new Set());
 
-  protected readonly interactable = computed(
-    () => this.authService.effectiveSubscriptionIndex() >= 2,
+  protected readonly interactable = computed(() =>
+    subscriptionAllowsScheduleInteraction(this.authService.effectiveSubscriptionIndex()),
   );
   protected readonly scheduleSubtitle = computed(() =>
-    this.interactable() ? 'Toca una clase para confirmar tu asistencia' : 'Vista de solo lectura',
+    studentScheduleSubtitle(this.interactable()),
   );
 
-  protected readonly filteredEntries = computed<CourseScheduleEntry[]>(() => {
-    const groupId = this.selectedGroupId();
-    if (!groupId) {
-      return this.entries();
-    }
-    return this.entries().filter((entry) => entry.groupId === groupId);
-  });
+  protected readonly filteredEntries = computed<CourseScheduleEntry[]>(() =>
+    filterEntriesByGroup(this.entries(), this.selectedGroupId()),
+  );
 
   constructor() {
     this.reload();
@@ -101,7 +108,11 @@ export class StudentSchedule {
         firstValueFrom(this.attendanceApi.myUniqueHistory(studentId)),
       ]);
       this.markedScheduledKeys.set(
-        new Set(scheduled.map((attendance) => `${attendance.classId}|${attendance.classDate}`)),
+        new Set(
+          scheduled.map((attendance) =>
+            scheduledAttendanceKey(attendance.classId, attendance.classDate),
+          ),
+        ),
       );
       this.markedUniqueIds.set(new Set(unique.map((attendance) => attendance.classId)));
     } catch {
@@ -111,16 +122,11 @@ export class StudentSchedule {
   }
 
   private isAlreadyMarked(entry: CourseScheduleEntry): boolean {
-    if (entry.classKind === 'Scheduled') {
-      return this.markedScheduledKeys().has(`${entry.classId}|${entry.date}`);
-    }
-    return this.markedUniqueIds().has(entry.classId);
+    return isEntryAlreadyMarked(entry, this.markedScheduledKeys(), this.markedUniqueIds());
   }
 
   protected onGroupsLoaded(groups: ClassGroup[]): void {
-    if (!this.selectedGroupId() || !groups.some((group) => group.id === this.selectedGroupId())) {
-      this.selectedGroupId.set(groups[0]?.id ?? '');
-    }
+    this.selectedGroupId.set(resolveSelectedGroupId(this.selectedGroupId(), groups));
   }
 
   protected onGroupChange(groupId: string): void {
@@ -128,8 +134,7 @@ export class StudentSchedule {
   }
 
   protected async onWeekDelta(delta: number): Promise<void> {
-    const nextWeekIndex = delta === 0 ? 0 : this.weekIndex() + delta;
-    await this.reload(false, nextWeekIndex);
+    await this.reload(false, nextWeekIndex(this.weekIndex(), delta));
   }
 
   private async reload(showSkeleton = true, weekIndexOverride?: number): Promise<void> {
@@ -157,24 +162,13 @@ export class StudentSchedule {
     scheduledClasses?: { courseId: string }[];
     uniqueClasses?: { courseId: string }[];
   }): Promise<void> {
-    const knownIds = new Set(this.courses().map((course) => course.id));
-    const missingIds = new Set<string>();
-    for (const scheduledClass of scheduleResponse.scheduledClasses ?? []) {
-      if (!knownIds.has(scheduledClass.courseId)) {
-        missingIds.add(scheduledClass.courseId);
-      }
-    }
-    for (const uniqueClass of scheduleResponse.uniqueClasses ?? []) {
-      if (!knownIds.has(uniqueClass.courseId)) {
-        missingIds.add(uniqueClass.courseId);
-      }
-    }
-    if (missingIds.size === 0) {
+    const missingIds = missingCourseIds(scheduleResponse, this.courses());
+    if (missingIds.length === 0) {
       return;
     }
 
     const fetchedCourses = await Promise.all(
-      Array.from(missingIds).map(async (courseId) => {
+      missingIds.map(async (courseId) => {
         try {
           return await firstValueFrom(this.courseApi.getCourse(courseId));
         } catch {
@@ -182,13 +176,7 @@ export class StudentSchedule {
         }
       }),
     );
-    const mergedCourses = [...this.courses()];
-    for (const course of fetchedCourses) {
-      if (course) {
-        mergedCourses.push(course);
-      }
-    }
-    this.courses.set(mergedCourses);
+    this.courses.set(mergeCourses(this.courses(), fetchedCourses));
   }
 
   onEvent(entry: CourseScheduleEntry): void {
@@ -220,7 +208,7 @@ export class StudentSchedule {
   private rememberMarked(entry: CourseScheduleEntry): void {
     if (entry.classKind === 'Scheduled') {
       this.markedScheduledKeys.update((keys) =>
-        new Set(keys).add(`${entry.classId}|${entry.date}`),
+        new Set(keys).add(scheduledAttendanceKey(entry.classId, entry.date)),
       );
       return;
     }

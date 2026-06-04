@@ -5,9 +5,7 @@ export function subscriptionAllowsScheduleInteraction(subscriptionIndex: number)
 }
 
 export function studentScheduleSubtitle(interactable: boolean): string {
-  return interactable
-    ? 'Toca una clase para confirmar tu asistencia'
-    : 'Vista de solo lectura';
+  return interactable ? 'Toca una clase para confirmar tu asistencia' : 'Vista de solo lectura';
 }
 
 export function filterEntriesByGroup(
@@ -32,7 +30,10 @@ export function nextWeekIndex(current: number, delta: number): number {
 }
 
 export function missingCourseIds(
-  scheduleResponse: { scheduledClasses?: { courseId: string }[]; uniqueClasses?: { courseId: string }[] },
+  scheduleResponse: {
+    scheduledClasses?: { courseId: string }[];
+    uniqueClasses?: { courseId: string }[];
+  },
   knownCourses: Course[],
 ): string[] {
   const knownIds = new Set(knownCourses.map((course) => course.id));
