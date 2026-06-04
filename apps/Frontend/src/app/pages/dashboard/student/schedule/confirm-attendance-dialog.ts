@@ -9,6 +9,7 @@ import { NotificationService } from '@core/services';
 import { ClassKindStrategies } from '@core/strategies';
 import { Icon } from '@shared/components';
 
+import { translateAttendanceError } from './confirm-attendance-dialog.logic';
 import { confirmAttendanceDialogStyles } from './confirm-attendance-dialog.variants';
 
 export interface ConfirmAttendanceDialogData {
@@ -77,25 +78,8 @@ export class ConfirmAttendanceDialog {
       this.notifications.success('Asistencia registrada.', { duration: 3000 });
       this.dialogRef.close(true);
     } catch (error: unknown) {
-      this.notifications.error(this.translateOutcome(error));
+      this.notifications.error(translateAttendanceError(error));
       this.state.set('idle');
     }
-  }
-
-  private translateOutcome(error: unknown): string {
-    const message = error instanceof Error ? error.message : '';
-    if (message.includes('AlreadyMarked')) {
-      return 'Ya registraste tu asistencia a esta clase.';
-    }
-    if (message.includes('NoRemainingClasses')) {
-      return 'No tienes clases disponibles. Compra un paquete primero.';
-    }
-    if (message.includes('ClassFull')) {
-      return 'La clase ya alcanzó su cupo máximo.';
-    }
-    if (message.includes('OutsideAllowedWindow')) {
-      return 'Fuera del horario permitido (01:00–23:00 local).';
-    }
-    return 'No se pudo registrar la asistencia.';
   }
 }
