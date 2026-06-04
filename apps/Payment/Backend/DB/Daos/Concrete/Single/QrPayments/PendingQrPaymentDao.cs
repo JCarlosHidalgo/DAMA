@@ -31,6 +31,7 @@ public sealed class PendingQrPaymentDao : MySQLSingleDao<PendingQrPayment>, IPen
             TemplateId = _mySqlReader!.GetGuid("TemplateId"),
             ClassQuantity = _mySqlReader!.GetInt32("ClassQuantity"),
             Cost = _mySqlReader!.GetInt32("Cost"),
+            Currency = _mySqlReader!.GetString("Currency"),
             QrImageUrl = _mySqlReader!.IsDBNull(qrImageUrlOrdinal) ? null : _mySqlReader!.GetString(qrImageUrlOrdinal),
             CreatedAt = _mySqlReader!.GetDateTime("CreatedAt"),
             ExpiresAt = _mySqlReader!.GetDateTime("ExpiresAt")
@@ -52,6 +53,7 @@ public sealed class PendingQrPaymentDao : MySQLSingleDao<PendingQrPayment>, IPen
                 TemplateId = _mySqlReader!.GetGuid("TemplateId"),
                 ClassQuantity = _mySqlReader!.GetInt32("ClassQuantity"),
                 Cost = _mySqlReader!.GetInt32("Cost"),
+                Currency = _mySqlReader!.GetString("Currency"),
                 QrImageUrl = _mySqlReader!.IsDBNull(qrImageUrlOrdinal) ? null : _mySqlReader!.GetString(qrImageUrlOrdinal),
                 CreatedAt = _mySqlReader!.GetDateTime("CreatedAt"),
                 ExpiresAt = _mySqlReader!.GetDateTime("ExpiresAt")
@@ -71,8 +73,8 @@ public sealed class PendingQrPaymentDao : MySQLSingleDao<PendingQrPayment>, IPen
     public async Task CreateAsync(PendingQrPayment payment, ITransactionContext transaction)
     {
         MySqlTransaction sqlTransaction = MySqlTransactionContextAccessor.Unwrap(transaction);
-        const string sql = "INSERT INTO PendingQrPayment (Id, TenantId, StudentId, TemplateId, ClassQuantity, Cost, QrImageUrl, ExpiresAt) " +
-                           "VALUES (@Id, @TenantId, @StudentId, @TemplateId, @ClassQuantity, @Cost, @QrImageUrl, @ExpiresAt);";
+        const string sql = "INSERT INTO PendingQrPayment (Id, TenantId, StudentId, TemplateId, ClassQuantity, Cost, Currency, QrImageUrl, ExpiresAt) " +
+                           "VALUES (@Id, @TenantId, @StudentId, @TemplateId, @ClassQuantity, @Cost, @Currency, @QrImageUrl, @ExpiresAt);";
         MySqlCommand insertCommand = new MySqlCommand(sql, _connection, sqlTransaction);
         insertCommand.Parameters.AddWithValue("@Id", payment.Id);
         insertCommand.Parameters.AddWithValue("@TenantId", payment.TenantId);
@@ -80,6 +82,7 @@ public sealed class PendingQrPaymentDao : MySQLSingleDao<PendingQrPayment>, IPen
         insertCommand.Parameters.AddWithValue("@TemplateId", payment.TemplateId);
         insertCommand.Parameters.AddWithValue("@ClassQuantity", payment.ClassQuantity);
         insertCommand.Parameters.AddWithValue("@Cost", payment.Cost);
+        insertCommand.Parameters.AddWithValue("@Currency", payment.Currency);
         insertCommand.Parameters.AddWithValue("@QrImageUrl", (object?)payment.QrImageUrl ?? DBNull.Value);
         insertCommand.Parameters.AddWithValue("@ExpiresAt", payment.ExpiresAt);
 
@@ -197,7 +200,7 @@ public sealed class PendingQrPaymentDao : MySQLSingleDao<PendingQrPayment>, IPen
     {
         return await MySQLRetryPolicy.ExecuteAsync(_connection, async () =>
         {
-            const string sql = "SELECT Id, TenantId, StudentId, TemplateId, ClassQuantity, Cost, QrImageUrl, CreatedAt, ExpiresAt " +
+            const string sql = "SELECT Id, TenantId, StudentId, TemplateId, ClassQuantity, Cost, Currency, QrImageUrl, CreatedAt, ExpiresAt " +
                                "FROM PendingQrPayment WHERE Id = @paymentId;";
             MySqlCommand selectCommand = new MySqlCommand(sql, _connection);
             selectCommand.Parameters.AddWithValue("@paymentId", paymentId.ToString());

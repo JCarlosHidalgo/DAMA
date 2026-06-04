@@ -29,6 +29,7 @@ public sealed class FailedQrPaymentDao : MySQLSingleDao<FailedQrPayment>, IFaile
             StudentId = _mySqlReader!.GetGuid("StudentId"),
             ClassQuantity = _mySqlReader!.GetInt32("ClassQuantity"),
             Cost = _mySqlReader!.GetInt32("Cost"),
+            Currency = _mySqlReader!.GetString("Currency"),
             FailedAt = _mySqlReader!.GetDateTime("FailedAt")
         };
         return _entity;
@@ -46,6 +47,7 @@ public sealed class FailedQrPaymentDao : MySQLSingleDao<FailedQrPayment>, IFaile
                 StudentId = _mySqlReader!.GetGuid("StudentId"),
                 ClassQuantity = _mySqlReader!.GetInt32("ClassQuantity"),
                 Cost = _mySqlReader!.GetInt32("Cost"),
+                Currency = _mySqlReader!.GetString("Currency"),
                 FailedAt = _mySqlReader!.GetDateTime("FailedAt")
             };
             _entitiesList.Add(_entity);
@@ -63,14 +65,15 @@ public sealed class FailedQrPaymentDao : MySQLSingleDao<FailedQrPayment>, IFaile
     public async Task<bool> TryCreateAsync(FailedQrPayment payment, ITransactionContext transaction)
     {
         MySqlTransaction sqlTransaction = MySqlTransactionContextAccessor.Unwrap(transaction);
-        const string sql = "INSERT INTO FailedQrPayment (Id, TenantId, StudentId, ClassQuantity, Cost, FailedAt) " +
-                           "VALUES (@Id, @TenantId, @StudentId, @ClassQuantity, @Cost, @FailedAt);";
+        const string sql = "INSERT INTO FailedQrPayment (Id, TenantId, StudentId, ClassQuantity, Cost, Currency, FailedAt) " +
+                           "VALUES (@Id, @TenantId, @StudentId, @ClassQuantity, @Cost, @Currency, @FailedAt);";
         MySqlCommand insertCommand = new MySqlCommand(sql, _connection, sqlTransaction);
         insertCommand.Parameters.AddWithValue("@Id", payment.Id);
         insertCommand.Parameters.AddWithValue("@TenantId", payment.TenantId);
         insertCommand.Parameters.AddWithValue("@StudentId", payment.StudentId);
         insertCommand.Parameters.AddWithValue("@ClassQuantity", payment.ClassQuantity);
         insertCommand.Parameters.AddWithValue("@Cost", payment.Cost);
+        insertCommand.Parameters.AddWithValue("@Currency", payment.Currency);
         insertCommand.Parameters.AddWithValue("@FailedAt", payment.FailedAt);
 
         try

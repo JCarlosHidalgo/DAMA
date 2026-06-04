@@ -13,6 +13,7 @@ function makePlan(overrides: Partial<SubscriptionPlan> = {}): SubscriptionPlan {
   return {
     level: 1,
     price: 100,
+    currency: 'BOB',
     durationAmount: 1,
     durationUnit: 'Month',
     ...overrides,

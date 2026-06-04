@@ -124,7 +124,10 @@ export class NoPaymentCredentialsDialog {
         <div>
           <strong>{{ data.template.description }}</strong>
         </div>
-        <div>{{ data.template.classQuantity }} clase(s) · {{ data.template.cost | money }}</div>
+        <div>
+          {{ data.template.classQuantity }} clase(s) ·
+          {{ data.template.cost | money: data.template.currency }}
+        </div>
       </div>
 
       <form [formGroup]="form" [class]="styles.form()">
@@ -216,7 +219,7 @@ export class PayDialog {
                   >{{ template.classQuantity }} clase(s)</app-tag
                 >
               </div>
-              <div [class]="styles.price()">{{ template.cost | money }}</div>
+              <div [class]="styles.price()">{{ template.cost | money: template.currency }}</div>
             </mat-card-content>
             <mat-card-actions align="end">
               <button

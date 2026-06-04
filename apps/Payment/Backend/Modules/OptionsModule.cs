@@ -47,8 +47,35 @@ public sealed class OptionsModule : IServiceModule
                 ?? throw new InvalidOperationException("RABBITMQ_PASSWORD not set.");
         });
 
+        CurrencyOptions currencyOptions = new CurrencyOptions
+        {
+            Default = NormalizeCurrencyCode(configuration["PAYMENT_CURRENCY_DEFAULT"]) ?? "BOB",
+            Allowed = ParseAllowedCurrencies(configuration["PAYMENT_CURRENCY_ALLOWED"])
+        };
+        currencyOptions.Validate();
+        services.Configure<CurrencyOptions>(options =>
+        {
+            options.Default = currencyOptions.Default;
+            options.Allowed = currencyOptions.Allowed;
+        });
+
         string encryptionKeyBase64 = configuration["TODOTIX_APPKEY_ENCRYPTION_KEY"]
             ?? throw new InvalidOperationException("TODOTIX_APPKEY_ENCRYPTION_KEY not set.");
         services.AddSingleton<IAppKeyCipher>(_ => new AppKeyCipher(Convert.FromBase64String(encryptionKeyBase64)));
+    }
+
+    private static string? NormalizeCurrencyCode(string? rawCode)
+    {
+        string normalized = (rawCode ?? string.Empty).Trim().ToUpperInvariant();
+        return normalized.Length == 0 ? null : normalized;
+    }
+
+    private static IReadOnlyList<string> ParseAllowedCurrencies(string? rawAllowed)
+    {
+        string[] parsed = (rawAllowed ?? string.Empty)
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Select(entry => entry.ToUpperInvariant())
+            .ToArray();
+        return parsed.Length == 0 ? new[] { "BOB" } : parsed;
     }
 }

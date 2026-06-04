@@ -47,6 +47,7 @@ public class QrPaymentTransitionBuilder : IQrPaymentTransitionBuilder
             StudentId = pendingPayment.StudentId,
             ClassQuantity = pendingPayment.ClassQuantity,
             Cost = pendingPayment.Cost,
+            Currency = pendingPayment.Currency,
             PaidAt = DateTime.UtcNow
         };
     }
@@ -60,6 +61,7 @@ public class QrPaymentTransitionBuilder : IQrPaymentTransitionBuilder
             StudentId = pendingPayment.StudentId,
             ClassQuantity = pendingPayment.ClassQuantity,
             Cost = pendingPayment.Cost,
+            Currency = pendingPayment.Currency,
             FailedAt = DateTime.UtcNow
         };
     }

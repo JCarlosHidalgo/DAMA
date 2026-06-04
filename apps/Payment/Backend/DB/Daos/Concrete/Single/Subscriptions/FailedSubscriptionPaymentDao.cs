@@ -19,13 +19,14 @@ public sealed class FailedSubscriptionPaymentDao : IFailedSubscriptionPaymentDao
     public async Task<bool> TryCreateAsync(FailedSubscriptionPayment payment, ITransactionContext transaction)
     {
         MySqlTransaction sqlTransaction = MySqlTransactionContextAccessor.Unwrap(transaction);
-        const string sql = "INSERT INTO FailedSubscriptionPayment (Id, TenantId, Level, Cost, FailedAt) " +
-                           "VALUES (@Id, @TenantId, @Level, @Cost, @FailedAt);";
+        const string sql = "INSERT INTO FailedSubscriptionPayment (Id, TenantId, Level, Cost, Currency, FailedAt) " +
+                           "VALUES (@Id, @TenantId, @Level, @Cost, @Currency, @FailedAt);";
         MySqlCommand insertCommand = new MySqlCommand(sql, _connection, sqlTransaction);
         insertCommand.Parameters.AddWithValue("@Id", payment.Id.ToString());
         insertCommand.Parameters.AddWithValue("@TenantId", payment.TenantId.ToString());
         insertCommand.Parameters.AddWithValue("@Level", payment.Level);
         insertCommand.Parameters.AddWithValue("@Cost", payment.Cost);
+        insertCommand.Parameters.AddWithValue("@Currency", payment.Currency);
         insertCommand.Parameters.AddWithValue("@FailedAt", payment.FailedAt);
 
         try

@@ -14,6 +14,7 @@ const TEMPLATE: DebtTemplate = {
   description: 'Pack 10',
   classQuantity: 10,
   cost: 250,
+  currency: 'BOB',
   tenantId: 'tenant-1',
 };
 

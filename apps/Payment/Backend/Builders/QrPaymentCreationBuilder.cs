@@ -39,6 +39,7 @@ public class QrPaymentCreationBuilder : IQrPaymentCreationBuilder
             TemplateId = templateId,
             ClassQuantity = template.ClassQuantity,
             Cost = template.Cost,
+            Currency = template.Currency,
             QrImageUrl = null,
             ExpiresAt = expiresAtUtc
         };

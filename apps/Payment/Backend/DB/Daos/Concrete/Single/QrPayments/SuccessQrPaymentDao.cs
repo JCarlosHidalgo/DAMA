@@ -29,6 +29,7 @@ public sealed class SuccessQrPaymentDao : MySQLSingleDao<SuccessQrPayment>, ISuc
             StudentId = _mySqlReader!.GetGuid("StudentId"),
             ClassQuantity = _mySqlReader!.GetInt32("ClassQuantity"),
             Cost = _mySqlReader!.GetInt32("Cost"),
+            Currency = _mySqlReader!.GetString("Currency"),
             PaidAt = _mySqlReader!.GetDateTime("PaidAt")
         };
         return _entity;
@@ -46,6 +47,7 @@ public sealed class SuccessQrPaymentDao : MySQLSingleDao<SuccessQrPayment>, ISuc
                 StudentId = _mySqlReader!.GetGuid("StudentId"),
                 ClassQuantity = _mySqlReader!.GetInt32("ClassQuantity"),
                 Cost = _mySqlReader!.GetInt32("Cost"),
+                Currency = _mySqlReader!.GetString("Currency"),
                 PaidAt = _mySqlReader!.GetDateTime("PaidAt")
             };
             _entitiesList.Add(_entity);
@@ -63,14 +65,15 @@ public sealed class SuccessQrPaymentDao : MySQLSingleDao<SuccessQrPayment>, ISuc
     public async Task<bool> TryCreateAsync(SuccessQrPayment payment, ITransactionContext transaction)
     {
         MySqlTransaction sqlTransaction = MySqlTransactionContextAccessor.Unwrap(transaction);
-        const string sql = "INSERT INTO SuccessQrPayment (Id, TenantId, StudentId, ClassQuantity, Cost, PaidAt) " +
-                           "VALUES (@Id, @TenantId, @StudentId, @ClassQuantity, @Cost, @PaidAt);";
+        const string sql = "INSERT INTO SuccessQrPayment (Id, TenantId, StudentId, ClassQuantity, Cost, Currency, PaidAt) " +
+                           "VALUES (@Id, @TenantId, @StudentId, @ClassQuantity, @Cost, @Currency, @PaidAt);";
         MySqlCommand insertCommand = new MySqlCommand(sql, _connection, sqlTransaction);
         insertCommand.Parameters.AddWithValue("@Id", payment.Id);
         insertCommand.Parameters.AddWithValue("@TenantId", payment.TenantId);
         insertCommand.Parameters.AddWithValue("@StudentId", payment.StudentId);
         insertCommand.Parameters.AddWithValue("@ClassQuantity", payment.ClassQuantity);
         insertCommand.Parameters.AddWithValue("@Cost", payment.Cost);
+        insertCommand.Parameters.AddWithValue("@Currency", payment.Currency);
         insertCommand.Parameters.AddWithValue("@PaidAt", payment.PaidAt);
 
         try
@@ -149,7 +152,7 @@ public sealed class SuccessQrPaymentDao : MySQLSingleDao<SuccessQrPayment>, ISuc
     {
         return await MySQLRetryPolicy.ExecuteAsync(_connection, async () =>
         {
-            const string sql = "SELECT Id, TenantId, StudentId, ClassQuantity, Cost, PaidAt " +
+            const string sql = "SELECT Id, TenantId, StudentId, ClassQuantity, Cost, Currency, PaidAt " +
                                "FROM SuccessQrPayment WHERE Id = @paymentId;";
             MySqlCommand selectCommand = new MySqlCommand(sql, _connection);
             selectCommand.Parameters.AddWithValue("@paymentId", paymentId.ToString());

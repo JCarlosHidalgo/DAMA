@@ -21,13 +21,14 @@ public sealed class SuccessSubscriptionPaymentDao : ISuccessSubscriptionPaymentD
     public async Task<bool> TryCreateAsync(SuccessSubscriptionPayment payment, ITransactionContext transaction)
     {
         MySqlTransaction sqlTransaction = MySqlTransactionContextAccessor.Unwrap(transaction);
-        const string sql = "INSERT INTO SuccessSubscriptionPayment (Id, TenantId, Level, Cost, PaidAt) " +
-                           "VALUES (@Id, @TenantId, @Level, @Cost, @PaidAt);";
+        const string sql = "INSERT INTO SuccessSubscriptionPayment (Id, TenantId, Level, Cost, Currency, PaidAt) " +
+                           "VALUES (@Id, @TenantId, @Level, @Cost, @Currency, @PaidAt);";
         MySqlCommand insertCommand = new MySqlCommand(sql, _connection, sqlTransaction);
         insertCommand.Parameters.AddWithValue("@Id", payment.Id.ToString());
         insertCommand.Parameters.AddWithValue("@TenantId", payment.TenantId.ToString());
         insertCommand.Parameters.AddWithValue("@Level", payment.Level);
         insertCommand.Parameters.AddWithValue("@Cost", payment.Cost);
+        insertCommand.Parameters.AddWithValue("@Currency", payment.Currency);
         insertCommand.Parameters.AddWithValue("@PaidAt", payment.PaidAt);
 
         try
@@ -45,7 +46,7 @@ public sealed class SuccessSubscriptionPaymentDao : ISuccessSubscriptionPaymentD
     {
         return await MySQLRetryPolicy.ExecuteAsync(_connection, async () =>
         {
-            const string sql = "SELECT Id, TenantId, Level, Cost, PaidAt " +
+            const string sql = "SELECT Id, TenantId, Level, Cost, Currency, PaidAt " +
                                "FROM SuccessSubscriptionPayment WHERE Id = @paymentId;";
             MySqlCommand selectCommand = new MySqlCommand(sql, _connection);
             selectCommand.Parameters.AddWithValue("@paymentId", paymentId.ToString());
@@ -62,6 +63,7 @@ public sealed class SuccessSubscriptionPaymentDao : ISuccessSubscriptionPaymentD
                 TenantId = reader.GetGuid("TenantId"),
                 Level = reader.GetInt32("Level"),
                 Cost = reader.GetInt32("Cost"),
+                Currency = reader.GetString("Currency"),
                 PaidAt = reader.GetDateTime("PaidAt")
             };
         });

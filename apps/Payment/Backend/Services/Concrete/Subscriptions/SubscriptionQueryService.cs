@@ -70,6 +70,7 @@ public class SubscriptionQueryService : ISubscriptionQueryService
         {
             Level = plan.Level,
             Price = plan.Price,
+            Currency = plan.Currency,
             DurationAmount = plan.DurationAmount,
             DurationUnit = plan.DurationUnit
         });

@@ -11,6 +11,9 @@ public class SubscriptionPlan : IEntity
     [Integer]
     public int Price { get; set; }
 
+    [Text(3)]
+    public string Currency { get; set; } = "BOB";
+
     [Integer]
     public int DurationAmount { get; set; }
 

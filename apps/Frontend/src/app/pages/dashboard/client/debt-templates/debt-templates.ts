@@ -146,7 +146,7 @@ export class DebtTemplateDialog {
               <ng-container matColumnDef="cost">
                 <th mat-header-cell *matHeaderCellDef [class]="styles.num()">Costo</th>
                 <td mat-cell *matCellDef="let template" [class]="styles.numMono()">
-                  {{ template.cost | money }}
+                  {{ template.cost | money: template.currency }}
                 </td>
               </ng-container>
               <ng-container matColumnDef="actions">

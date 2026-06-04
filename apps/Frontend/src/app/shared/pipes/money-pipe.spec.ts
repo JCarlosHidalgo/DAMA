@@ -39,6 +39,16 @@ describe('MoneyPipe (direct instance)', () => {
     expect(formatted).toContain('7');
     expect(formatted).toMatch(/-|−|\(/);
   });
+
+  it('defaults to BOB when no currency is given', () => {
+    expect(pipe.transform(50)).toMatch(/Bs/);
+  });
+
+  it('honours an explicit ISO 4217 currency', () => {
+    const formatted = pipe.transform(50, 'USD');
+    expect(formatted).toMatch(/\$|USD/);
+    expect(formatted).not.toMatch(/Bs/);
+  });
 });
 
 describe('MoneyPipe (via host component)', () => {

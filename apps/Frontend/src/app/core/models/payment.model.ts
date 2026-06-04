@@ -1,6 +1,7 @@
 export interface PaymentSummary {
   totalEarnings: number;
   monthEarnings: number;
+  currency: string;
   firstPaymentDate: string | null;
   from: string;
   to: string;
@@ -11,6 +12,7 @@ export interface DebtTemplate {
   description: string;
   classQuantity: number;
   cost: number;
+  currency: string;
   tenantId: string;
 }
 
@@ -33,6 +35,7 @@ export interface PendingQrPayment {
   studentId: string;
   classQuantity: number;
   cost: number;
+  currency: string;
   externalReference: string;
   qrImageUrl: string;
   createdAt: string;
@@ -44,6 +47,7 @@ export interface SuccessQrPayment {
   studentId: string;
   classQuantity: number;
   cost: number;
+  currency: string;
   paidAt: string;
 }
 
@@ -53,6 +57,7 @@ export interface FailedQrPayment {
   studentId: string;
   classQuantity: number;
   cost: number;
+  currency: string;
   failedAt: string;
 }
 
@@ -93,6 +98,7 @@ export type SubscriptionDurationUnit = 'Day' | 'Week' | 'Month';
 export interface SubscriptionPlan {
   level: number;
   price: number;
+  currency: string;
   durationAmount: number;
   durationUnit: SubscriptionDurationUnit;
 }

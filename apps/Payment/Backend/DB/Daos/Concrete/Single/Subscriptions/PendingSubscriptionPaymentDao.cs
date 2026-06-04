@@ -12,7 +12,7 @@ namespace Backend.DB.Daos.Concrete.Single.Subscriptions;
 public sealed class PendingSubscriptionPaymentDao : IPendingSubscriptionPaymentDao
 {
     private const string SelectColumns =
-        "Id, TenantId, Level, Cost, QrImageUrl, CreatedAt, ExpiresAt";
+        "Id, TenantId, Level, Cost, Currency, QrImageUrl, CreatedAt, ExpiresAt";
 
     private readonly MySqlConnection _connection;
 
@@ -24,13 +24,14 @@ public sealed class PendingSubscriptionPaymentDao : IPendingSubscriptionPaymentD
     public async Task CreateAsync(PendingSubscriptionPayment payment, ITransactionContext transaction)
     {
         MySqlTransaction sqlTransaction = MySqlTransactionContextAccessor.Unwrap(transaction);
-        const string sql = "INSERT INTO PendingSubscriptionPayment (Id, TenantId, Level, Cost, QrImageUrl, ExpiresAt) " +
-                           "VALUES (@Id, @TenantId, @Level, @Cost, @QrImageUrl, @ExpiresAt);";
+        const string sql = "INSERT INTO PendingSubscriptionPayment (Id, TenantId, Level, Cost, Currency, QrImageUrl, ExpiresAt) " +
+                           "VALUES (@Id, @TenantId, @Level, @Cost, @Currency, @QrImageUrl, @ExpiresAt);";
         MySqlCommand insertCommand = new MySqlCommand(sql, _connection, sqlTransaction);
         insertCommand.Parameters.AddWithValue("@Id", payment.Id.ToString());
         insertCommand.Parameters.AddWithValue("@TenantId", payment.TenantId.ToString());
         insertCommand.Parameters.AddWithValue("@Level", payment.Level);
         insertCommand.Parameters.AddWithValue("@Cost", payment.Cost);
+        insertCommand.Parameters.AddWithValue("@Currency", payment.Currency);
         insertCommand.Parameters.AddWithValue("@QrImageUrl", (object?)payment.QrImageUrl ?? DBNull.Value);
         insertCommand.Parameters.AddWithValue("@ExpiresAt", payment.ExpiresAt);
 
@@ -110,6 +111,7 @@ public sealed class PendingSubscriptionPaymentDao : IPendingSubscriptionPaymentD
             TenantId = reader.GetGuid("TenantId"),
             Level = reader.GetInt32("Level"),
             Cost = reader.GetInt32("Cost"),
+            Currency = reader.GetString("Currency"),
             QrImageUrl = reader.IsDBNull(qrImageUrlOrdinal) ? null : reader.GetString(qrImageUrlOrdinal),
             CreatedAt = reader.GetDateTime("CreatedAt"),
             ExpiresAt = reader.GetDateTime("ExpiresAt")

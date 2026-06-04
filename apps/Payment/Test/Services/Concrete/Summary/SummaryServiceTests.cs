@@ -1,7 +1,10 @@
 using Backend.Claims;
 using Backend.DB.Daos.Abstract.Single.QrPayments;
 using Backend.Dtos.Summary.Output;
+using Backend.Options;
 using Backend.Services.Concrete.Summary;
+
+using Microsoft.Extensions.Options;
 
 using Moq;
 
@@ -22,7 +25,7 @@ public class SummaryServiceTests
         _claimContext = new Mock<IClaimContext>(MockBehavior.Strict);
         _tenantId = Guid.NewGuid();
         _claimContext.Setup(c => c.TenantId).Returns(_tenantId);
-        _sut = new SummaryService(_successDao.Object, _claimContext.Object);
+        _sut = new SummaryService(_successDao.Object, _claimContext.Object, Options.Create(new CurrencyOptions()));
     }
 
     [Test]
@@ -38,6 +41,7 @@ public class SummaryServiceTests
         {
             Assert.That(summary.TotalEarnings, Is.EqualTo(1000));
             Assert.That(summary.MonthEarnings, Is.EqualTo(200));
+            Assert.That(summary.Currency, Is.EqualTo("BOB"));
             Assert.That(summary.FirstPaymentDate, Is.EqualTo(firstPaid));
             Assert.That(summary.To, Is.GreaterThanOrEqualTo(summary.From));
             Assert.That((summary.To - summary.From).TotalDays, Is.EqualTo(30).Within(0.001));

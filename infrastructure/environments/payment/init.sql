@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS DebtTemplate (
     Description   VARCHAR(256) NOT NULL,
     ClassQuantity INT          NOT NULL,
     Cost          INT          NOT NULL,
+    Currency      CHAR(3)      NOT NULL DEFAULT 'BOB',
     INDEX idx_DebtTemplate_TenantId (TenantId)
 );
 
@@ -20,7 +21,8 @@ BEGIN
         dt.TenantId,
         dt.Description,
         dt.ClassQuantity,
-        dt.Cost
+        dt.Cost,
+        dt.Currency
     FROM DebtTemplate dt
     WHERE dt.TenantId = tenantId;
 END //
@@ -34,7 +36,8 @@ BEGIN
         dt.TenantId,
         dt.Description,
         dt.ClassQuantity,
-        dt.Cost
+        dt.Cost,
+        dt.Currency
     FROM DebtTemplate dt
     WHERE dt.Id = templateId
       AND dt.TenantId = tenantId;
@@ -109,6 +112,7 @@ CREATE TABLE IF NOT EXISTS PendingQrPayment (
     TemplateId    VARCHAR(36)  NOT NULL,
     ClassQuantity INT          NOT NULL,
     Cost          INT          NOT NULL,
+    Currency      CHAR(3)      NOT NULL DEFAULT 'BOB',
     QrImageUrl    VARCHAR(512) NULL,
     CreatedAt     DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
     ExpiresAt     DATETIME(6)  NOT NULL,
@@ -126,6 +130,7 @@ BEGIN
         pq.TemplateId,
         pq.ClassQuantity,
         pq.Cost,
+        pq.Currency,
         pq.QrImageUrl,
         pq.CreatedAt,
         pq.ExpiresAt
@@ -145,6 +150,7 @@ BEGIN
         pq.TemplateId,
         pq.ClassQuantity,
         pq.Cost,
+        pq.Currency,
         pq.QrImageUrl,
         pq.CreatedAt,
         pq.ExpiresAt
@@ -165,6 +171,7 @@ BEGIN
         pq.TemplateId,
         pq.ClassQuantity,
         pq.Cost,
+        pq.Currency,
         pq.QrImageUrl,
         pq.CreatedAt,
         pq.ExpiresAt
@@ -199,6 +206,7 @@ BEGIN
         pq.TemplateId,
         pq.ClassQuantity,
         pq.Cost,
+        pq.Currency,
         pq.QrImageUrl,
         pq.CreatedAt,
         pq.ExpiresAt
@@ -217,6 +225,7 @@ CREATE TABLE IF NOT EXISTS SuccessQrPayment (
     StudentId     VARCHAR(36) NOT NULL,
     ClassQuantity INT         NOT NULL,
     Cost          INT         NOT NULL,
+    Currency      CHAR(3)     NOT NULL DEFAULT 'BOB',
     PaidAt        DATETIME    NOT NULL,
     INDEX idx_SuccessQrPayment_TenantStudent (TenantId, StudentId),
     INDEX idx_SuccessQrPayment_TenantPaidAt (TenantId, PaidAt)
@@ -251,6 +260,7 @@ BEGIN
         sq.StudentId,
         sq.ClassQuantity,
         sq.Cost,
+        sq.Currency,
         sq.PaidAt
     FROM SuccessQrPayment sq
     WHERE sq.TenantId  = tenantId
@@ -267,6 +277,7 @@ CREATE TABLE IF NOT EXISTS FailedQrPayment (
     StudentId     VARCHAR(36) NOT NULL,
     ClassQuantity INT         NOT NULL,
     Cost          INT         NOT NULL,
+    Currency      CHAR(3)     NOT NULL DEFAULT 'BOB',
     FailedAt      DATETIME    NOT NULL,
     INDEX idx_FailedQrPayment_TenantStudent (TenantId, StudentId)
 );
@@ -285,6 +296,7 @@ BEGIN
         fq.StudentId,
         fq.ClassQuantity,
         fq.Cost,
+        fq.Currency,
         fq.FailedAt
     FROM FailedQrPayment fq
     WHERE fq.TenantId  = tenantId
@@ -377,6 +389,7 @@ CREATE TABLE IF NOT EXISTS payment_callback_inbox (
 CREATE TABLE IF NOT EXISTS SubscriptionPlan (
     Level          INT          NOT NULL PRIMARY KEY,
     Price          INT          NOT NULL,
+    Currency       CHAR(3)      NOT NULL DEFAULT 'BOB',
     DurationAmount INT          NOT NULL,
     DurationUnit   VARCHAR(8)   NOT NULL DEFAULT 'Month',
     UpdatedAt      DATETIME(6)  NOT NULL
@@ -395,6 +408,7 @@ CREATE TABLE IF NOT EXISTS PendingSubscriptionPayment (
     TenantId    CHAR(36)     NOT NULL,
     Level       INT          NOT NULL,
     Cost        INT          NOT NULL,
+    Currency    CHAR(3)      NOT NULL DEFAULT 'BOB',
     QrImageUrl  VARCHAR(512) NULL,
     CreatedAt   DATETIME(6)  NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
     ExpiresAt   DATETIME(6)  NOT NULL,
@@ -406,6 +420,7 @@ CREATE TABLE IF NOT EXISTS SuccessSubscriptionPayment (
     TenantId  CHAR(36)    NOT NULL,
     Level     INT         NOT NULL,
     Cost      INT         NOT NULL,
+    Currency  CHAR(3)     NOT NULL DEFAULT 'BOB',
     PaidAt    DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
     INDEX idx_success_subscription_tenant (TenantId)
 );
@@ -415,6 +430,7 @@ CREATE TABLE IF NOT EXISTS FailedSubscriptionPayment (
     TenantId  CHAR(36)    NOT NULL,
     Level     INT         NOT NULL,
     Cost      INT         NOT NULL,
+    Currency  CHAR(3)     NOT NULL DEFAULT 'BOB',
     FailedAt  DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
     INDEX idx_failed_subscription_tenant (TenantId)
 );

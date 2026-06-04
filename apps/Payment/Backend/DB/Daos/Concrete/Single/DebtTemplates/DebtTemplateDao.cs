@@ -28,7 +28,8 @@ public sealed class DebtTemplateDao : MySQLSingleDao<DebtTemplate>, IDebtTemplat
             TenantId = _mySqlReader!.GetGuid("TenantId"),
             Description = _mySqlReader!.GetString("Description"),
             ClassQuantity = _mySqlReader!.GetInt32("ClassQuantity"),
-            Cost = _mySqlReader!.GetInt32("Cost")
+            Cost = _mySqlReader!.GetInt32("Cost"),
+            Currency = _mySqlReader!.GetString("Currency")
         };
         return _entity;
     }
@@ -44,7 +45,8 @@ public sealed class DebtTemplateDao : MySQLSingleDao<DebtTemplate>, IDebtTemplat
                 TenantId = _mySqlReader!.GetGuid("TenantId"),
                 Description = _mySqlReader!.GetString("Description"),
                 ClassQuantity = _mySqlReader!.GetInt32("ClassQuantity"),
-                Cost = _mySqlReader!.GetInt32("Cost")
+                Cost = _mySqlReader!.GetInt32("Cost"),
+                Currency = _mySqlReader!.GetString("Currency")
             };
             _entitiesList.Add(_entity);
         }
@@ -62,14 +64,15 @@ public sealed class DebtTemplateDao : MySQLSingleDao<DebtTemplate>, IDebtTemplat
     {
         await MySQLRetryPolicy.ExecuteAsync(_connection, async () =>
         {
-            const string sql = "INSERT INTO DebtTemplate (Id, TenantId, Description, ClassQuantity, Cost) " +
-                               "VALUES (@Id, @TenantId, @Description, @ClassQuantity, @Cost);";
+            const string sql = "INSERT INTO DebtTemplate (Id, TenantId, Description, ClassQuantity, Cost, Currency) " +
+                               "VALUES (@Id, @TenantId, @Description, @ClassQuantity, @Cost, @Currency);";
             MySqlCommand insertCommand = new MySqlCommand(sql, _connection);
             insertCommand.Parameters.AddWithValue("@Id", template.Id);
             insertCommand.Parameters.AddWithValue("@TenantId", template.TenantId);
             insertCommand.Parameters.AddWithValue("@Description", template.Description);
             insertCommand.Parameters.AddWithValue("@ClassQuantity", template.ClassQuantity);
             insertCommand.Parameters.AddWithValue("@Cost", template.Cost);
+            insertCommand.Parameters.AddWithValue("@Currency", template.Currency);
 
             await insertCommand.ExecuteNonQueryAsync();
         });
@@ -78,14 +81,15 @@ public sealed class DebtTemplateDao : MySQLSingleDao<DebtTemplate>, IDebtTemplat
     public async Task CreateAsync(DebtTemplate template, ITransactionContext transaction)
     {
         MySqlTransaction sqlTransaction = MySqlTransactionContextAccessor.Unwrap(transaction);
-        const string sql = "INSERT INTO DebtTemplate (Id, TenantId, Description, ClassQuantity, Cost) " +
-                           "VALUES (@Id, @TenantId, @Description, @ClassQuantity, @Cost);";
+        const string sql = "INSERT INTO DebtTemplate (Id, TenantId, Description, ClassQuantity, Cost, Currency) " +
+                           "VALUES (@Id, @TenantId, @Description, @ClassQuantity, @Cost, @Currency);";
         MySqlCommand insertCommand = new MySqlCommand(sql, _connection, sqlTransaction);
         insertCommand.Parameters.AddWithValue("@Id", template.Id);
         insertCommand.Parameters.AddWithValue("@TenantId", template.TenantId);
         insertCommand.Parameters.AddWithValue("@Description", template.Description);
         insertCommand.Parameters.AddWithValue("@ClassQuantity", template.ClassQuantity);
         insertCommand.Parameters.AddWithValue("@Cost", template.Cost);
+        insertCommand.Parameters.AddWithValue("@Currency", template.Currency);
 
         await insertCommand.ExecuteNonQueryAsync();
     }

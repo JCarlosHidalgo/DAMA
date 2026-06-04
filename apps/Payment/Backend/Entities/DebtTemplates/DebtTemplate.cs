@@ -19,4 +19,7 @@ public class DebtTemplate : IEntity
 
     [Integer]
     public int Cost { get; set; }
+
+    [Text(3)]
+    public string Currency { get; set; } = "BOB";
 }

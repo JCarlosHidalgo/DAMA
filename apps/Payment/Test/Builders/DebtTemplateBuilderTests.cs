@@ -2,6 +2,9 @@ using Backend.Builders;
 using Backend.Dtos.DebtTemplates.Input;
 using Backend.Entities.DebtTemplates;
 using Backend.Entities.QrPayments;
+using Backend.Options;
+
+using Microsoft.Extensions.Options;
 
 namespace Test.Builders;
 
@@ -11,7 +14,7 @@ public class DebtTemplateBuilderTests
     private DebtTemplateBuilder _sut = null!;
 
     [SetUp]
-    public void Setup() => _sut = new DebtTemplateBuilder();
+    public void Setup() => _sut = new DebtTemplateBuilder(Options.Create(new CurrencyOptions()));
 
     [Test]
     public void BuildDebtTemplate_WithValidInputs_PopulatesAllFieldsAndGeneratesId()
@@ -33,6 +36,7 @@ public class DebtTemplateBuilderTests
             Assert.That(result.Description, Is.EqualTo("Cuota anual"));
             Assert.That(result.ClassQuantity, Is.EqualTo(12));
             Assert.That(result.Cost, Is.EqualTo(1200));
+            Assert.That(result.Currency, Is.EqualTo("BOB"));
         });
     }
 

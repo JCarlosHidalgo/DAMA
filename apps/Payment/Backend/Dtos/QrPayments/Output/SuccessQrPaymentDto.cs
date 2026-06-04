@@ -8,5 +8,7 @@ public class SuccessQrPaymentDto : IQrPaymentLine
 
     public int Cost { get; set; }
 
+    public string Currency { get; set; } = "BOB";
+
     public DateTime PaidAt { get; set; }
 }

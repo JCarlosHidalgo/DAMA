@@ -23,6 +23,9 @@ public class PendingQrPayment : IEntity
     [Integer]
     public int Cost { get; set; }
 
+    [Text(3)]
+    public string Currency { get; set; } = "BOB";
+
     [Text(512)]
     public string? QrImageUrl { get; set; }
 

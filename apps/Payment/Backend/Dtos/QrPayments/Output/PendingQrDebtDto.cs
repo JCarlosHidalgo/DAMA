@@ -8,6 +8,8 @@ public class PendingQrDebtDto : IQrPaymentLine
 
     public int Cost { get; set; }
 
+    public string Currency { get; set; } = "BOB";
+
     public string? QrImageUrl { get; set; }
 
     public DateTime CreatedAt { get; set; }

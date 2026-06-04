@@ -5,7 +5,7 @@ import { SubscriptionPlan } from '@core/models';
 import { sortPlansByLevel } from './subscription-plans';
 
 function makePlan(level: number): SubscriptionPlan {
-  return { level, price: level * 10, durationAmount: 1, durationUnit: 'Month' };
+  return { level, price: level * 10, currency: 'BOB', durationAmount: 1, durationUnit: 'Month' };
 }
 
 describe('sortPlansByLevel', () => {

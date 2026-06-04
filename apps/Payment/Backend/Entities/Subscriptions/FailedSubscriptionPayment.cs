@@ -17,6 +17,9 @@ public class FailedSubscriptionPayment : IEntity
     [Integer]
     public int Cost { get; set; }
 
+    [Text(3)]
+    public string Currency { get; set; } = "BOB";
+
     [Timestamp]
     public DateTime FailedAt { get; set; }
 }

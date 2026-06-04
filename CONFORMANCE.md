@@ -35,7 +35,7 @@ Two different kinds of ISO standard appear below, and they cannot be judged the 
 | **ISO 9001** | Quality management | 🟡 Aligned\* | Documented conventions, config management, named-test traceability. No formal QMS, audits, or change-control gate. |
 | **ISO 8601** | Date / time format | 🟡 Partial | Storage strong (`DATETIME(6)` + IANA tenant timezone via `TimeZoneInfo`); transmission relies on .NET defaults with no explicit JSON config; Todotix boundary uses a non-ISO format. |
 | **ISO/IEC 40500 (WCAG 2.0)** | Web accessibility | 🟡 Partial | ARIA labels + semantic HTML on key screens; no a11y lint, no contrast audit, icons lack accessible names, no CDK a11y utilities. |
-| **ISO 4217** | Currency codes | ❌ Absent | Monetary amounts are bare `int`; no currency field anywhere. |
+| **ISO 4217** | Currency codes | ✅ Full | Every money row + DTO carries a validated 3-letter code; server-stamped from a configurable default (`BOB`). |
 | **ISO 3166** | Country codes | ❌ Absent | Not modeled. |
 | **ISO 639 / i18n** | Language codes / localization | ❌ Absent | Single-language Spanish, hardcoded; no i18n library or locale registration. |
 
@@ -49,33 +49,34 @@ management system that cannot be satisfied by code. See the closing section.
 Ordered by impact-to-effort. Each section states the current state with evidence, the gap, the
 ordered steps citing real files, and a definition of done. No code is changed by this document.
 
-### 1. ISO 4217 — Currency codes (❌ → ✅) — cheapest full close
+### 1. ISO 4217 — Currency codes (❌ → ✅ — **DONE**)
 
-**Current state.** Money is stored as a unitless integer with no currency attached:
-- `apps/Payment/Backend/Entities/DebtTemplates/DebtTemplate.cs:21` → `public int Cost { get; set; }`
-- `apps/Payment/Backend/Entities/QrPayments/PendingQrPayment.cs:24` → `public int Cost { get; set; }`
-- `infrastructure/environments/payment/init.sql` stores `Cost INT NOT NULL`.
-- The Todotix integration sends a `Decimal? MontoTotal` with no currency code.
+**Status.** Implemented end-to-end. Every money-bearing record, DTO and API response now carries a
+3-letter ISO 4217 code, server-stamped from a configurable default (`BOB`) and validated for shape
+at startup. Bolivia is single-currency and Todotix has no currency field, so the allow-list is
+`BOB` only — the code is present and validated even though one value is currently permitted.
 
-The currency is implicitly the tenant's local currency, never recorded.
+**What was built.**
+- `Options/CurrencyOptions.cs` (`Default`, `Allowed`, `Validate()` + `IsValidIso4217Code`), bound and
+  fail-fast-validated in `Modules/OptionsModule.cs` from optional `PAYMENT_CURRENCY_DEFAULT` /
+  `PAYMENT_CURRENCY_ALLOWED` config (defaults to `BOB` / `[BOB]`).
+- `Currency` added to the 8 money entities, the 8 tables + every read stored procedure in
+  `infrastructure/environments/payment/init.sql` (`CHAR(3) NOT NULL DEFAULT 'BOB'`, placed last so the
+  positional `LOAD DATA` seed of `DebtTemplate.csv` still loads), the DAOs, and the output DTOs.
+- The code is **stamped at the two origins** (`DebtTemplateBuilder`, `SubscriptionPlanService` — from
+  the configured default) and **inherited downstream** (template → pending → success/failed; plan →
+  pending → success/failed), so a transaction's currency-of-record is fixed at creation.
+- Frontend: `currency` added to the payment models and `MoneyPipe` now takes an ISO 4217 argument
+  (`amount | money: entity.currency`), replacing the hardcoded `BOB` formatter.
+- Todotix is left currency-agnostic on purpose (its API has no currency field).
 
-**Gap to 100%.** Every monetary amount must carry an explicit ISO 4217 alphabetic code (e.g.
-`PEN`, `BOB`, `USD`), validated on input.
+**Known limitation (minor units).** `Cost`/`Price` stay integer **major** units (whole bolivianos) —
+the system cannot represent fractional amounts (e.g. 50.50 BOB). Moving to integer minor units
+(centavos) is a separate, larger change and was intentionally left out of this currency-code close.
 
-**Actionable steps.**
-1. Add a `Currency` field (3-char ISO 4217 code) to the money-bearing entities — `DebtTemplate`,
-   `PendingQrPayment` — and to the request/response DTOs under `apps/Payment/Backend/Dtos/`.
-2. Add the `Currency` column to `infrastructure/environments/payment/init.sql` (and the prod
-   init runbook); a schema change in dev requires `down -v` + re-init.
-3. Validate the code against an allowed set in the relevant FluentValidation validators under
-   `apps/Payment/Backend/Validators/QrPayments/` (reject unknown codes with a 400).
-4. Decide and document the minor-unit convention for `Cost` (smallest unit vs. major unit) so the
-   integer amount is unambiguous alongside the currency.
-5. Map `Currency` through the Todotix builders (`apps/Payment/Backend/Builders/QrPaymentCreationBuilder.cs`)
-   and surface it in API responses.
-
-**Definition of done.** No monetary value exists in the schema, DTOs, or API without an associated,
-validated ISO 4217 code; a payment in a disallowed currency is rejected at the boundary.
+**Verification.** `dotnet test` (Payment, 175 passing incl. `CurrencyOptionsTests` and the
+builder/summary stamping assertions); frontend `lint` + `build` + Vitest (631 passing incl. the new
+`MoneyPipe` currency cases).
 
 ### 2. CI/CD automation (ISO/IEC 12207 / ISO 9001 — 🟡 → materially stronger)
 

@@ -37,12 +37,12 @@ type SummaryState =
           <div [class]="styles.kpiGrid()">
             <app-stat-card
               label="Ganancias totales"
-              [value]="summary.totalEarnings | money"
+              [value]="summary.totalEarnings | money: summary.currency"
               icon="money-bill"
             />
             <app-stat-card
               label="Últimos 30 días"
-              [value]="summary.monthEarnings | money"
+              [value]="summary.monthEarnings | money: summary.currency"
               icon="credit-card"
             />
             <app-stat-card

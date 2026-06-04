@@ -35,6 +35,7 @@ public class SubscriptionCreationBuilder : ISubscriptionCreationBuilder
             TenantId = tenantId,
             Level = plan.Level,
             Cost = plan.Price,
+            Currency = plan.Currency,
             QrImageUrl = null,
             ExpiresAt = expiresAtUtc
         };

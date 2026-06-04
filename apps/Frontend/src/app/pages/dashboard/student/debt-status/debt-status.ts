@@ -64,7 +64,7 @@ import { debtStatusStyles } from './debt-status.variants';
                     <ng-container matColumnDef="cost">
                       <th mat-header-cell *matHeaderCellDef [class]="styles.num()">Costo</th>
                       <td mat-cell *matCellDef="let payment" [class]="styles.numMono()">
-                        {{ payment.cost | money }}
+                        {{ payment.cost | money: payment.currency }}
                       </td>
                     </ng-container>
                     <ng-container matColumnDef="ref">
@@ -132,7 +132,7 @@ import { debtStatusStyles } from './debt-status.variants';
                     <ng-container matColumnDef="cost">
                       <th mat-header-cell *matHeaderCellDef [class]="styles.num()">Costo</th>
                       <td mat-cell *matCellDef="let payment" [class]="styles.numMono()">
-                        {{ payment.cost | money }}
+                        {{ payment.cost | money: payment.currency }}
                       </td>
                     </ng-container>
                     <ng-container matColumnDef="paidAt">
@@ -184,7 +184,7 @@ import { debtStatusStyles } from './debt-status.variants';
                     <ng-container matColumnDef="cost">
                       <th mat-header-cell *matHeaderCellDef [class]="styles.num()">Costo</th>
                       <td mat-cell *matCellDef="let payment" [class]="styles.numMono()">
-                        {{ payment.cost | money }}
+                        {{ payment.cost | money: payment.currency }}
                       </td>
                     </ng-container>
                     <ng-container matColumnDef="failedAt">

@@ -12,6 +12,7 @@ public class SubscriptionTransitionBuilder : ISubscriptionTransitionBuilder
             TenantId = pendingPayment.TenantId,
             Level = pendingPayment.Level,
             Cost = pendingPayment.Cost,
+            Currency = pendingPayment.Currency,
             PaidAt = DateTime.UtcNow
         };
     }
@@ -24,6 +25,7 @@ public class SubscriptionTransitionBuilder : ISubscriptionTransitionBuilder
             TenantId = pendingPayment.TenantId,
             Level = pendingPayment.Level,
             Cost = pendingPayment.Cost,
+            Currency = pendingPayment.Currency,
             FailedAt = DateTime.UtcNow
         };
     }

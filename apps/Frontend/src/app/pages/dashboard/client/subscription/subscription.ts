@@ -101,7 +101,8 @@ interface SubscriptionPayDialogResult {
           <mat-select formControlName="level">
             @for (plan of data.plans; track plan.level) {
               <mat-option [value]="plan.level">
-                Nivel {{ plan.level }} · {{ plan.price | money }} / {{ planDuration(plan) }}
+                Nivel {{ plan.level }} · {{ plan.price | money: plan.currency }} /
+                {{ planDuration(plan) }}
               </mat-option>
             }
           </mat-select>
@@ -208,7 +209,7 @@ export class SubscriptionPayDialog {
                 <app-tag variant="primary" [dot]="true">{{ planDuration(plan) }}</app-tag>
               </div>
               <p [class]="styles.planDesc()">{{ levelLabel(plan.level) }}</p>
-              <div [class]="styles.price()">{{ plan.price | money }}</div>
+              <div [class]="styles.price()">{{ plan.price | money: plan.currency }}</div>
             </mat-card-content>
           </mat-card>
         }

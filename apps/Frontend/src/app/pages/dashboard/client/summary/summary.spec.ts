@@ -10,6 +10,7 @@ import { PaymentSummary } from '@core/models';
 const samplePayment: PaymentSummary = {
   totalEarnings: 1000,
   monthEarnings: 200,
+  currency: 'BOB',
   firstPaymentDate: '2026-01-01T00:00:00Z',
   from: '2026-04-01',
   to: '2026-04-30',
