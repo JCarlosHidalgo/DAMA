@@ -12,6 +12,15 @@ import { LoadingSkeleton, PageHead } from '@shared/components';
 import { Calendar } from '@shared/components/calendar';
 import { GroupSelect } from '@shared/components/group-select/group-select';
 import { AttendanceQrDialog, AttendanceQrDialogData } from './attendance-qr-dialog';
+import {
+  filterEntriesByGroup,
+  mergeCourses,
+  missingCourseIds,
+  nextWeekIndex,
+  resolveSelectedGroupId,
+  scheduleSubtitle,
+  subscriptionAllowsScheduleInteraction,
+} from './schedule.logic';
 import { teacherScheduleStyles } from './schedule.variants';
 
 @Component({
@@ -60,12 +69,10 @@ export class TeacherSchedule {
   private readonly authService = inject(AuthService);
 
   protected readonly styles = teacherScheduleStyles();
-  protected readonly interactable = computed(
-    () => this.authService.effectiveSubscriptionIndex() >= 2,
+  protected readonly interactable = computed(() =>
+    subscriptionAllowsScheduleInteraction(this.authService.effectiveSubscriptionIndex()),
   );
-  protected readonly scheduleSubtitle = computed(() =>
-    this.interactable() ? 'Toca una clase para abrir el QR de asistencia' : 'Vista de solo lectura',
-  );
+  protected readonly scheduleSubtitle = computed(() => scheduleSubtitle(this.interactable()));
 
   protected readonly entries = signal<CourseScheduleEntry[]>([]);
   protected readonly loading = signal(true);
@@ -74,22 +81,16 @@ export class TeacherSchedule {
   private readonly weekIndex = signal(0);
   protected readonly anchorDate = signal<string | null>(null);
 
-  protected readonly filteredEntries = computed<CourseScheduleEntry[]>(() => {
-    const groupId = this.selectedGroupId();
-    if (!groupId) {
-      return this.entries();
-    }
-    return this.entries().filter((entry) => entry.groupId === groupId);
-  });
+  protected readonly filteredEntries = computed<CourseScheduleEntry[]>(() =>
+    filterEntriesByGroup(this.entries(), this.selectedGroupId()),
+  );
 
   constructor() {
     this.reload();
   }
 
   protected onGroupsLoaded(groups: ClassGroup[]): void {
-    if (!this.selectedGroupId() || !groups.some((group) => group.id === this.selectedGroupId())) {
-      this.selectedGroupId.set(groups[0]?.id ?? '');
-    }
+    this.selectedGroupId.set(resolveSelectedGroupId(this.selectedGroupId(), groups));
   }
 
   protected onGroupChange(groupId: string): void {
@@ -97,8 +98,8 @@ export class TeacherSchedule {
   }
 
   protected async onWeekDelta(delta: number): Promise<void> {
-    const nextWeekIndex = delta === 0 ? 0 : this.weekIndex() + delta;
-    await this.reload(false, nextWeekIndex);
+    const target = nextWeekIndex(this.weekIndex(), delta);
+    await this.reload(false, target);
   }
 
   private async reload(showSkeleton = true, weekIndexOverride?: number): Promise<void> {
@@ -126,24 +127,13 @@ export class TeacherSchedule {
     scheduledClasses?: { courseId: string }[];
     uniqueClasses?: { courseId: string }[];
   }): Promise<void> {
-    const knownIds = new Set(this.courses().map((course) => course.id));
-    const missingIds = new Set<string>();
-    for (const scheduledClass of scheduleResponse.scheduledClasses ?? []) {
-      if (!knownIds.has(scheduledClass.courseId)) {
-        missingIds.add(scheduledClass.courseId);
-      }
-    }
-    for (const uniqueClass of scheduleResponse.uniqueClasses ?? []) {
-      if (!knownIds.has(uniqueClass.courseId)) {
-        missingIds.add(uniqueClass.courseId);
-      }
-    }
-    if (missingIds.size === 0) {
+    const missingIds = missingCourseIds(scheduleResponse, this.courses());
+    if (missingIds.length === 0) {
       return;
     }
 
     const fetchedCourses = await Promise.all(
-      Array.from(missingIds).map(async (courseId) => {
+      missingIds.map(async (courseId) => {
         try {
           return await firstValueFrom(this.courseApi.getCourse(courseId));
         } catch {
@@ -151,13 +141,7 @@ export class TeacherSchedule {
         }
       }),
     );
-    const mergedCourses = [...this.courses()];
-    for (const course of fetchedCourses) {
-      if (course) {
-        mergedCourses.push(course);
-      }
-    }
-    this.courses.set(mergedCourses);
+    this.courses.set(mergeCourses(this.courses(), fetchedCourses));
   }
 
   onEvent(entry: CourseScheduleEntry): void {
