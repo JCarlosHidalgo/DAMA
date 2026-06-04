@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { CdkDragDrop, DragDropModule } from '@angular/cdk/drag-drop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { HttpErrorResponse } from '@angular/common/http';
 import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatCardModule } from '@angular/material/card';
@@ -22,19 +21,29 @@ import { Calendar } from '@shared/components/calendar';
 import { GroupSelect } from '@shared/components/group-select/group-select';
 import { NoPasswordManager } from '@shared/directives';
 
+import {
+  buildTeacherPayload,
+  candidateGroups as candidateGroupsFn,
+  classifyTransferError,
+  ClassDialogResult,
+  DAY_OF_WEEK_OPTIONS,
+  deleteClassMessage,
+  entriesForGroupAndDay,
+  filterEntriesByGroup,
+  findGroupById,
+  FormKind,
+  formKindForClassKind,
+  isValidClassForm,
+  kindLabel,
+  nextWeekIndex as nextWeekIndexFn,
+  resolveSelectedGroupId,
+  resolveTargetGroupId,
+  resolveDayDelta,
+  teacherNames,
+  transferConfirmMessage,
+} from './schedule.logic';
+
 import { scheduleClassTagStyles, scheduleDialogStyles, scheduleStyles } from './schedule.variants';
-
-type FormKind = 'scheduled' | 'unique';
-
-const DAY_OF_WEEK_OPTIONS = [
-  { value: 1, label: 'Lunes' },
-  { value: 2, label: 'Martes' },
-  { value: 3, label: 'Miércoles' },
-  { value: 4, label: 'Jueves' },
-  { value: 5, label: 'Viernes' },
-  { value: 6, label: 'Sábado' },
-  { value: 7, label: 'Domingo' },
-] as const;
 
 interface ClassDialogData {
   mode: 'create' | 'edit';
@@ -43,18 +52,6 @@ interface ClassDialogData {
   teachers: UserListItem[];
   groups: ClassGroup[];
   initial?: Partial<ClassDialogResult> & { id?: string };
-}
-
-interface ClassDialogResult {
-  kind: FormKind;
-  courseId: string;
-  groupId: string;
-  teacherIds: string[];
-  dayOfWeekIndex: number;
-  date: string;
-  startTime: string;
-  endTime: string;
-  maxStudentLimit: number;
 }
 
 @Component({
@@ -176,10 +173,7 @@ export class ScheduleDialog {
 
   submit(): void {
     const formValue = this.form.getRawValue();
-    if (formValue.startTime >= formValue.endTime) {
-      return;
-    }
-    if (formValue.kind === 'unique' && !formValue.date) {
+    if (!isValidClassForm(formValue)) {
       return;
     }
     this.dialogRef.close({
@@ -330,7 +324,7 @@ export class ScheduleDialog {
               >
                 <mat-label>Grupo candidato</mat-label>
                 <mat-select [value]="targetGroupId()" (valueChange)="targetGroupId.set($event)">
-                  @for (group of candidateGroups(); track group.id) {
+                  @for (group of candidateGroupsComputed(); track group.id) {
                     <mat-option [value]="group.id">{{ group.name }}</mat-option>
                   }
                 </mat-select>
@@ -427,27 +421,23 @@ export class Schedule {
   protected readonly anchorDate = signal<string | null>(null);
 
   protected readonly selectedGroup = computed<ClassGroup | undefined>(() =>
-    this.groups().find((group) => group.id === this.selectedGroupId()),
+    findGroupById(this.groups(), this.selectedGroupId()),
   );
 
-  protected readonly candidateGroups = computed<ClassGroup[]>(() =>
-    this.groups().filter((group) => group.id !== this.selectedGroupId()),
+  protected readonly candidateGroupsComputed = computed<ClassGroup[]>(() =>
+    candidateGroupsFn(this.groups(), this.selectedGroupId()),
   );
 
   protected readonly targetGroup = computed<ClassGroup | undefined>(() =>
-    this.groups().find((group) => group.id === this.targetGroupId()),
+    findGroupById(this.groups(), this.targetGroupId()),
   );
 
   protected readonly selectedGroupEntries = computed<CourseScheduleEntry[]>(() =>
-    this.entries().filter((entry) => entry.groupId === this.selectedGroupId()),
+    filterEntriesByGroup(this.entries(), this.selectedGroupId()),
   );
 
   protected readonly selectedGroupListEntries = computed<CourseScheduleEntry[]>(() =>
-    this.sortByStartTime(
-      this.selectedGroupEntries().filter(
-        (entry) => this.weekdayIndexOf(entry) === this.selectedDayIndex(),
-      ),
-    ),
+    entriesForGroupAndDay(this.entries(), this.selectedGroupId(), this.selectedDayIndex()),
   );
 
   protected readonly targetGroupListEntries = computed<CourseScheduleEntry[]>(() => {
@@ -455,13 +445,11 @@ export class Schedule {
     if (!target) {
       return [];
     }
-    return this.sortByStartTime(
-      this.entries().filter(
-        (entry) =>
-          entry.groupId === target.id && this.weekdayIndexOf(entry) === this.targetDayIndex(),
-      ),
-    );
+    return entriesForGroupAndDay(this.entries(), target.id, this.targetDayIndex());
   });
+
+  protected readonly kindLabel = kindLabel;
+  protected readonly teacherNames = teacherNames;
 
   constructor() {
     this.initialLoad();
@@ -469,9 +457,7 @@ export class Schedule {
 
   protected onGroupsLoaded(groups: ClassGroup[]): void {
     this.groups.set(groups);
-    if (!this.selectedGroupId() || !groups.some((group) => group.id === this.selectedGroupId())) {
-      this.selectedGroupId.set(groups[0]?.id ?? '');
-    }
+    this.selectedGroupId.set(resolveSelectedGroupId(this.selectedGroupId(), groups));
     this.ensureValidTargetGroup();
   }
 
@@ -487,23 +473,14 @@ export class Schedule {
     }
   }
 
-  protected kindLabel(entry: CourseScheduleEntry): string {
-    return entry.classKind === 'Scheduled' ? 'Semanal' : 'Única';
-  }
-
   protected tagClass(entry: CourseScheduleEntry): string {
     return scheduleClassTagStyles({ kind: entry.classKind === 'Scheduled' ? 'weekly' : 'unique' });
   }
 
-  protected teacherNames(entry: CourseScheduleEntry): string {
-    return entry.teachers.map((teacher) => teacher.teacherName).join(', ') || 'Sin profesor';
-  }
-
   private ensureValidTargetGroup(): void {
-    const candidates = this.candidateGroups();
-    if (!candidates.some((group) => group.id === this.targetGroupId())) {
-      this.targetGroupId.set(candidates[0]?.id ?? '');
-    }
+    this.targetGroupId.set(
+      resolveTargetGroupId(this.candidateGroupsComputed(), this.targetGroupId()),
+    );
   }
 
   private applyTodayDayDefault(todayDate: string): void {
@@ -516,19 +493,6 @@ export class Schedule {
     this.targetDayIndex.set(todayWeekday);
   }
 
-  private weekdayIndexOf(entry: CourseScheduleEntry): number {
-    if (entry.dayOfWeekIndex) {
-      return entry.dayOfWeekIndex;
-    }
-    const [year, month, day] = entry.date.split('-').map(Number);
-    const weekday = new Date(year, month - 1, day).getDay();
-    return weekday === 0 ? 7 : weekday;
-  }
-
-  private sortByStartTime(entries: CourseScheduleEntry[]): CourseScheduleEntry[] {
-    return [...entries].sort((first, second) => first.startTime.localeCompare(second.startTime));
-  }
-
   protected async onDrop(dropEvent: CdkDragDrop<string>): Promise<void> {
     const targetGroupId = dropEvent.container.data;
     const sourceGroupId = dropEvent.previousContainer.data;
@@ -539,7 +503,7 @@ export class Schedule {
     const targetGroup = this.groups().find((group) => group.id === targetGroupId);
     const confirmed = await this.dialogs.confirm({
       title: 'Transferir clase',
-      message: `¿Mover "${entry.courseName}" al grupo "${targetGroup?.name ?? ''}"?`,
+      message: transferConfirmMessage(entry.courseName, targetGroup?.name ?? ''),
       confirmLabel: 'Transferir',
     });
     if (!confirmed) {
@@ -554,11 +518,7 @@ export class Schedule {
       this.notifications.success('Clase transferida.');
       await this.reloadSchedule();
     } catch (error: unknown) {
-      if (error instanceof HttpErrorResponse && error.status === 409) {
-        this.notifications.error('La clase se solapa con otra en el grupo destino.');
-      } else {
-        this.notifications.error('Error al transferir clase.');
-      }
+      this.notifications.error(classifyTransferError(error));
     }
   }
 
@@ -594,20 +554,14 @@ export class Schedule {
   }
 
   protected async onWeekDelta(delta: number): Promise<void> {
-    const nextWeekIndex = delta === 0 ? 0 : this.weekIndex() + delta;
-    await this.reloadSchedule(false, nextWeekIndex);
+    await this.reloadSchedule(false, nextWeekIndexFn(this.weekIndex(), delta));
   }
 
   protected async onDayDelta(delta: number): Promise<void> {
-    const nextDay = this.selectedDayIndex() + delta;
-    if (nextDay < 1) {
-      this.selectedDayIndex.set(7);
-      await this.reloadSchedule(false, this.weekIndex() - 1);
-    } else if (nextDay > 7) {
-      this.selectedDayIndex.set(1);
-      await this.reloadSchedule(false, this.weekIndex() + 1);
-    } else {
-      this.selectedDayIndex.set(nextDay);
+    const outcome = resolveDayDelta(this.selectedDayIndex(), this.weekIndex(), delta);
+    this.selectedDayIndex.set(outcome.dayIndex);
+    if (outcome.reload) {
+      await this.reloadSchedule(false, outcome.weekIndex);
     }
   }
 
@@ -656,7 +610,7 @@ export class Schedule {
         strategy.create({
           courseId: result.courseId,
           groupId: result.groupId,
-          teachers: this.buildTeacherPayload(result.teacherIds),
+          teachers: buildTeacherPayload(result.teacherIds, this.teachers()),
           startTime: result.startTime,
           endTime: result.endTime,
           dayOfWeekIndex: result.dayOfWeekIndex,
@@ -672,7 +626,7 @@ export class Schedule {
   }
 
   async onEdit(entry: CourseScheduleEntry): Promise<void> {
-    const formKind: FormKind = entry.classKind === 'Scheduled' ? 'scheduled' : 'unique';
+    const formKind = formKindForClassKind(entry.classKind);
     const dayOfWeekIndex = entry.dayOfWeekIndex ?? 1;
     const result = await this.openClassDialog({
       mode: 'edit',
@@ -701,7 +655,7 @@ export class Schedule {
         strategy.update(entry.classId, {
           courseId: entry.courseId,
           groupId: entry.groupId,
-          teachers: this.buildTeacherPayload(result.teacherIds),
+          teachers: buildTeacherPayload(result.teacherIds, this.teachers()),
           startTime: result.startTime,
           endTime: result.endTime,
           dayOfWeekIndex: result.dayOfWeekIndex,
@@ -719,7 +673,7 @@ export class Schedule {
   async onDelete(entry: CourseScheduleEntry): Promise<void> {
     const confirmed = await this.dialogs.confirm({
       title: 'Eliminar clase',
-      message: `¿Eliminar clase de ${entry.courseName} el ${entry.date}?`,
+      message: deleteClassMessage(entry.courseName, entry.date),
       destructive: true,
       confirmLabel: 'Eliminar',
     });
@@ -741,15 +695,5 @@ export class Schedule {
       data,
       { width: '480px' },
     );
-  }
-
-  private buildTeacherPayload(teacherIds: string[]): { teacherId: string; teacherName: string }[] {
-    const teacherNameById = new Map(
-      this.teachers().map((teacher) => [teacher.id, teacher.username]),
-    );
-    return teacherIds.map((teacherId) => ({
-      teacherId,
-      teacherName: teacherNameById.get(teacherId) ?? teacherId,
-    }));
   }
 }
