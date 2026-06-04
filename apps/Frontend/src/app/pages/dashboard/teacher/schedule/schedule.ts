@@ -7,20 +7,20 @@ import { CourseApi } from '@core/api';
 import { AuthService } from '@core/auth';
 import { ClassGroup, Course, CourseScheduleEntry } from '@core/models';
 import { NotificationService } from '@core/services';
-import { normalizeSchedule } from '@core/utils';
-import { LoadingSkeleton, PageHead } from '@shared/components';
-import { Calendar } from '@shared/components/calendar';
-import { GroupSelect } from '@shared/components/group-select/group-select';
-import { AttendanceQrDialog, AttendanceQrDialogData } from './attendance-qr-dialog';
 import {
   filterEntriesByGroup,
   mergeCourses,
   missingCourseIds,
   nextWeekIndex,
+  normalizeSchedule,
   resolveSelectedGroupId,
-  scheduleSubtitle,
   subscriptionAllowsScheduleInteraction,
-} from './schedule.logic';
+} from '@core/utils';
+import { LoadingSkeleton, PageHead } from '@shared/components';
+import { Calendar } from '@shared/components/calendar';
+import { GroupSelect } from '@shared/components/group-select/group-select';
+import { AttendanceQrDialog, AttendanceQrDialogData } from './attendance-qr-dialog';
+import { scheduleSubtitle } from './schedule.logic';
 import { teacherScheduleStyles } from './schedule.variants';
 
 @Component({

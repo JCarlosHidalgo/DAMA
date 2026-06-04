@@ -6,7 +6,6 @@ import {
   classifyMarkAttendanceError,
   classKindFromPayload,
   resolveScannedQr,
-  scheduledAttendanceKey,
 } from './mark-attendance.logic';
 
 const samplePayload: QrPayload = {
@@ -47,12 +46,6 @@ describe('classKindFromPayload', () => {
 
   it('maps UNIQUE to Unique', () => {
     expect(classKindFromPayload('UNIQUE')).toBe('Unique');
-  });
-});
-
-describe('scheduledAttendanceKey', () => {
-  it('builds a pipe-separated key', () => {
-    expect(scheduledAttendanceKey('c1', '2026-06-03')).toBe('c1|2026-06-03');
   });
 });
 

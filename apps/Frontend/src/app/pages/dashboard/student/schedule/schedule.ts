@@ -7,23 +7,23 @@ import { AttendanceApi, CourseApi } from '@core/api';
 import { AuthService } from '@core/auth';
 import { ClassGroup, Course, CourseScheduleEntry } from '@core/models';
 import { NotificationService } from '@core/services';
-import { AttendanceMarkedDialog, normalizeSchedule } from '@core/utils';
+import {
+  AttendanceMarkedDialog,
+  filterEntriesByGroup,
+  mergeCourses,
+  missingCourseIds,
+  nextWeekIndex,
+  normalizeSchedule,
+  resolveSelectedGroupId,
+  scheduledAttendanceKey,
+  subscriptionAllowsScheduleInteraction,
+} from '@core/utils';
 import { LoadingSkeleton, PageHead } from '@shared/components';
 import { Calendar } from '@shared/components/calendar';
 import { GroupSelect } from '@shared/components/group-select/group-select';
 
 import { ConfirmAttendanceDialog, ConfirmAttendanceDialogData } from './confirm-attendance-dialog';
-import {
-  filterEntriesByGroup,
-  isEntryAlreadyMarked,
-  mergeCourses,
-  missingCourseIds,
-  nextWeekIndex,
-  resolveSelectedGroupId,
-  scheduledAttendanceKey,
-  studentScheduleSubtitle,
-  subscriptionAllowsScheduleInteraction,
-} from './schedule.logic';
+import { isEntryAlreadyMarked, studentScheduleSubtitle } from './schedule.logic';
 import { studentScheduleStyles } from './schedule.variants';
 
 @Component({

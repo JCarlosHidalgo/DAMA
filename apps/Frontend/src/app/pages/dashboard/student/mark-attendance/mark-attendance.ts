@@ -10,7 +10,12 @@ import { AttendanceApi } from '@core/api';
 import { AuthService } from '@core/auth';
 import { NotificationService } from '@core/services';
 import { ClassKindStrategies } from '@core/strategies';
-import { AttendanceMarkedDialog, decodeQr, todayDateOnlyInTenant } from '@core/utils';
+import {
+  AttendanceMarkedDialog,
+  decodeQr,
+  scheduledAttendanceKey,
+  todayDateOnlyInTenant,
+} from '@core/utils';
 import { Icon, LoadingSkeleton, PageHead } from '@shared/components';
 import { CameraScanner } from '@shared/components/camera-scanner/camera-scanner';
 
@@ -18,7 +23,6 @@ import {
   classifyMarkAttendanceError,
   classKindFromPayload,
   resolveScannedQr,
-  scheduledAttendanceKey,
 } from './mark-attendance.logic';
 import { markAttendanceStatusStyles, markAttendanceStyles } from './mark-attendance.variants';
 

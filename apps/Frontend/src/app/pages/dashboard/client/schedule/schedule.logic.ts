@@ -70,13 +70,6 @@ export function candidateGroups(groups: ClassGroup[], selectedGroupId: string): 
   return groups.filter((group) => group.id !== selectedGroupId);
 }
 
-export function filterEntriesByGroup(
-  entries: CourseScheduleEntry[],
-  groupId: string,
-): CourseScheduleEntry[] {
-  return entries.filter((entry) => entry.groupId === groupId);
-}
-
 export function entriesForGroupAndDay(
   entries: CourseScheduleEntry[],
   groupId: string,
@@ -87,22 +80,11 @@ export function entriesForGroupAndDay(
   );
 }
 
-export function resolveSelectedGroupId(currentSelectedId: string, groups: ClassGroup[]): string {
-  if (!currentSelectedId || !groups.some((group) => group.id === currentSelectedId)) {
-    return groups[0]?.id ?? '';
-  }
-  return currentSelectedId;
-}
-
 export function resolveTargetGroupId(candidates: ClassGroup[], currentTargetId: string): string {
   if (!candidates.some((group) => group.id === currentTargetId)) {
     return candidates[0]?.id ?? '';
   }
   return currentTargetId;
-}
-
-export function nextWeekIndex(current: number, delta: number): number {
-  return delta === 0 ? 0 : current + delta;
 }
 
 export interface DayDeltaOutcome {

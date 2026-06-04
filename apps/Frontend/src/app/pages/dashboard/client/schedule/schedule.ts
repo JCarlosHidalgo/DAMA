@@ -15,7 +15,13 @@ import { AuthApi, CourseApi } from '@core/api';
 import { ClassGroup, Course, CourseScheduleEntry, UserListItem } from '@core/models';
 import { DialogService, NotificationService } from '@core/services';
 import { ClassKindStrategies } from '@core/strategies';
-import { isoWeekdayIndex, normalizeSchedule } from '@core/utils';
+import {
+  filterEntriesByGroup,
+  isoWeekdayIndex,
+  nextWeekIndex as nextWeekIndexFn,
+  normalizeSchedule,
+  resolveSelectedGroupId,
+} from '@core/utils';
 import { Icon, LoadingSkeleton, PageHead } from '@shared/components';
 import { Calendar } from '@shared/components/calendar';
 import { GroupSelect } from '@shared/components/group-select/group-select';
@@ -29,14 +35,11 @@ import {
   DAY_OF_WEEK_OPTIONS,
   deleteClassMessage,
   entriesForGroupAndDay,
-  filterEntriesByGroup,
   findGroupById,
   FormKind,
   formKindForClassKind,
   isValidClassForm,
   kindLabel,
-  nextWeekIndex as nextWeekIndexFn,
-  resolveSelectedGroupId,
   resolveTargetGroupId,
   resolveDayDelta,
   teacherNames,

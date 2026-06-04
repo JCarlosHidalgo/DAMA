@@ -10,13 +10,10 @@ import {
   DAY_OF_WEEK_OPTIONS,
   deleteClassMessage,
   entriesForGroupAndDay,
-  filterEntriesByGroup,
   findGroupById,
   formKindForClassKind,
   isValidClassForm,
   kindLabel,
-  nextWeekIndex,
-  resolveSelectedGroupId,
   resolveTargetGroupId,
   resolveDayDelta,
   sortByStartTime,
@@ -187,23 +184,6 @@ describe('candidateGroups', () => {
   });
 });
 
-describe('filterEntriesByGroup', () => {
-  const entries = [
-    makeEntry({ classId: 'a', groupId: 'g1' }),
-    makeEntry({ classId: 'b', groupId: 'g2' }),
-    makeEntry({ classId: 'c', groupId: 'g1' }),
-  ];
-
-  it('returns only entries matching the groupId', () => {
-    const result = filterEntriesByGroup(entries, 'g1');
-    expect(result.map((e) => e.classId)).toEqual(['a', 'c']);
-  });
-
-  it('returns empty array when no entries match', () => {
-    expect(filterEntriesByGroup(entries, 'g99')).toHaveLength(0);
-  });
-});
-
 describe('entriesForGroupAndDay', () => {
   const entries = [
     makeEntry({ classId: 'a', groupId: 'g1', dayOfWeekIndex: 1, startTime: '10:00:00' }),
@@ -222,26 +202,6 @@ describe('entriesForGroupAndDay', () => {
   });
 });
 
-describe('resolveSelectedGroupId', () => {
-  const groups = [makeGroup('g1', 'Alpha'), makeGroup('g2', 'Beta')];
-
-  it('keeps current id when it exists in groups', () => {
-    expect(resolveSelectedGroupId('g2', groups)).toBe('g2');
-  });
-
-  it('falls back to first group when current id is absent', () => {
-    expect(resolveSelectedGroupId('g99', groups)).toBe('g1');
-  });
-
-  it('falls back to first group when current id is empty', () => {
-    expect(resolveSelectedGroupId('', groups)).toBe('g1');
-  });
-
-  it('returns empty string when groups list is empty', () => {
-    expect(resolveSelectedGroupId('', [])).toBe('');
-  });
-});
-
 describe('resolveTargetGroupId', () => {
   const candidates = [makeGroup('g2', 'Beta'), makeGroup('g3', 'Gamma')];
 
@@ -255,20 +215,6 @@ describe('resolveTargetGroupId', () => {
 
   it('returns empty string when candidates list is empty', () => {
     expect(resolveTargetGroupId([], 'g2')).toBe('');
-  });
-});
-
-describe('nextWeekIndex', () => {
-  it('returns 0 when delta is 0', () => {
-    expect(nextWeekIndex(3, 0)).toBe(0);
-  });
-
-  it('adds delta to current when delta is positive', () => {
-    expect(nextWeekIndex(2, 1)).toBe(3);
-  });
-
-  it('subtracts delta from current when delta is negative', () => {
-    expect(nextWeekIndex(2, -1)).toBe(1);
   });
 });
 

@@ -23,10 +23,6 @@ export function classKindFromPayload(payloadKind: QrPayload['kind']): ClassKind 
   return payloadKind === 'SCHEDULED' ? 'Scheduled' : 'Unique';
 }
 
-export function scheduledAttendanceKey(classId: string, classDate: string): string {
-  return `${classId}|${classDate}`;
-}
-
 export type MarkErrorOutcome = { kind: 'alreadyMarked' } | { kind: 'fail'; message: string };
 
 export function classifyMarkAttendanceError(error: unknown): MarkErrorOutcome {
