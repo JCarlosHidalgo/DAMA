@@ -1,11 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
-import { QrDebtStatus, SubscriptionPlan } from '@core/models';
+import { SubscriptionPlan } from '@core/models';
 
 import {
   describePlanDuration,
-  resolveSubscriptionQrOutcome,
-  sortPlansByLevel,
   subscriptionExpiresLabel,
   subscriptionLevelLabel,
   subscriptionPayConfirmMessage,
@@ -17,16 +15,6 @@ function makePlan(overrides: Partial<SubscriptionPlan> = {}): SubscriptionPlan {
     price: 100,
     durationAmount: 1,
     durationUnit: 'Month',
-    ...overrides,
-  };
-}
-
-function makeQrDebtStatus(overrides: Partial<QrDebtStatus> = {}): QrDebtStatus {
-  return {
-    identificadorDeuda: 'debt-123',
-    status: 'Pending',
-    qrSimpleUrl: null,
-    error: null,
     ...overrides,
   };
 }
@@ -71,33 +59,6 @@ describe('subscriptionLevelLabel', () => {
   });
 });
 
-describe('sortPlansByLevel', () => {
-  it('sorts an unsorted list by level ascending', () => {
-    const plans = [makePlan({ level: 3 }), makePlan({ level: 1 }), makePlan({ level: 2 })];
-    const sorted = sortPlansByLevel(plans);
-    expect(sorted.map((plan) => plan.level)).toEqual([1, 2, 3]);
-  });
-
-  it('returns an empty array for null', () => {
-    expect(sortPlansByLevel(null)).toEqual([]);
-  });
-
-  it('returns an empty array for undefined', () => {
-    expect(sortPlansByLevel(undefined)).toEqual([]);
-  });
-
-  it('returns an empty array for an empty list', () => {
-    expect(sortPlansByLevel([])).toEqual([]);
-  });
-
-  it('does not mutate the original array', () => {
-    const plans = [makePlan({ level: 3 }), makePlan({ level: 1 })];
-    const original = [...plans];
-    sortPlansByLevel(plans);
-    expect(plans.map((plan) => plan.level)).toEqual(original.map((plan) => plan.level));
-  });
-});
-
 describe('subscriptionExpiresLabel', () => {
   it('returns "—" for epoch 0', () => {
     expect(subscriptionExpiresLabel(0)).toBe('—');
@@ -122,54 +83,5 @@ describe('subscriptionPayConfirmMessage', () => {
 
   it('returns the confirm message for level 1', () => {
     expect(subscriptionPayConfirmMessage(1)).toBe('¿Registrar la deuda para el nivel 1?');
-  });
-});
-
-describe('resolveSubscriptionQrOutcome', () => {
-  it('returns qr outcome when status is Ready and qrSimpleUrl is present', () => {
-    const status = makeQrDebtStatus({
-      status: 'Ready',
-      identificadorDeuda: 'debt-abc',
-      qrSimpleUrl: 'https://qr.example.com/abc.png',
-    });
-    const outcome = resolveSubscriptionQrOutcome(status);
-    expect(outcome).toEqual({
-      kind: 'qr',
-      debtId: 'debt-abc',
-      qrUrl: 'https://qr.example.com/abc.png',
-    });
-  });
-
-  it('returns pending outcome when status is Ready but qrSimpleUrl is absent', () => {
-    const status = makeQrDebtStatus({ status: 'Ready', qrSimpleUrl: null });
-    const outcome = resolveSubscriptionQrOutcome(status);
-    expect(outcome.kind).toBe('pending');
-  });
-
-  it('returns failed outcome when status is Failed with an error message', () => {
-    const status = makeQrDebtStatus({ status: 'Failed', error: 'timeout' });
-    const outcome = resolveSubscriptionQrOutcome(status);
-    expect(outcome.kind).toBe('failed');
-    if (outcome.kind === 'failed') {
-      expect(outcome.message).toContain('timeout');
-    }
-  });
-
-  it('returns failed outcome with the default message when status is Failed without error', () => {
-    const status = makeQrDebtStatus({ status: 'Failed', error: null });
-    const outcome = resolveSubscriptionQrOutcome(status);
-    expect(outcome.kind).toBe('failed');
-    if (outcome.kind === 'failed') {
-      expect(outcome.message).toContain('reintente más tarde.');
-    }
-  });
-
-  it('returns pending outcome for any other status (e.g. Pending)', () => {
-    const status = makeQrDebtStatus({ status: 'Pending' });
-    const outcome = resolveSubscriptionQrOutcome(status);
-    expect(outcome.kind).toBe('pending');
-    if (outcome.kind === 'pending') {
-      expect(outcome.message).toBe('Generación en curso. Vuelve a intentar en unos segundos.');
-    }
   });
 });

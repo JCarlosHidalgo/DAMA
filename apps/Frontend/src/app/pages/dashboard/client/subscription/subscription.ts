@@ -17,7 +17,7 @@ import { PaymentApi } from '@core/api';
 import { AuthService } from '@core/auth';
 import { QrDebtStatus, SubscriptionPlan } from '@core/models';
 import { DialogService, NotificationService } from '@core/services';
-import { pollQrDebtUntilSettled } from '@core/utils';
+import { pollQrDebtUntilSettled, resolveQrDebtOutcome, sortPlansByLevel } from '@core/utils';
 import { EmptyState, LoadingSkeleton, PageHead, Tag } from '@shared/components';
 import { MoneyPipe } from '@shared/pipes';
 
@@ -28,8 +28,6 @@ import {
 } from './subscription.variants';
 import {
   describePlanDuration,
-  resolveSubscriptionQrOutcome,
-  sortPlansByLevel,
   subscriptionExpiresLabel,
   subscriptionLevelLabel,
   subscriptionPayConfirmMessage,
@@ -288,7 +286,10 @@ export class ClientSubscription {
       }
       const finalStatus = await this.pollUntilSettled(queued.identificadorDeuda);
 
-      const outcome = resolveSubscriptionQrOutcome(finalStatus);
+      const outcome = resolveQrDebtOutcome(
+        finalStatus,
+        'Generación en curso. Vuelve a intentar en unos segundos.',
+      );
       switch (outcome.kind) {
         case 'qr':
           this.openQrDialog(outcome.debtId, outcome.qrUrl);

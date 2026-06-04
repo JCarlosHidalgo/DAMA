@@ -1,4 +1,4 @@
-import { QrDebtStatus, SubscriptionPlan } from '@core/models';
+import { SubscriptionPlan } from '@core/models';
 
 export const LEVEL_LABELS: Record<number, string> = {
   1: 'Base — cursos y clases',
@@ -20,10 +20,6 @@ export function subscriptionLevelLabel(level: number): string {
   return LEVEL_LABELS[level] ?? `Nivel ${level}`;
 }
 
-export function sortPlansByLevel(plans: SubscriptionPlan[] | null | undefined): SubscriptionPlan[] {
-  return [...(plans ?? [])].sort((first, second) => first.level - second.level);
-}
-
 export function subscriptionExpiresLabel(expiresAtEpochSeconds: number): string {
   if (expiresAtEpochSeconds <= 0) {
     return '—';
@@ -37,22 +33,4 @@ export function subscriptionExpiresLabel(expiresAtEpochSeconds: number): string 
 
 export function subscriptionPayConfirmMessage(level: number): string {
   return `¿Registrar la deuda para el nivel ${level}?`;
-}
-
-export type SubscriptionQrOutcome =
-  | { kind: 'qr'; debtId: string; qrUrl: string }
-  | { kind: 'failed'; message: string }
-  | { kind: 'pending'; message: string };
-
-export function resolveSubscriptionQrOutcome(status: QrDebtStatus): SubscriptionQrOutcome {
-  if (status.status === 'Ready' && status.qrSimpleUrl) {
-    return { kind: 'qr', debtId: status.identificadorDeuda, qrUrl: status.qrSimpleUrl };
-  }
-  if (status.status === 'Failed') {
-    return {
-      kind: 'failed',
-      message: `Error al generar QR: ${status.error ?? 'reintente más tarde.'}`,
-    };
-  }
-  return { kind: 'pending', message: 'Generación en curso. Vuelve a intentar en unos segundos.' };
 }
