@@ -89,7 +89,7 @@ services:
       Kestrel__Endpoints__Grpc__Protocols: Http2
       Kestrel__Endpoints__Grpc__Certificate__Path: /etc/dama/tls/auth.crt
       Kestrel__Endpoints__Grpc__Certificate__KeyPath: /etc/dama/tls/auth.key
-      SEED_DB: "true"
+      SEED_DB: ${SEED_DB:-false}
       DB_CONNECTION_STRING: ${AUTH_DB_CONNECTION_STRING}
       SUBSCRIPTION_GRPC_SECRET: ${SUBSCRIPTION_GRPC_SECRET}
       RABBITMQ_HOST: ${RABBITMQ_HOST}
@@ -148,7 +148,7 @@ services:
       Kestrel__Endpoints__Grpc__Protocols: Http2
       Kestrel__Endpoints__Grpc__Certificate__Path: /etc/dama/tls/course-management.crt
       Kestrel__Endpoints__Grpc__Certificate__KeyPath: /etc/dama/tls/course-management.key
-      SEED_DB: "true"
+      SEED_DB: ${SEED_DB:-false}
       DB_CONNECTION_STRING: ${COURSE_MANAGEMENT_DB_CONNECTION_STRING}
       RABBITMQ_HOST: ${RABBITMQ_HOST}
       RABBITMQ_PORT: ${RABBITMQ_PORT}
@@ -209,6 +209,7 @@ services:
       AppSettings__PublicKey: ${JWT_PUBLIC_KEY_B64}
       AppSettings__Issuer: ${JWT_ISSUER}
       AppSettings__Audience: Attendance
+      SEED_DB: ${SEED_DB:-false}
     mem_limit: 768m
     cpus: 1.0
     restart: unless-stopped
@@ -255,7 +256,7 @@ services:
       dockerfile: ./infrastructure/environments/payment/Dockerfile
     environment:
       ASPNETCORE_HTTP_PORTS: 80
-      SEED_DB: "true"
+      SEED_DB: ${SEED_DB:-false}
       DB_CONNECTION_STRING: ${PAYMENT_DB_CONNECTION_STRING}
       Todotix__BaseUrl: ${TODOTIX_BASE_URL}
       TODOTIX_APPKEY: ${TODOTIX_APPKEY}
