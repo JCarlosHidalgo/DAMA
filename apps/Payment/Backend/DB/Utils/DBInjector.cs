@@ -21,5 +21,17 @@ public static class DBInjector
     {
         IDataInjector injector = new DebtTemplateInjector();
         injector.InjectData(connection);
+
+        injector = new SuccessQrPaymentInjector();
+        injector.InjectData(connection);
+
+        injector = new FailedQrPaymentInjector();
+        injector.InjectData(connection);
+
+        injector = new PendingQrPaymentInjector();
+        injector.InjectData(connection);
+
+        injector = new SuccessSubscriptionPaymentInjector();
+        injector.InjectData(connection);
     }
 }
