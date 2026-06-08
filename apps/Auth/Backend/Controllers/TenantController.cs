@@ -30,6 +30,13 @@ public class TenantController : ControllerBase
     }
 
     [Authorize(Roles = UserRoles.Admin)]
+    [HttpGet("tier-distribution")]
+    public async Task<ActionResult<List<TenantTierCountDto>>> GetTierDistribution()
+    {
+        return Ok(await _tenantService.GetTierDistribution());
+    }
+
+    [Authorize(Roles = UserRoles.Admin)]
     [HttpPost]
     public async Task<ActionResult<TenantDto>> Create(CreateTenantDto request)
     {

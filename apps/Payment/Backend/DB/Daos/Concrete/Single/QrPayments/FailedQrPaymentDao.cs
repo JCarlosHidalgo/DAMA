@@ -30,7 +30,8 @@ public sealed class FailedQrPaymentDao : MySQLSingleDao<FailedQrPayment>, IFaile
             ClassQuantity = _mySqlReader!.GetInt32("ClassQuantity"),
             Cost = _mySqlReader!.GetInt32("Cost"),
             Currency = _mySqlReader!.GetString("Currency"),
-            FailedAt = _mySqlReader!.GetDateTime("FailedAt")
+            FailedAt = _mySqlReader!.GetDateTime("FailedAt"),
+            FailureReason = Enum.Parse<FailureReason>(_mySqlReader!.GetString("FailureReason"))
         };
         return _entity;
     }
@@ -65,8 +66,8 @@ public sealed class FailedQrPaymentDao : MySQLSingleDao<FailedQrPayment>, IFaile
     public async Task<bool> TryCreateAsync(FailedQrPayment payment, ITransactionContext transaction)
     {
         MySqlTransaction sqlTransaction = MySqlTransactionContextAccessor.Unwrap(transaction);
-        const string sql = "INSERT INTO FailedQrPayment (Id, TenantId, StudentId, ClassQuantity, Cost, Currency, FailedAt) " +
-                           "VALUES (@Id, @TenantId, @StudentId, @ClassQuantity, @Cost, @Currency, @FailedAt);";
+        const string sql = "INSERT INTO FailedQrPayment (Id, TenantId, StudentId, ClassQuantity, Cost, Currency, FailedAt, FailureReason) " +
+                           "VALUES (@Id, @TenantId, @StudentId, @ClassQuantity, @Cost, @Currency, @FailedAt, @FailureReason);";
         MySqlCommand insertCommand = new MySqlCommand(sql, _connection, sqlTransaction);
         insertCommand.Parameters.AddWithValue("@Id", payment.Id);
         insertCommand.Parameters.AddWithValue("@TenantId", payment.TenantId);
@@ -75,6 +76,7 @@ public sealed class FailedQrPaymentDao : MySQLSingleDao<FailedQrPayment>, IFaile
         insertCommand.Parameters.AddWithValue("@Cost", payment.Cost);
         insertCommand.Parameters.AddWithValue("@Currency", payment.Currency);
         insertCommand.Parameters.AddWithValue("@FailedAt", payment.FailedAt);
+        insertCommand.Parameters.AddWithValue("@FailureReason", payment.FailureReason.ToString());
 
         try
         {

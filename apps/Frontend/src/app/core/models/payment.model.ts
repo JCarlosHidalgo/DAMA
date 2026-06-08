@@ -51,6 +51,8 @@ export interface SuccessQrPayment {
   paidAt: string;
 }
 
+export type FailureReason = 'Expired' | 'CallbackError' | 'Manual';
+
 export interface FailedQrPayment {
   id: string;
   tenantId: string;
@@ -59,6 +61,26 @@ export interface FailedQrPayment {
   cost: number;
   currency: string;
   failedAt: string;
+  failureReason: FailureReason;
+}
+
+export interface StudentQrBreakdown {
+  pendingCount: number;
+  pendingAmount: number;
+  successCount: number;
+  successAmount: number;
+  expiredCount: number;
+  expiredAmount: number;
+  otherFailedCount: number;
+  otherFailedAmount: number;
+  currency: string;
+}
+
+export interface StudentSpendPoint {
+  year: number;
+  month: number;
+  amount: number;
+  count: number;
 }
 
 export interface QrDebtPending {

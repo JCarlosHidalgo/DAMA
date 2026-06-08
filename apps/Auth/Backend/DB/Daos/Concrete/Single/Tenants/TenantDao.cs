@@ -116,4 +116,22 @@ public sealed class TenantDao : MySQLSingleDao<Tenant>, ITenantDao
             return await com.ExecuteNonQueryAsync();
         });
     }
+
+    public async Task<List<TenantTierCountRow>> GetCountBySubscriptionTierAsync()
+    {
+        return await MySQLRetryPolicy.ExecuteAsync(_connection, async () =>
+        {
+            MySqlCommand com = GetCommandStoredProcedure("GetTenantCountBySubscriptionTier");
+
+            using MySqlDataReader reader = (MySqlDataReader)await com.ExecuteReaderAsync();
+            List<TenantTierCountRow> rows = new List<TenantTierCountRow>();
+            while (await reader.ReadAsync())
+            {
+                rows.Add(new TenantTierCountRow(
+                    reader.GetInt32("Tier"),
+                    reader.GetInt32("TenantCount")));
+            }
+            return rows;
+        });
+    }
 }

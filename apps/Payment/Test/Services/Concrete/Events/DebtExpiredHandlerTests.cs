@@ -66,7 +66,7 @@ public class DebtExpiredHandlerTests
 
         _processedEventDao.Setup(d => d.TryMarkProcessedAsync(debtEvent.EventId, _transactionScope.Object)).ReturnsAsync(true);
         _pendingDao.Setup(d => d.GetByIdAsync(debtEvent.Data.PendingId)).ReturnsAsync(pending);
-        _transitionBuilder.Setup(b => b.BuildFailedPayment(pending)).Returns(failed);
+        _transitionBuilder.Setup(b => b.BuildFailedPayment(pending, FailureReason.Expired)).Returns(failed);
         _failedDao.Setup(d => d.TryCreateAsync(failed, _transactionScope.Object)).ReturnsAsync(true);
         _pendingDao.Setup(d => d.DeleteAsync(pending.Id, _transactionScope.Object)).ReturnsAsync(true);
 

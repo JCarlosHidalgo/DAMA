@@ -5,6 +5,7 @@ using Backend.Application.Mediator;
 using Backend.Common;
 using Backend.DB.Daos.Abstract.Single.QrPayments;
 using Backend.Dtos.QrPayments.Input;
+using Backend.Dtos.QrPayments.Output;
 using Backend.Logging;
 using Backend.Results.QrPayments;
 using Backend.Security;
@@ -95,6 +96,26 @@ public class QrPaymentController : ControllerBase
     {
         var paginatedPayments = await _queryService.ListFailedAsync(pagination.Index);
         return Ok(paginatedPayments);
+    }
+
+    [Authorize(Roles = UserRoles.Student)]
+    [RequiresServiceTier(3)]
+    [HttpGet("analytics/status")]
+    public async Task<ActionResult> GetStatusBreakdown()
+    {
+        StudentQrBreakdownDto breakdown = await _queryService.GetStatusBreakdownAsync();
+        return Ok(breakdown);
+    }
+
+    [Authorize(Roles = UserRoles.Student)]
+    [RequiresServiceTier(3)]
+    [HttpGet("analytics/spend")]
+    public async Task<ActionResult> GetSpend([FromQuery] DateTime? from, [FromQuery] DateTime? to)
+    {
+        DateTime rangeEnd = to ?? DateTime.UtcNow;
+        DateTime rangeStart = from ?? rangeEnd.AddMonths(-12);
+        List<StudentSpendPointDto> spendPoints = await _queryService.GetSpendByMonthAsync(rangeStart, rangeEnd);
+        return Ok(spendPoints);
     }
 
     [HttpGet("callback")]

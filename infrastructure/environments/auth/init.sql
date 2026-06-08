@@ -195,6 +195,20 @@ END //
 DELIMITER ;
 
 DELIMITER //
+CREATE PROCEDURE GetTenantCountBySubscriptionTier()
+BEGIN
+    SELECT
+        tas.IndexCoreServicesPyramid AS Tier,
+        COUNT(*) AS TenantCount
+    FROM TenantAllowedServices tas
+    WHERE tas.ExpiresAt > NOW()
+      AND tas.IndexCoreServicesPyramid > 0
+    GROUP BY tas.IndexCoreServicesPyramid
+    ORDER BY tas.IndexCoreServicesPyramid ASC;
+END //
+DELIMITER ;
+
+DELIMITER //
 CREATE PROCEDURE CreateTenant(
     IN tenantId       VARCHAR(36),
     IN tenantName     VARCHAR(200),

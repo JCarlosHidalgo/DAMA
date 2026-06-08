@@ -25,4 +25,6 @@ public class FailedQrPayment : IEntity
 
     [Timestamp]
     public DateTime FailedAt { get; set; }
+
+    public FailureReason FailureReason { get; set; } = FailureReason.CallbackError;
 }

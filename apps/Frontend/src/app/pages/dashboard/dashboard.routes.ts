@@ -1,6 +1,7 @@
 import { inject } from '@angular/core';
 import { Routes } from '@angular/router';
 import { provideTanStackQuery, QueryClient } from '@tanstack/angular-query-experimental';
+import { provideCharts, withDefaultRegisterables } from 'ng2-charts';
 
 import { AuthService, roleGuard, subscriptionGuard, UserRole } from '@core/auth';
 import { defaultRouteForRole } from '@core/router';
@@ -106,6 +107,12 @@ const dashboardChildRoutes: Routes = [
       import('./admin/subscription-plans/subscription-plans').then((m) => m.AdminSubscriptionPlans),
   },
   {
+    path: 'analisis',
+    canActivate: [roleGuard],
+    data: { roles: ['Admin'] as UserRole[] },
+    loadComponent: () => import('./admin/analytics/analytics').then((m) => m.AdminAnalytics),
+  },
+  {
     path: '',
     pathMatch: 'full',
     redirectTo: () => {
@@ -131,6 +138,7 @@ export const dashboardRoutes: Routes = [
           },
         }),
       ),
+      provideCharts(withDefaultRegisterables()),
     ],
     children: dashboardChildRoutes,
   },

@@ -20,6 +20,11 @@ import {
   PaymentAvailability,
   SubscriptionPlan,
   UpdateSubscriptionPlanPayload,
+  StudentQrBreakdown,
+  StudentSpendPoint,
+  SubscriptionRevenueTotal,
+  SubscriptionRevenuePoint,
+  SubscriptionRevenueByTier,
 } from '@core/models';
 
 @Injectable({ providedIn: 'root' })
@@ -72,6 +77,47 @@ export class PaymentApi {
     return this.http.get<Page<FailedQrPayment>>(`${this.base}/qr/failed`, {
       params: new HttpParams().set('Index', pageIndex),
     });
+  }
+
+  getStudentStatusBreakdown(): Observable<StudentQrBreakdown> {
+    return this.http.get<StudentQrBreakdown>(`${this.base}/qr/analytics/status`);
+  }
+
+  getStudentSpend(from?: string, to?: string): Observable<StudentSpendPoint[]> {
+    let params = new HttpParams();
+    if (from) {
+      params = params.set('from', from);
+    }
+    if (to) {
+      params = params.set('to', to);
+    }
+    return this.http.get<StudentSpendPoint[]>(`${this.base}/qr/analytics/spend`, { params });
+  }
+
+  getAdminRevenueTotal(): Observable<SubscriptionRevenueTotal> {
+    return this.http.get<SubscriptionRevenueTotal>(`${this.base}/admin/analytics/revenue/total`);
+  }
+
+  getAdminRevenueTimeline(from?: string, to?: string): Observable<SubscriptionRevenuePoint[]> {
+    let params = new HttpParams();
+    if (from) {
+      params = params.set('from', from);
+    }
+    if (to) {
+      params = params.set('to', to);
+    }
+    return this.http.get<SubscriptionRevenuePoint[]>(
+      `${this.base}/admin/analytics/revenue/timeline`,
+      {
+        params,
+      },
+    );
+  }
+
+  getAdminRevenueByTier(): Observable<SubscriptionRevenueByTier[]> {
+    return this.http.get<SubscriptionRevenueByTier[]>(
+      `${this.base}/admin/analytics/revenue/by-tier`,
+    );
   }
 
   getPaymentAvailability(): Observable<PaymentAvailability> {

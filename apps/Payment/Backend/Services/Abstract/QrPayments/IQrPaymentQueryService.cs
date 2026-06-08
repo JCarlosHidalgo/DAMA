@@ -13,4 +13,8 @@ public interface IQrPaymentQueryService
     Task<PageDto<SuccessQrPaymentDto>> ListSuccessAsync(int pageIndex);
 
     Task<PageDto<FailedQrPaymentDto>> ListFailedAsync(int pageIndex);
+
+    Task<StudentQrBreakdownDto> GetStatusBreakdownAsync();
+
+    Task<List<StudentSpendPointDto>> GetSpendByMonthAsync(DateTime fromDate, DateTime toDate);
 }

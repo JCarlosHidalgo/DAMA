@@ -279,6 +279,7 @@ CREATE TABLE IF NOT EXISTS FailedQrPayment (
     Cost          INT         NOT NULL,
     Currency      CHAR(3)     NOT NULL DEFAULT 'BOB',
     FailedAt      DATETIME    NOT NULL,
+    FailureReason ENUM('Expired','CallbackError','Manual') NOT NULL DEFAULT 'CallbackError',
     INDEX idx_FailedQrPayment_TenantStudent (TenantId, StudentId)
 );
 
@@ -297,12 +298,55 @@ BEGIN
         fq.ClassQuantity,
         fq.Cost,
         fq.Currency,
-        fq.FailedAt
+        fq.FailedAt,
+        fq.FailureReason
     FROM FailedQrPayment fq
     WHERE fq.TenantId  = tenantId
       AND fq.StudentId = studentId
     ORDER BY fq.FailedAt DESC, fq.Id DESC
     LIMIT pageLimit OFFSET pageOffset;
+END //
+DELIMITER ;
+
+-- STUDENT QR ANALYTICS
+DELIMITER //
+CREATE PROCEDURE GetStudentQrStatusBreakdownForTenant(
+    IN tenantId  CHAR(36),
+    IN studentId CHAR(36)
+)
+BEGIN
+    SELECT
+        (SELECT COUNT(*)               FROM PendingQrPayment pq WHERE pq.TenantId = tenantId AND pq.StudentId = studentId) AS PendingCount,
+        (SELECT COALESCE(SUM(pq.Cost), 0) FROM PendingQrPayment pq WHERE pq.TenantId = tenantId AND pq.StudentId = studentId) AS PendingAmount,
+        (SELECT COUNT(*)               FROM SuccessQrPayment sqp WHERE sqp.TenantId = tenantId AND sqp.StudentId = studentId) AS SuccessCount,
+        (SELECT COALESCE(SUM(sqp.Cost), 0) FROM SuccessQrPayment sqp WHERE sqp.TenantId = tenantId AND sqp.StudentId = studentId) AS SuccessAmount,
+        (SELECT COUNT(*)               FROM FailedQrPayment fq WHERE fq.TenantId = tenantId AND fq.StudentId = studentId AND fq.FailureReason = 'Expired') AS ExpiredCount,
+        (SELECT COALESCE(SUM(fq.Cost), 0) FROM FailedQrPayment fq WHERE fq.TenantId = tenantId AND fq.StudentId = studentId AND fq.FailureReason = 'Expired') AS ExpiredAmount,
+        (SELECT COUNT(*)               FROM FailedQrPayment fq WHERE fq.TenantId = tenantId AND fq.StudentId = studentId AND fq.FailureReason <> 'Expired') AS OtherFailedCount,
+        (SELECT COALESCE(SUM(fq.Cost), 0) FROM FailedQrPayment fq WHERE fq.TenantId = tenantId AND fq.StudentId = studentId AND fq.FailureReason <> 'Expired') AS OtherFailedAmount;
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE GetStudentSpendByMonthForTenant(
+    IN tenantId  CHAR(36),
+    IN studentId CHAR(36),
+    IN fromDate  DATETIME,
+    IN toDate    DATETIME
+)
+BEGIN
+    SELECT
+        YEAR(sqp.PaidAt)  AS Yr,
+        MONTH(sqp.PaidAt) AS Mo,
+        COALESCE(SUM(sqp.Cost), 0) AS Amount,
+        COUNT(*) AS Cnt
+    FROM SuccessQrPayment sqp
+    WHERE sqp.TenantId  = tenantId
+      AND sqp.StudentId = studentId
+      AND sqp.PaidAt   >= fromDate
+      AND sqp.PaidAt   <  toDate
+    GROUP BY YEAR(sqp.PaidAt), MONTH(sqp.PaidAt)
+    ORDER BY Yr, Mo;
 END //
 DELIMITER ;
 
@@ -434,6 +478,49 @@ CREATE TABLE IF NOT EXISTS FailedSubscriptionPayment (
     FailedAt  DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
     INDEX idx_failed_subscription_tenant (TenantId)
 );
+
+-- ADMIN SUBSCRIPTION ANALYTICS (cross-tenant; no tenant filter)
+DELIMITER //
+CREATE PROCEDURE GetSubscriptionRevenueTotal()
+BEGIN
+    SELECT
+        COALESCE(SUM(ssp.Cost), 0) AS TotalRevenue,
+        COUNT(*) AS PaymentCount
+    FROM SuccessSubscriptionPayment ssp;
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE GetSubscriptionRevenueByMonth(
+    IN fromDate DATETIME,
+    IN toDate   DATETIME
+)
+BEGIN
+    SELECT
+        YEAR(ssp.PaidAt)  AS Yr,
+        MONTH(ssp.PaidAt) AS Mo,
+        COALESCE(SUM(ssp.Cost), 0) AS Revenue,
+        COUNT(*) AS Cnt
+    FROM SuccessSubscriptionPayment ssp
+    WHERE ssp.PaidAt >= fromDate
+      AND ssp.PaidAt <  toDate
+    GROUP BY YEAR(ssp.PaidAt), MONTH(ssp.PaidAt)
+    ORDER BY Yr, Mo;
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE GetSubscriptionRevenueByTier()
+BEGIN
+    SELECT
+        ssp.Level AS Lvl,
+        COALESCE(SUM(ssp.Cost), 0) AS Revenue,
+        COUNT(*) AS Cnt
+    FROM SuccessSubscriptionPayment ssp
+    GROUP BY ssp.Level
+    ORDER BY ssp.Level;
+END //
+DELIMITER ;
 
 -- TRUNCATE ALL TABLES
 DELIMITER //

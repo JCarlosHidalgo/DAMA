@@ -11,4 +11,6 @@ public class FailedQrPaymentDto : IQrPaymentLine
     public string Currency { get; set; } = "BOB";
 
     public DateTime FailedAt { get; set; }
+
+    public string FailureReason { get; set; } = nameof(Entities.QrPayments.FailureReason.CallbackError);
 }

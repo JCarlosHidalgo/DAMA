@@ -80,10 +80,11 @@ describe('Dashboard', () => {
       expect(fixture.componentInstance.tabs()).toHaveLength(6);
     });
 
-    it('shows 2 tabs for Admin', async () => {
+    it('shows 3 tabs for Admin', async () => {
       await setUp('Admin');
-      expect(fixture.componentInstance.tabs()).toHaveLength(2);
+      expect(fixture.componentInstance.tabs()).toHaveLength(3);
       expect(fixture.componentInstance.tabs()[0].path).toBe('tenants');
+      expect(fixture.componentInstance.tabs()[2].path).toBe('analisis');
     });
 
     it('shows 0 tabs when there is no role', async () => {

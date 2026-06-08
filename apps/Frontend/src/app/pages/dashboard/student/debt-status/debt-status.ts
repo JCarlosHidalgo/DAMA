@@ -1,19 +1,43 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatTableModule } from '@angular/material/table';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { Observable } from 'rxjs';
+import { Observable, catchError, of } from 'rxjs';
 
 import { PaymentApi } from '@core/api';
-import { FailedQrPayment, Page, PendingQrPayment, SuccessQrPayment } from '@core/models';
+import {
+  FailedQrPayment,
+  FailureReason,
+  Page,
+  PendingQrPayment,
+  StudentQrBreakdown,
+  SuccessQrPayment,
+} from '@core/models';
 import { NotificationService } from '@core/services';
 import { PaginatedTabState } from '@core/utils';
-import { EmptyState, Icon, LoadingSkeleton, PageHead, Paginator } from '@shared/components';
+import {
+  EmptyState,
+  Icon,
+  LoadingSkeleton,
+  PageHead,
+  Paginator,
+  StatCard,
+  Tag,
+} from '@shared/components';
+import { BarChart, DoughnutChart } from '@shared/components/charts';
 import { MoneyPipe, TenantDatePipe } from '@shared/pipes';
 
-import { TabKind, tabKindForIndex } from './debt-status.logic';
+import {
+  TabKind,
+  breakdownToAmountsBar,
+  breakdownToStatusDoughnut,
+  failureReasonLabel,
+  failureReasonTone,
+  tabKindForIndex,
+} from './debt-status.logic';
 import { debtStatusStyles } from './debt-status.variants';
 
 @Component({
@@ -29,11 +53,51 @@ import { debtStatusStyles } from './debt-status.variants';
     Paginator,
     LoadingSkeleton,
     EmptyState,
+    StatCard,
+    Tag,
+    DoughnutChart,
+    BarChart,
     MoneyPipe,
     TenantDatePipe,
   ],
   template: `
     <app-page-head title="Estado de deudas" subtitle="Historial de QRs generados." />
+
+    @if (breakdown(); as summary) {
+      <div [class]="styles.kpiGrid()">
+        <app-stat-card
+          label="Pagado"
+          [value]="summary.successAmount | money: summary.currency"
+          icon="money-bill"
+        />
+        <app-stat-card
+          label="Pendientes"
+          [value]="summary.pendingCount.toString()"
+          icon="receipt"
+        />
+        <app-stat-card label="Vencidas" [value]="summary.expiredCount.toString()" icon="clock" />
+        <app-stat-card label="Fallidas" [value]="summary.otherFailedCount.toString()" icon="ban" />
+      </div>
+      <div [class]="styles.chartsGrid()">
+        @if (doughnut(); as series) {
+          <app-doughnut-chart
+            title="Distribución por estado"
+            [labels]="series.labels"
+            [values]="series.values"
+            [colorKeys]="series.colorKeys"
+          />
+        }
+        @if (amountsBar(); as series) {
+          <app-bar-chart
+            title="Montos por estado"
+            [labels]="series.labels"
+            [values]="series.values"
+            [colorKeys]="series.colorKeys"
+            [valueFormatter]="moneyFormatter()"
+          />
+        }
+      </div>
+    }
 
     <mat-card [class]="styles.tabsCard()">
       <mat-card-content [class]="styles.cardContent()">
@@ -187,6 +251,14 @@ import { debtStatusStyles } from './debt-status.variants';
                         {{ payment.cost | money: payment.currency }}
                       </td>
                     </ng-container>
+                    <ng-container matColumnDef="reason">
+                      <th mat-header-cell *matHeaderCellDef>Motivo</th>
+                      <td mat-cell *matCellDef="let payment">
+                        <app-tag [variant]="failureTone(payment.failureReason)" [dot]="true">
+                          {{ failureLabel(payment.failureReason) }}
+                        </app-tag>
+                      </td>
+                    </ng-container>
                     <ng-container matColumnDef="failedAt">
                       <th mat-header-cell *matHeaderCellDef>Fallida</th>
                       <td mat-cell *matCellDef="let payment">
@@ -223,11 +295,34 @@ export class DebtStatus {
   protected readonly styles = debtStatusStyles();
   protected readonly pendingColumns = ['quantity', 'cost', 'ref', 'qr'];
   protected readonly successColumns = ['quantity', 'cost', 'paidAt'];
-  protected readonly failedColumns = ['quantity', 'cost', 'failedAt'];
+  protected readonly failedColumns = ['quantity', 'cost', 'reason', 'failedAt'];
 
   protected readonly pending = new PaginatedTabState<PendingQrPayment>();
   protected readonly success = new PaginatedTabState<SuccessQrPayment>();
   protected readonly failed = new PaginatedTabState<FailedQrPayment>();
+
+  protected readonly breakdown = toSignal(
+    this.paymentApi
+      .getStudentStatusBreakdown()
+      .pipe(catchError(() => of<StudentQrBreakdown | null>(null))),
+    { initialValue: null as StudentQrBreakdown | null },
+  );
+
+  protected readonly doughnut = computed(() => {
+    const summary = this.breakdown();
+    return summary ? breakdownToStatusDoughnut(summary) : null;
+  });
+
+  protected readonly amountsBar = computed(() => {
+    const summary = this.breakdown();
+    return summary ? breakdownToAmountsBar(summary) : null;
+  });
+
+  protected readonly moneyFormatter = computed(() => {
+    const currency = this.breakdown()?.currency ?? 'BOB';
+    const pipe = new MoneyPipe();
+    return (value: number): string => pipe.transform(value, currency);
+  });
 
   constructor() {
     this.loadTab('pending', 0);
@@ -243,6 +338,14 @@ export class DebtStatus {
 
   async changePage(kind: TabKind, pageIndex: number): Promise<void> {
     await this.loadTab(kind, pageIndex);
+  }
+
+  protected failureTone(reason: FailureReason) {
+    return failureReasonTone(reason);
+  }
+
+  protected failureLabel(reason: FailureReason): string {
+    return failureReasonLabel(reason);
   }
 
   private tabFor(kind: TabKind) {

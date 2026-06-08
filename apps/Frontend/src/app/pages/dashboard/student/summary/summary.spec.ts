@@ -4,7 +4,7 @@ import { Subject, of, throwError } from 'rxjs';
 import { describe, it, expect } from 'vitest';
 
 import { StudentSummary } from './summary';
-import { AttendanceApi } from '@core/api';
+import { AttendanceApi, PaymentApi } from '@core/api';
 import { AuthService } from '@core/auth';
 import { StudentRemainClasses } from '@core/models';
 import { buildJwtClaims } from '@testing';
@@ -19,11 +19,20 @@ const sampleRemain: StudentRemainClasses = {
 describe('StudentSummary', () => {
   async function instantiate(api: { getMyRemain: () => unknown }) {
     TestBed.resetTestingModule();
+    const attendanceApi = {
+      myScheduledHistory: () => of([]),
+      myUniqueHistory: () => of([]),
+      ...api,
+    };
+    const paymentApi = {
+      getStudentSpend: () => of([]),
+    };
     await TestBed.configureTestingModule({
       imports: [StudentSummary],
       providers: [
         provideZonelessChangeDetection(),
-        { provide: AttendanceApi, useValue: api },
+        { provide: AttendanceApi, useValue: attendanceApi },
+        { provide: PaymentApi, useValue: paymentApi },
         {
           provide: AuthService,
           useValue: {

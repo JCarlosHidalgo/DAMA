@@ -13,4 +13,6 @@ public interface ITenantService
     Task<UpdateTenantNameOutcome> RenameTenant(Guid tenantId, string newName);
 
     Task<UpdateTenantTimezoneOutcome> UpdateTenantTimezone(Guid tenantId, string newTimezone);
+
+    Task<List<TenantTierCountDto>> GetTierDistribution();
 }
