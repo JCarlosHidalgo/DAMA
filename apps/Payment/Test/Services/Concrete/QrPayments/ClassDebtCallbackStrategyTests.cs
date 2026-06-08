@@ -95,7 +95,7 @@ public class ClassDebtCallbackStrategyTests
         _todotixClient.Setup(c => c.ConsultDebtAsync(txId, It.IsAny<string>())).ReturnsAsync(TodotixDebtState.Unpaid);
 
         var failedPayment = new FailedQrPayment { Id = txId };
-        _transitionBuilder.Setup(b => b.BuildFailedPayment(pending)).Returns(failedPayment);
+        _transitionBuilder.Setup(b => b.BuildFailedPayment(pending, FailureReason.CallbackError)).Returns(failedPayment);
         _failedDao.Setup(d => d.TryCreateAsync(failedPayment, _transactionScope.Object)).ReturnsAsync(true);
         _pendingDao.Setup(d => d.DeleteAsync(pending.Id, _transactionScope.Object)).ReturnsAsync(true);
 

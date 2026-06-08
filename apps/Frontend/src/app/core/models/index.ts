@@ -1,3 +1,4 @@
+export * from './admin-analytics.model';
 export * from './attendance.model';
 export * from './auth.model';
 export * from './course.model';

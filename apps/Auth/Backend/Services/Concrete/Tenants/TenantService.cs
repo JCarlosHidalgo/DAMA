@@ -57,4 +57,17 @@ public class TenantService : ITenantService
             ? new UpdateTenantTimezoneOutcome.Updated()
             : new UpdateTenantTimezoneOutcome.NotFound();
     }
+
+    public async Task<List<TenantTierCountDto>> GetTierDistribution()
+    {
+        List<TenantTierCountRow> rows = await _tenantDao.GetCountBySubscriptionTierAsync();
+
+        return rows
+            .Select(row => new TenantTierCountDto
+            {
+                Tier = row.Tier,
+                TenantCount = row.TenantCount
+            })
+            .ToList();
+    }
 }

@@ -8,8 +8,11 @@ using Backend.DB.Daos.Abstract.Single.Todotix;
 using Backend.Dtos.QrPayments.Output;
 using Backend.Entities.QrPayments;
 using Backend.Entities.Todotix;
+using Backend.Options;
 using Backend.Results.QrPayments;
 using Backend.Services.Abstract.QrPayments;
+
+using Microsoft.Extensions.Options;
 
 namespace Backend.Services.Concrete.QrPayments;
 
@@ -21,25 +24,31 @@ public class QrPaymentQueryService : IQrPaymentQueryService
     private readonly ISuccessQrPaymentDao _successQrPaymentDao;
     private readonly IFailedQrPaymentDao _failedQrPaymentDao;
     private readonly ITodotixOutboxDao _todotixOutboxDao;
+    private readonly IStudentAnalyticsDao _studentAnalyticsDao;
     private readonly IMapper _autoMapper;
     private readonly IClaimContext _claimContext;
     private readonly IQrPaymentViewBuilder _viewBuilder;
+    private readonly IOptions<CurrencyOptions> _currencyOptions;
 
     public QrPaymentQueryService(IPendingQrPaymentDao pendingQrPaymentDao,
                                  ISuccessQrPaymentDao successQrPaymentDao,
                                  IFailedQrPaymentDao failedQrPaymentDao,
                                  ITodotixOutboxDao todotixOutboxDao,
+                                 IStudentAnalyticsDao studentAnalyticsDao,
                                  IMapper autoMapper,
                                  IClaimContext claimContext,
-                                 IQrPaymentViewBuilder viewBuilder)
+                                 IQrPaymentViewBuilder viewBuilder,
+                                 IOptions<CurrencyOptions> currencyOptions)
     {
         _pendingQrPaymentDao = pendingQrPaymentDao;
         _successQrPaymentDao = successQrPaymentDao;
         _failedQrPaymentDao = failedQrPaymentDao;
         _todotixOutboxDao = todotixOutboxDao;
+        _studentAnalyticsDao = studentAnalyticsDao;
         _autoMapper = autoMapper;
         _claimContext = claimContext;
         _viewBuilder = viewBuilder;
+        _currencyOptions = currencyOptions;
     }
 
     public async Task<GetQrDebtStatusOutcome> GetDebtStatusAsync(Guid paymentId)
@@ -108,6 +117,45 @@ public class QrPaymentQueryService : IQrPaymentQueryService
             pageIndex,
             _failedQrPaymentDao.CountByStudentForTenantAsync,
             _failedQrPaymentDao.GetPageByStudentForTenantAsync);
+    }
+
+    public async Task<StudentQrBreakdownDto> GetStatusBreakdownAsync()
+    {
+        Guid tenantId = _claimContext.TenantId;
+        Guid studentId = _claimContext.UserId;
+
+        StudentQrBreakdownRow breakdown = await _studentAnalyticsDao.GetStatusBreakdownAsync(tenantId, studentId);
+
+        return new StudentQrBreakdownDto
+        {
+            PendingCount = breakdown.PendingCount,
+            PendingAmount = breakdown.PendingAmount,
+            SuccessCount = breakdown.SuccessCount,
+            SuccessAmount = breakdown.SuccessAmount,
+            ExpiredCount = breakdown.ExpiredCount,
+            ExpiredAmount = breakdown.ExpiredAmount,
+            OtherFailedCount = breakdown.OtherFailedCount,
+            OtherFailedAmount = breakdown.OtherFailedAmount,
+            Currency = _currencyOptions.Value.Default
+        };
+    }
+
+    public async Task<List<StudentSpendPointDto>> GetSpendByMonthAsync(DateTime fromDate, DateTime toDate)
+    {
+        Guid tenantId = _claimContext.TenantId;
+        Guid studentId = _claimContext.UserId;
+
+        List<StudentSpendMonthRow> rows = await _studentAnalyticsDao.GetSpendByMonthAsync(tenantId, studentId, fromDate, toDate);
+
+        return rows
+            .Select(row => new StudentSpendPointDto
+            {
+                Year = row.Year,
+                Month = row.Month,
+                Amount = row.Amount,
+                Count = row.Count
+            })
+            .ToList();
     }
 
     private async Task<PageDto<TOutputDto>> BuildPageAsync<TEntity, TOutputDto>(

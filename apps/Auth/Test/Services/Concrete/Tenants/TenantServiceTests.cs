@@ -132,4 +132,26 @@ public class TenantServiceTests
 
         Assert.That(outcome, Is.InstanceOf<UpdateTenantTimezoneOutcome.Updated>());
     }
+
+    [Test]
+    public async Task GetTierDistribution_MapsRowsToDtos()
+    {
+        _tenantDao.Setup(dao => dao.GetCountBySubscriptionTierAsync())
+                  .ReturnsAsync(new List<TenantTierCountRow>
+                  {
+                      new(1, 4),
+                      new(3, 2)
+                  });
+
+        List<TenantTierCountDto> distribution = await _sut.GetTierDistribution();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(distribution, Has.Count.EqualTo(2));
+            Assert.That(distribution[0].Tier, Is.EqualTo(1));
+            Assert.That(distribution[0].TenantCount, Is.EqualTo(4));
+            Assert.That(distribution[1].Tier, Is.EqualTo(3));
+            Assert.That(distribution[1].TenantCount, Is.EqualTo(2));
+        });
+    }
 }

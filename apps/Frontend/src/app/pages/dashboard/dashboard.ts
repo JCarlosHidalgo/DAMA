@@ -34,6 +34,7 @@ import {
   faGear,
   faStar,
   faLayerGroup,
+  faChartPie,
 } from '@fortawesome/free-solid-svg-icons';
 
 import { AuthService, UserRole } from '@core/auth';
@@ -73,6 +74,7 @@ const TABS_BY_ROLE: Record<UserRole, TabEntry[]> = {
   Admin: [
     { label: 'Tenants', icon: faBuilding, path: 'tenants', minIndex: 0 },
     { label: 'Planes de Suscripción', icon: faLayerGroup, path: 'planes-suscripcion', minIndex: 0 },
+    { label: 'Análisis', icon: faChartPie, path: 'analisis', minIndex: 0 },
   ],
 };
 

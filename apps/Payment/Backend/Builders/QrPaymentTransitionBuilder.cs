@@ -52,7 +52,7 @@ public class QrPaymentTransitionBuilder : IQrPaymentTransitionBuilder
         };
     }
 
-    public FailedQrPayment BuildFailedPayment(PendingQrPayment pendingPayment)
+    public FailedQrPayment BuildFailedPayment(PendingQrPayment pendingPayment, FailureReason reason)
     {
         return new FailedQrPayment
         {
@@ -62,7 +62,8 @@ public class QrPaymentTransitionBuilder : IQrPaymentTransitionBuilder
             ClassQuantity = pendingPayment.ClassQuantity,
             Cost = pendingPayment.Cost,
             Currency = pendingPayment.Currency,
-            FailedAt = DateTime.UtcNow
+            FailedAt = DateTime.UtcNow,
+            FailureReason = reason
         };
     }
 }

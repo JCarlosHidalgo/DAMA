@@ -53,7 +53,7 @@ public sealed class DebtExpiredHandler : IDebtExpiredHandler
                         return new HandleDebtExpiredOutcome.PendingMissing();
                     }
 
-                    FailedQrPayment failed = _transitionBuilder.BuildFailedPayment(pending);
+                    FailedQrPayment failed = _transitionBuilder.BuildFailedPayment(pending, FailureReason.Expired);
                     await _failedQrPaymentDao.TryCreateAsync(failed, scope);
                     await _pendingQrPaymentDao.DeleteAsync(pending.Id, scope);
 

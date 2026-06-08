@@ -18,6 +18,7 @@ describe('DebtStatus', () => {
     listPendingQr: ReturnType<typeof vi.fn>;
     listSuccessQr: ReturnType<typeof vi.fn>;
     listFailedQr: ReturnType<typeof vi.fn>;
+    getStudentStatusBreakdown: ReturnType<typeof vi.fn>;
   };
   let notifications: { error: ReturnType<typeof vi.fn> };
 
@@ -27,6 +28,7 @@ describe('DebtStatus', () => {
       listPendingQr: vi.fn(() => of(page([{ id: 'p1' }]))),
       listSuccessQr: vi.fn(() => of(page([{ id: 's1' }]))),
       listFailedQr: vi.fn(() => of(page([{ id: 'f1' }]))),
+      getStudentStatusBreakdown: vi.fn(() => of(null)),
     };
     notifications = { error: vi.fn() };
 

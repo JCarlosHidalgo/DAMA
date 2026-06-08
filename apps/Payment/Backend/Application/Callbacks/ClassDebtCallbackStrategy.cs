@@ -67,7 +67,7 @@ public sealed class ClassDebtCallbackStrategy : DebtCallbackStrategyBase<Pending
     {
         await _unitOfWork.RunInTransactionAsync(async transaction =>
         {
-            FailedQrPayment failed = _transitionBuilder.BuildFailedPayment(pending);
+            FailedQrPayment failed = _transitionBuilder.BuildFailedPayment(pending, FailureReason.CallbackError);
             await _failedQrPaymentDao.TryCreateAsync(failed, transaction);
             await _pendingQrPaymentDao.DeleteAsync(pending.Id, transaction);
         });

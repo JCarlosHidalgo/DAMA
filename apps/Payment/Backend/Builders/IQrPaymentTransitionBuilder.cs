@@ -9,5 +9,5 @@ public interface IQrPaymentTransitionBuilder
 
     SuccessQrPayment BuildSuccessPayment(PendingQrPayment pendingPayment);
 
-    FailedQrPayment BuildFailedPayment(PendingQrPayment pendingPayment);
+    FailedQrPayment BuildFailedPayment(PendingQrPayment pendingPayment, FailureReason reason);
 }

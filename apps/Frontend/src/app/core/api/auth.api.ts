@@ -14,6 +14,7 @@ import {
   Tenant,
   CreateTenantPayload,
   UpdateTenantNamePayload,
+  TenantTierCount,
 } from '@core/models';
 
 @Injectable({ providedIn: 'root' })
@@ -73,6 +74,10 @@ export class AuthApi {
 
   listTenants(): Observable<Tenant[]> {
     return this.http.get<Tenant[]>(`${this.base}/tenants`);
+  }
+
+  getTenantTierDistribution(): Observable<TenantTierCount[]> {
+    return this.http.get<TenantTierCount[]>(`${this.base}/tenants/tier-distribution`);
   }
 
   createTenant(payload: CreateTenantPayload): Observable<Tenant> {

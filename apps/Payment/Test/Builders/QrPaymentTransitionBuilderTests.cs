@@ -86,7 +86,7 @@ public class QrPaymentTransitionBuilderTests
         PendingQrPayment pending = NewPending();
         DateTime before = DateTime.UtcNow;
 
-        FailedQrPayment failed = _sut.BuildFailedPayment(pending);
+        FailedQrPayment failed = _sut.BuildFailedPayment(pending, FailureReason.Expired);
 
         Assert.Multiple(() =>
         {
@@ -96,6 +96,7 @@ public class QrPaymentTransitionBuilderTests
             Assert.That(failed.ClassQuantity, Is.EqualTo(pending.ClassQuantity));
             Assert.That(failed.Cost, Is.EqualTo(pending.Cost));
             Assert.That(failed.FailedAt, Is.GreaterThanOrEqualTo(before));
+            Assert.That(failed.FailureReason, Is.EqualTo(FailureReason.Expired));
         });
     }
 }

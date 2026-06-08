@@ -9,8 +9,11 @@ using Backend.DB.Daos.Abstract.Single.Todotix;
 using Backend.Dtos.QrPayments.Output;
 using Backend.Entities.QrPayments;
 using Backend.Entities.Todotix;
+using Backend.Options;
 using Backend.Results.QrPayments;
 using Backend.Services.Concrete.QrPayments;
+
+using Microsoft.Extensions.Options;
 
 using Moq;
 
@@ -23,9 +26,11 @@ public class QrPaymentQueryServiceTests
     private Mock<ISuccessQrPaymentDao> _successDao = null!;
     private Mock<IFailedQrPaymentDao> _failedDao = null!;
     private Mock<ITodotixOutboxDao> _todotixOutboxDao = null!;
+    private Mock<IStudentAnalyticsDao> _studentAnalyticsDao = null!;
     private IMapper _autoMapper = null!;
     private Mock<IClaimContext> _claimContext = null!;
     private QrPaymentViewBuilder _viewBuilder = null!;
+    private IOptions<CurrencyOptions> _currencyOptions = null!;
     private QrPaymentQueryService _sut = null!;
     private Guid _tenantId;
     private Guid _studentId;
@@ -37,6 +42,7 @@ public class QrPaymentQueryServiceTests
         _successDao = new Mock<ISuccessQrPaymentDao>(MockBehavior.Strict);
         _failedDao = new Mock<IFailedQrPaymentDao>(MockBehavior.Strict);
         _todotixOutboxDao = new Mock<ITodotixOutboxDao>(MockBehavior.Strict);
+        _studentAnalyticsDao = new Mock<IStudentAnalyticsDao>(MockBehavior.Strict);
 
         var mapperConfiguration = new MapperConfiguration(
             configuration => configuration.AddProfile<DebtTemplateProfile>(),
@@ -50,15 +56,18 @@ public class QrPaymentQueryServiceTests
         _claimContext.Setup(c => c.UserId).Returns(_studentId);
 
         _viewBuilder = new QrPaymentViewBuilder();
+        _currencyOptions = Options.Create(new CurrencyOptions { Default = "BOB" });
 
         _sut = new QrPaymentQueryService(
             _pendingDao.Object,
             _successDao.Object,
             _failedDao.Object,
             _todotixOutboxDao.Object,
+            _studentAnalyticsDao.Object,
             _autoMapper,
             _claimContext.Object,
-            _viewBuilder);
+            _viewBuilder,
+            _currencyOptions);
     }
 
     [Test]
@@ -201,5 +210,52 @@ public class QrPaymentQueryServiceTests
         PageDto<FailedQrPaymentDto> page = await _sut.ListFailedAsync(0);
 
         Assert.That(page.Items, Has.Count.EqualTo(1));
+    }
+
+    [Test]
+    public async Task GetStatusBreakdownAsync_MapsRowAndStampsCurrency()
+    {
+        _studentAnalyticsDao.Setup(d => d.GetStatusBreakdownAsync(_tenantId, _studentId))
+                            .ReturnsAsync(new StudentQrBreakdownRow(2, 200, 5, 500, 1, 100, 3, 300));
+
+        StudentQrBreakdownDto breakdown = await _sut.GetStatusBreakdownAsync();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(breakdown.PendingCount, Is.EqualTo(2));
+            Assert.That(breakdown.PendingAmount, Is.EqualTo(200));
+            Assert.That(breakdown.SuccessCount, Is.EqualTo(5));
+            Assert.That(breakdown.SuccessAmount, Is.EqualTo(500));
+            Assert.That(breakdown.ExpiredCount, Is.EqualTo(1));
+            Assert.That(breakdown.ExpiredAmount, Is.EqualTo(100));
+            Assert.That(breakdown.OtherFailedCount, Is.EqualTo(3));
+            Assert.That(breakdown.OtherFailedAmount, Is.EqualTo(300));
+            Assert.That(breakdown.Currency, Is.EqualTo("BOB"));
+        });
+    }
+
+    [Test]
+    public async Task GetSpendByMonthAsync_MapsRowsToPoints()
+    {
+        DateTime from = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        DateTime to = new DateTime(2026, 6, 1, 0, 0, 0, DateTimeKind.Utc);
+        _studentAnalyticsDao.Setup(d => d.GetSpendByMonthAsync(_tenantId, _studentId, from, to))
+                            .ReturnsAsync(new List<StudentSpendMonthRow>
+                            {
+                                new(2026, 1, 150, 2),
+                                new(2026, 3, 90, 1)
+                            });
+
+        List<StudentSpendPointDto> points = await _sut.GetSpendByMonthAsync(from, to);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(points, Has.Count.EqualTo(2));
+            Assert.That(points[0].Year, Is.EqualTo(2026));
+            Assert.That(points[0].Month, Is.EqualTo(1));
+            Assert.That(points[0].Amount, Is.EqualTo(150));
+            Assert.That(points[0].Count, Is.EqualTo(2));
+            Assert.That(points[1].Month, Is.EqualTo(3));
+        });
     }
 }
