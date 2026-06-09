@@ -1,6 +1,3 @@
-using Backend.DB.Daos.Abstract.Single.Attendance;
-using Backend.Services.Abstract.Attendance;
-
 namespace Backend.Modules;
 
 public sealed class AutoRegisteredServicesModule : IServiceModule
@@ -10,17 +7,12 @@ public sealed class AutoRegisteredServicesModule : IServiceModule
     public void Register(IServiceCollection services, IConfiguration configuration)
     {
         services.Scan(scan => scan
-            .FromAssemblyOf<IScheduledClassService>()
+            .FromAssemblyOf<Program>()
             .AddClasses(classes => classes.InNamespaces(
                 "Backend.Services.Concrete",
+                "Backend.DB.Daos.Concrete",
                 "Backend.Claims",
                 "Backend.Builders"))
-            .AsImplementedInterfaces()
-            .WithScopedLifetime());
-
-        services.Scan(scan => scan
-            .FromAssemblyOf<IScheduledClassAttendanceDao>()
-            .AddClasses(classes => classes.InNamespaces("Backend.DB.Daos.Concrete.Single"))
             .AsImplementedInterfaces()
             .WithScopedLifetime());
     }

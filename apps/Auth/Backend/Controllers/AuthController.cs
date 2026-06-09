@@ -120,8 +120,8 @@ public class AuthController : ControllerBase
         return outcome switch
         {
             DeleteUserOutcome.Deleted => NoContent(),
-            DeleteUserOutcome.SelfDeleteForbidden => StatusCode(403, "No puede eliminarse a sí mismo."),
-            DeleteUserOutcome.ClientDeleteForbidden => StatusCode(403, "No puede eliminar a otro cliente."),
+            DeleteUserOutcome.SelfDeleteForbidden => StatusCode(StatusCodes.Status403Forbidden, "No puede eliminarse a sí mismo."),
+            DeleteUserOutcome.ClientDeleteForbidden => StatusCode(StatusCodes.Status403Forbidden, "No puede eliminar a otro cliente."),
             DeleteUserOutcome.NotFound => NotFound(),
             _ => throw new UnreachableException()
         };
