@@ -1,5 +1,3 @@
-using Backend.Services.Abstract;
-
 namespace Backend.Modules;
 
 public sealed class AutoRegisteredServicesModule : IServiceModule
@@ -9,7 +7,7 @@ public sealed class AutoRegisteredServicesModule : IServiceModule
     public void Register(IServiceCollection services, IConfiguration configuration)
     {
         services.Scan(scan => scan
-            .FromAssemblyOf<ICredentialsService>()
+            .FromAssemblyOf<Program>()
             .AddClasses(classes => classes.InNamespaces(
                 "Backend.Services.Concrete",
                 "Backend.Claims"))

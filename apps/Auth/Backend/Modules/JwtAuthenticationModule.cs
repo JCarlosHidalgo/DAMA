@@ -11,9 +11,10 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace Backend.Modules;
 
-public sealed class JwtAuthenticationModule : IServiceModule
+public sealed class JwtAuthenticationModule : IServiceModule, IAppModule
 {
-    public int Order => 50;
+    int IServiceModule.Order => 50;
+    int IAppModule.Order => 30;
 
     public void Register(IServiceCollection services, IConfiguration configuration)
     {
@@ -43,6 +44,11 @@ public sealed class JwtAuthenticationModule : IServiceModule
                     RoleClaimType = AuthClaims.Role,
                 };
             });
+    }
+
+    public void Configure(WebApplication app)
+    {
+        app.UseAuthentication();
     }
 
     private static RsaSecurityKey LoadPublicKey(string publicKeyBase64)

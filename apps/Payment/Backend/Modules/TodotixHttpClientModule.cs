@@ -7,6 +7,8 @@ namespace Backend.Modules;
 
 public sealed class TodotixHttpClientModule : IServiceModule
 {
+    public int Order => 91;
+
     public void Register(IServiceCollection services, IConfiguration configuration)
     {
         services.AddHttpClient<ITodotixClient, TodotixClient>(client =>

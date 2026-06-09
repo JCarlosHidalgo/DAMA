@@ -65,7 +65,7 @@ public class TenantController : ControllerBase
         return outcome switch
         {
             UpdateTenantTimezoneOutcome.Updated => NoContent(),
-            UpdateTenantTimezoneOutcome.Forbidden => StatusCode(403, "No puede modificar otro tenant."),
+            UpdateTenantTimezoneOutcome.Forbidden => StatusCode(StatusCodes.Status403Forbidden, "No puede modificar otro tenant."),
             UpdateTenantTimezoneOutcome.NotFound => NotFound(),
             _ => throw new UnreachableException()
         };

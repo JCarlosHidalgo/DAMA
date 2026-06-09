@@ -7,6 +7,8 @@ namespace Backend.Modules;
 
 public sealed class ExpirationOutboxModule : IServiceModule
 {
+    public int Order => 94;
+
     public void Register(IServiceCollection services, IConfiguration configuration)
     {
         services.AddSingleton<IOutboxPublisher<ExpirationOutboxEvent>, RabbitMqExpirationPublisher>();

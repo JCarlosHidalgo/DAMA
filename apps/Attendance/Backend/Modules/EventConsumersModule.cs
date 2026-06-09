@@ -4,6 +4,8 @@ namespace Backend.Modules;
 
 public sealed class EventConsumersModule : IServiceModule
 {
+    public int Order => 95;
+
     public void Register(IServiceCollection services, IConfiguration configuration)
     {
         services.AddHostedService<StudentRegisteredConsumer>();
