@@ -118,6 +118,7 @@ public class QrPaymentController : ControllerBase
         return Ok(spendPoints);
     }
 
+    [AllowAnonymous]
     [HttpGet("callback")]
     public async Task<ActionResult> Callback([FromQuery(Name = "transaction_id")] Guid transactionId,
                                               [FromQuery] int error,

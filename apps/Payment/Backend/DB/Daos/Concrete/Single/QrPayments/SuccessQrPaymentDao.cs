@@ -148,14 +148,15 @@ public sealed class SuccessQrPaymentDao : MySQLSingleDao<SuccessQrPayment>, ISuc
         });
     }
 
-    public async Task<SuccessQrPayment?> GetByIdAsync(Guid paymentId)
+    public async Task<SuccessQrPayment?> GetByIdForTenantAsync(Guid tenantId, Guid paymentId)
     {
         return await MySQLRetryPolicy.ExecuteAsync(_connection, async () =>
         {
             const string sql = "SELECT Id, TenantId, StudentId, ClassQuantity, Cost, Currency, PaidAt " +
-                               "FROM SuccessQrPayment WHERE Id = @paymentId;";
+                               "FROM SuccessQrPayment WHERE Id = @paymentId AND TenantId = @tenantId;";
             MySqlCommand selectCommand = new MySqlCommand(sql, _connection);
             selectCommand.Parameters.AddWithValue("@paymentId", paymentId.ToString());
+            selectCommand.Parameters.AddWithValue("@tenantId", tenantId.ToString());
 
             _mySqlReader = (MySqlDataReader)await selectCommand.ExecuteReaderAsync();
             if (!await _mySqlReader.ReadAsync())
