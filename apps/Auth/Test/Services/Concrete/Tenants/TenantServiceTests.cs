@@ -7,6 +7,8 @@ using Backend.Entities.Tenants;
 using Backend.Results.Tenants;
 using Backend.Services.Concrete.Tenants;
 
+using Microsoft.Extensions.Logging.Abstractions;
+
 using Moq;
 
 namespace Test.Services.Concrete.Tenants;
@@ -15,6 +17,7 @@ namespace Test.Services.Concrete.Tenants;
 public class TenantServiceTests
 {
     private static readonly Guid CallerTenantId = Guid.Parse("33333333-3333-3333-3333-333333333333");
+    private static readonly Guid CallerUserId = Guid.Parse("44444444-4444-4444-4444-444444444444");
 
     private Mock<ITenantDao> _tenantDao = null!;
     private Mock<IClaimContext> _claimContext = null!;
@@ -29,7 +32,13 @@ public class TenantServiceTests
         _claimContext = new Mock<IClaimContext>(MockBehavior.Strict);
         _tenantBuilder = new Mock<ITenantBuilder>(MockBehavior.Strict);
 
-        _sut = new TenantService(_tenantDao.Object, _claimContext.Object, _tenantBuilder.Object);
+        _claimContext.Setup(accessor => accessor.UserId).Returns(CallerUserId);
+
+        _sut = new TenantService(
+            _tenantDao.Object,
+            _claimContext.Object,
+            _tenantBuilder.Object,
+            NullLogger<TenantService>.Instance);
     }
 
     [Test]

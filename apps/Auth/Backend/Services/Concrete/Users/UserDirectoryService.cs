@@ -3,6 +3,7 @@ using Backend.Claims;
 using Backend.DB.Daos.Abstract.Single.Users;
 using Backend.Dtos.Users.Output;
 using Backend.Entities.Users;
+using Backend.Logging;
 using Backend.Pagination;
 using Backend.Results.Users;
 using Backend.Security;
@@ -17,14 +18,17 @@ public class UserDirectoryService : IUserDirectoryService
     private readonly IUserDirectoryDao _userDao;
     private readonly IClaimContext _claimContext;
     private readonly IUserViewBuilder _viewBuilder;
+    private readonly ILogger<UserDirectoryService> _logger;
 
     public UserDirectoryService(IUserDirectoryDao userDao,
                                 IClaimContext claimContext,
-                                IUserViewBuilder viewBuilder)
+                                IUserViewBuilder viewBuilder,
+                                ILogger<UserDirectoryService> logger)
     {
         _userDao = userDao;
         _claimContext = claimContext;
         _viewBuilder = viewBuilder;
+        _logger = logger;
     }
 
     public Task<PagedUsersResponseDto> GetStudentsPagedAsync(int pageIndex) =>
@@ -71,7 +75,12 @@ public class UserDirectoryService : IUserDirectoryService
         }
 
         int affected = await _userDao.SoftDeleteForTenantAsync(targetUserId, tenantId);
-        return affected > 0 ? new DeleteUserOutcome.Deleted() : new DeleteUserOutcome.NotFound();
+        if (affected > 0)
+        {
+            LogEvents.UserDeleted(_logger, callerId, targetUserId, tenantId);
+            return new DeleteUserOutcome.Deleted();
+        }
+        return new DeleteUserOutcome.NotFound();
     }
 
     public async Task<RenameUserOutcome> RenameUserAsync(Guid targetUserId, string newUserName)

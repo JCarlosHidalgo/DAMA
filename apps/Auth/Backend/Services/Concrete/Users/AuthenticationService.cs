@@ -6,6 +6,7 @@ using Backend.Dtos.Users.Output;
 using Backend.Entities.Tenants;
 using Backend.Entities.Users;
 using Backend.Logging;
+using Backend.Results.Users;
 using Backend.Security;
 using Backend.Services.Abstract.Users;
 using Backend.Transporters.Entities;
@@ -46,27 +47,30 @@ public class AuthenticationService : IAuthenticationService
         _logger = logger;
     }
 
-    public async Task<TokenResponseDto?> LoginAsync(LoginCredentialsDto request)
+    public async Task<LoginOutcome> LoginAsync(LoginCredentialsDto request)
     {
         UserWithTenant? userWithTenant = await _userDao.ReadUserWithTenantByUserNameAsync(request.Username);
         if (userWithTenant is null)
         {
             LogEvents.LoginFailedUserNotFound(_logger, request.Username);
-            return null;
+            return new LoginOutcome.InvalidCredentials();
         }
 
         User user = userWithTenant.User;
 
-        if (
-            _passwordHasher.VerifyHashedPassword(
-                user,
-                user.PasswordHash,
-                request.Password
-            ) == PasswordVerificationResult.Failed
-        )
+        if (user.LockedUntil is DateTime lockedUntil && lockedUntil > DateTime.UtcNow)
         {
+            LogEvents.LoginBlockedAccountLocked(_logger, user.Id);
+            return new LoginOutcome.AccountLocked();
+        }
+
+        PasswordVerificationResult verification =
+            _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, request.Password);
+        if (verification == PasswordVerificationResult.Failed)
+        {
+            await _userDao.RegisterFailedLoginAttemptAsync(user.Id);
             LogEvents.LoginFailedInvalidPassword(_logger, request.Username);
-            return null;
+            return new LoginOutcome.InvalidCredentials();
         }
 
         TenantAllowedServices? allowedServices =
@@ -76,15 +80,22 @@ public class AuthenticationService : IAuthenticationService
         IssuedRefreshToken issued = _refreshTokenGenerator.Issue(user.Id);
 
         await using ITransactionScope scope = await _unitOfWork.BeginAsync();
+        if (verification == PasswordVerificationResult.SuccessRehashNeeded)
+        {
+            string upgradedHash = _passwordHasher.HashPassword(user, request.Password);
+            await _userDao.UpdatePasswordHashAsync(user.Id, upgradedHash, scope);
+            LogEvents.PasswordHashUpgraded(_logger, user.Id);
+        }
+        await _userDao.ResetFailedLoginAttemptsAsync(user.Id, scope);
         await _refreshTokenWriteDao.CreateAsync(issued.Entity, scope);
         await scope.CommitAsync();
 
         LogEvents.LoginSucceeded(_logger, user.Id, userWithTenant.Tenant.Id);
 
-        return new TokenResponseDto
+        return new LoginOutcome.Success(new TokenResponseDto
         {
             AccessToken = accessToken,
             RefreshToken = issued.RawToken
-        };
+        });
     }
 }

@@ -7,6 +7,8 @@ using Backend.Results.Users;
 using Backend.Security;
 using Backend.Services.Concrete.Users;
 
+using Microsoft.Extensions.Logging.Abstractions;
+
 using Moq;
 
 namespace Test.Services.Concrete.Users;
@@ -36,7 +38,8 @@ public class UserDirectoryServiceTests
         _sut = new UserDirectoryService(
             _userDirectoryDao.Object,
             _claimContext.Object,
-            _userViewBuilder.Object);
+            _userViewBuilder.Object,
+            NullLogger<UserDirectoryService>.Instance);
     }
 
     [Test]
