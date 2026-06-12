@@ -42,14 +42,15 @@ public sealed class SuccessSubscriptionPaymentDao : ISuccessSubscriptionPaymentD
         }
     }
 
-    public async Task<SuccessSubscriptionPayment?> GetByIdAsync(Guid paymentId)
+    public async Task<SuccessSubscriptionPayment?> GetByIdForTenantAsync(Guid tenantId, Guid paymentId)
     {
         return await MySQLRetryPolicy.ExecuteAsync(_connection, async () =>
         {
             const string sql = "SELECT Id, TenantId, Level, Cost, Currency, PaidAt " +
-                               "FROM SuccessSubscriptionPayment WHERE Id = @paymentId;";
+                               "FROM SuccessSubscriptionPayment WHERE Id = @paymentId AND TenantId = @tenantId;";
             MySqlCommand selectCommand = new MySqlCommand(sql, _connection);
             selectCommand.Parameters.AddWithValue("@paymentId", paymentId.ToString());
+            selectCommand.Parameters.AddWithValue("@tenantId", tenantId.ToString());
 
             using MySqlDataReader reader = (MySqlDataReader)await selectCommand.ExecuteReaderAsync();
             if (!await reader.ReadAsync())

@@ -12,6 +12,6 @@ public sealed class HealthCheckModule : IServiceModule, IAppModule
 
     public void Configure(WebApplication app)
     {
-        app.MapHealthChecks("/health");
+        app.MapHealthChecks("/health").AllowAnonymous();
     }
 }

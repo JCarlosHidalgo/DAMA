@@ -8,5 +8,5 @@ public interface ISuccessSubscriptionPaymentDao
 {
     Task<bool> TryCreateAsync(SuccessSubscriptionPayment payment, ITransactionContext transaction);
 
-    Task<SuccessSubscriptionPayment?> GetByIdAsync(Guid paymentId);
+    Task<SuccessSubscriptionPayment?> GetByIdForTenantAsync(Guid tenantId, Guid paymentId);
 }

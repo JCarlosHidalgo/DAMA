@@ -28,12 +28,14 @@ public sealed class HealthCheckModule : IServiceModule, IAppModule
         app.MapHealthChecks("/health", new HealthCheckOptions
         {
             Predicate = _ => false
-        });
+        })
+        .AllowAnonymous();
 
         app.MapHealthChecks("/health/ready", new HealthCheckOptions
         {
             Predicate = healthCheck => healthCheck.Tags.Contains("ready"),
             ResponseWriter = ReadinessResponseWriter.WriteAsync
-        });
+        })
+        .AllowAnonymous();
     }
 }

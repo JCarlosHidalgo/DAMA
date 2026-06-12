@@ -124,7 +124,7 @@ public class QrPaymentQueryServiceTests
     {
         var paymentId = Guid.NewGuid();
         _pendingDao.Setup(d => d.GetByIdForTenantAsync(_tenantId, paymentId)).ReturnsAsync((PendingQrPayment?)null);
-        _successDao.Setup(d => d.GetByIdAsync(paymentId)).ReturnsAsync(new SuccessQrPayment { Id = paymentId, TenantId = _tenantId });
+        _successDao.Setup(d => d.GetByIdForTenantAsync(_tenantId, paymentId)).ReturnsAsync(new SuccessQrPayment { Id = paymentId, TenantId = _tenantId });
 
         GetQrDebtStatusOutcome outcome = await _sut.GetDebtStatusAsync(paymentId);
 
@@ -137,7 +137,7 @@ public class QrPaymentQueryServiceTests
     {
         var paymentId = Guid.NewGuid();
         _pendingDao.Setup(d => d.GetByIdForTenantAsync(_tenantId, paymentId)).ReturnsAsync((PendingQrPayment?)null);
-        _successDao.Setup(d => d.GetByIdAsync(paymentId)).ReturnsAsync(new SuccessQrPayment { Id = paymentId, TenantId = Guid.NewGuid() });
+        _successDao.Setup(d => d.GetByIdForTenantAsync(_tenantId, paymentId)).ReturnsAsync((SuccessQrPayment?)null);
 
         GetQrDebtStatusOutcome outcome = await _sut.GetDebtStatusAsync(paymentId);
 
@@ -149,7 +149,7 @@ public class QrPaymentQueryServiceTests
     {
         var paymentId = Guid.NewGuid();
         _pendingDao.Setup(d => d.GetByIdForTenantAsync(_tenantId, paymentId)).ReturnsAsync((PendingQrPayment?)null);
-        _successDao.Setup(d => d.GetByIdAsync(paymentId)).ReturnsAsync((SuccessQrPayment?)null);
+        _successDao.Setup(d => d.GetByIdForTenantAsync(_tenantId, paymentId)).ReturnsAsync((SuccessQrPayment?)null);
 
         GetQrDebtStatusOutcome outcome = await _sut.GetDebtStatusAsync(paymentId);
 

@@ -10,7 +10,7 @@ public interface ISuccessQrPaymentDao : ISingleDao<SuccessQrPayment>
 {
     Task<bool> TryCreateAsync(SuccessQrPayment payment, ITransactionContext transaction);
 
-    Task<SuccessQrPayment?> GetByIdAsync(Guid paymentId);
+    Task<SuccessQrPayment?> GetByIdForTenantAsync(Guid tenantId, Guid paymentId);
 
     Task<int> CountByStudentForTenantAsync(Guid tenantId, Guid studentId);
 

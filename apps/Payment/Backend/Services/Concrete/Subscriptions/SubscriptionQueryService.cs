@@ -54,8 +54,8 @@ public class SubscriptionQueryService : ISubscriptionQueryService
             return new GetQrDebtStatusOutcome.Found(_viewBuilder.BuildPendingStatus(pending.Id));
         }
 
-        SuccessSubscriptionPayment? success = await _successSubscriptionPaymentDao.GetByIdAsync(paymentId);
-        if (success != null && success.TenantId == tenantId)
+        SuccessSubscriptionPayment? success = await _successSubscriptionPaymentDao.GetByIdForTenantAsync(tenantId, paymentId);
+        if (success != null)
         {
             return new GetQrDebtStatusOutcome.Found(_viewBuilder.BuildReadyStatus(success.Id, null));
         }

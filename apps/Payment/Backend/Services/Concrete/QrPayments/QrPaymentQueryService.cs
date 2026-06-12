@@ -71,8 +71,8 @@ public class QrPaymentQueryService : IQrPaymentQueryService
             return new GetQrDebtStatusOutcome.Found(_viewBuilder.BuildPendingStatus(pending.Id));
         }
 
-        SuccessQrPayment? success = await _successQrPaymentDao.GetByIdAsync(paymentId);
-        if (success != null && success.TenantId == tenantId)
+        SuccessQrPayment? success = await _successQrPaymentDao.GetByIdForTenantAsync(tenantId, paymentId);
+        if (success != null)
         {
             return new GetQrDebtStatusOutcome.Found(_viewBuilder.BuildReadyStatus(success.Id, null));
         }

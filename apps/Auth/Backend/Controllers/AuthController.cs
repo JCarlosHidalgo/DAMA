@@ -140,6 +140,7 @@ public class AuthController : ControllerBase
         return Ok(result);
     }
 
+    [AllowAnonymous]
     [HttpPost("login")]
     public async Task<ActionResult<TokenResponseDto>> Login(LoginCredentialsDto request)
     {
@@ -151,6 +152,7 @@ public class AuthController : ControllerBase
         return Ok(result);
     }
 
+    [AllowAnonymous]
     [HttpPost("refresh")]
     public async Task<ActionResult<TokenResponseDto>> Refresh(RefreshTokenRequestDto request)
     {

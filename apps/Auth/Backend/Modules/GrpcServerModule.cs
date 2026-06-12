@@ -14,6 +14,6 @@ public sealed class GrpcServerModule : IServiceModule, IAppModule
 
     public void Configure(WebApplication app)
     {
-        app.MapGrpcService<TenantSubscriptionGrpcService>();
+        app.MapGrpcService<TenantSubscriptionGrpcService>().AllowAnonymous();
     }
 }
