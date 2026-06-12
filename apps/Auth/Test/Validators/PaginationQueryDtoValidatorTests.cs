@@ -48,4 +48,14 @@ public class PaginationQueryDtoValidatorTests
             Assert.That(result.Errors[0].ErrorMessage, Is.EqualTo(InvalidPageIndexMessage));
         });
     }
+
+    [Test]
+    public async Task Validate_WithPageIndexAboveMaximum_Fails()
+    {
+        PaginationQueryDto query = new() { PageIndex = int.MaxValue };
+
+        ValidationResult result = await _sut.ValidateAsync(query);
+
+        Assert.That(result.IsValid, Is.False);
+    }
 }
