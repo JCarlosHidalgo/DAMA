@@ -31,4 +31,12 @@ public class PaginationParamsDtoValidatorTests
 
         Assert.That(result.IsValid, Is.False);
     }
+
+    [Test]
+    public async Task Validate_IndexAboveMaximum_Fails()
+    {
+        FluentValidation.Results.ValidationResult result = await _sut.ValidateAsync(new PaginationParamsDto { Index = int.MaxValue });
+
+        Assert.That(result.IsValid, Is.False);
+    }
 }

@@ -40,4 +40,12 @@ public class PaginationParamsDtoValidatorTests
             Assert.That(result.Errors[0].ErrorMessage, Is.EqualTo("El índice de página no puede ser negativo."));
         });
     }
+
+    [Test]
+    public async Task Validate_IndexAboveMaximum_Fails()
+    {
+        ValidationResult result = await _sut.ValidateAsync(new PaginationParamsDto { Index = int.MaxValue });
+
+        Assert.That(result.IsValid, Is.False);
+    }
 }
