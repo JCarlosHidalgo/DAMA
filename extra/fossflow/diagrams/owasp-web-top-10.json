@@ -1,0 +1,1269 @@
+{
+  "name": "OWASP Web Top 10 (2021) – DAMA",
+  "title": "OWASP Web Top 10 (2021) – DAMA",
+  "version": "1.0",
+  "fitToScreen": true,
+  "icons": [],
+  "colors": [
+    {
+      "id": "c1",
+      "value": "#ef4444"
+    },
+    {
+      "id": "c2",
+      "value": "#f59e0b"
+    },
+    {
+      "id": "c3",
+      "value": "#eab308"
+    },
+    {
+      "id": "c4",
+      "value": "#84cc16"
+    },
+    {
+      "id": "c5",
+      "value": "#10b981"
+    },
+    {
+      "id": "c6",
+      "value": "#06b6d4"
+    },
+    {
+      "id": "c7",
+      "value": "#3b82f6"
+    },
+    {
+      "id": "c8",
+      "value": "#6366f1"
+    },
+    {
+      "id": "c9",
+      "value": "#a855f7"
+    },
+    {
+      "id": "c10",
+      "value": "#ec4899"
+    }
+  ],
+  "items": [
+    {
+      "id": "w_0_0",
+      "name": "JwtBearer middleware",
+      "icon": "loadbalancer"
+    },
+    {
+      "id": "w_0_1",
+      "name": "FallbackPolicy deny-by-default",
+      "icon": "lock"
+    },
+    {
+      "id": "w_0_2",
+      "name": "[Authorize(Roles)]",
+      "icon": "lock"
+    },
+    {
+      "id": "w_0_3",
+      "name": "IClaimContext",
+      "icon": "document"
+    },
+    {
+      "id": "w_0_4",
+      "name": "Tenant-filter DAO",
+      "icon": "storage"
+    },
+    {
+      "id": "w_1_0",
+      "name": "RS256 JwtTokenSigner",
+      "icon": "lock"
+    },
+    {
+      "id": "w_1_1",
+      "name": "PBKDF2 PasswordHasher 210k",
+      "icon": "lock"
+    },
+    {
+      "id": "w_1_2",
+      "name": "AES-256-GCM AppKeyCipher",
+      "icon": "lock"
+    },
+    {
+      "id": "w_1_3",
+      "name": "HMAC CallbackSignature",
+      "icon": "lock"
+    },
+    {
+      "id": "w_1_4",
+      "name": "TLS gRPC interno",
+      "icon": "server"
+    },
+    {
+      "id": "w_2_0",
+      "name": "FluentValidation filter",
+      "icon": "document"
+    },
+    {
+      "id": "w_2_1",
+      "name": "DAO parametrizado",
+      "icon": "server"
+    },
+    {
+      "id": "w_2_2",
+      "name": "Stored Procedures",
+      "icon": "storage"
+    },
+    {
+      "id": "w_3_0",
+      "name": "Outbox + Inbox",
+      "icon": "queue"
+    },
+    {
+      "id": "w_3_1",
+      "name": "Idempotencia processed_events",
+      "icon": "storage"
+    },
+    {
+      "id": "w_3_2",
+      "name": "Multitenancy por tenant",
+      "icon": "lock"
+    },
+    {
+      "id": "w_3_3",
+      "name": "Account Lockout",
+      "icon": "lock"
+    },
+    {
+      "id": "w_4_0",
+      "name": "nginx security headers",
+      "icon": "loadbalancer"
+    },
+    {
+      "id": "w_4_1",
+      "name": "SecretsValidationModule",
+      "icon": "lock"
+    },
+    {
+      "id": "w_4_2",
+      "name": "ProblemDetails (sin stack)",
+      "icon": "document"
+    },
+    {
+      "id": "w_4_3",
+      "name": "Secrets solo por env",
+      "icon": "document"
+    },
+    {
+      "id": "w_5_0",
+      "name": ".NET 9 + NuGet fijado",
+      "icon": "server"
+    },
+    {
+      "id": "w_5_1",
+      "name": "SonarAnalyzer",
+      "icon": "document"
+    },
+    {
+      "id": "w_5_2",
+      "name": "Paquetes internos NuGet",
+      "icon": "queue"
+    },
+    {
+      "id": "w_6_0",
+      "name": "JWT validation params",
+      "icon": "lock"
+    },
+    {
+      "id": "w_6_1",
+      "name": "Account Lockout 423",
+      "icon": "lock"
+    },
+    {
+      "id": "w_6_2",
+      "name": "Refresh rotation + reuse",
+      "icon": "lock"
+    },
+    {
+      "id": "w_6_3",
+      "name": "Rate-limit login (nginx)",
+      "icon": "loadbalancer"
+    },
+    {
+      "id": "w_7_0",
+      "name": "processed_events idempotente",
+      "icon": "storage"
+    },
+    {
+      "id": "w_7_1",
+      "name": "TLS CA trust store",
+      "icon": "server"
+    },
+    {
+      "id": "w_7_2",
+      "name": "System.Text.Json",
+      "icon": "document"
+    },
+    {
+      "id": "w_8_0",
+      "name": "LogEvents source-gen",
+      "icon": "document"
+    },
+    {
+      "id": "w_8_1",
+      "name": "JSON structured logs",
+      "icon": "document"
+    },
+    {
+      "id": "w_8_2",
+      "name": "Health /ready checks",
+      "icon": "server"
+    },
+    {
+      "id": "w_9_0",
+      "name": "Todotix BaseUrl por config",
+      "icon": "cloud"
+    },
+    {
+      "id": "w_9_1",
+      "name": "gRPC service discovery fijo",
+      "icon": "server"
+    },
+    {
+      "id": "w_9_2",
+      "name": "Sin URL desde el usuario",
+      "icon": "lock"
+    }
+  ],
+  "views": [
+    {
+      "id": "main",
+      "name": "OWASP Web Top 10 (2021) – DAMA",
+      "items": [
+        {
+          "id": "w_0_0",
+          "tile": {
+            "x": 0,
+            "y": 0
+          },
+          "labelHeight": 100
+        },
+        {
+          "id": "w_0_1",
+          "tile": {
+            "x": 0,
+            "y": 3
+          },
+          "labelHeight": 100
+        },
+        {
+          "id": "w_0_2",
+          "tile": {
+            "x": 0,
+            "y": 6
+          },
+          "labelHeight": 100
+        },
+        {
+          "id": "w_0_3",
+          "tile": {
+            "x": 0,
+            "y": 9
+          },
+          "labelHeight": 100
+        },
+        {
+          "id": "w_0_4",
+          "tile": {
+            "x": 0,
+            "y": 12
+          },
+          "labelHeight": 100
+        },
+        {
+          "id": "w_1_0",
+          "tile": {
+            "x": 13,
+            "y": 0
+          },
+          "labelHeight": 100
+        },
+        {
+          "id": "w_1_1",
+          "tile": {
+            "x": 13,
+            "y": 3
+          },
+          "labelHeight": 100
+        },
+        {
+          "id": "w_1_2",
+          "tile": {
+            "x": 13,
+            "y": 6
+          },
+          "labelHeight": 100
+        },
+        {
+          "id": "w_1_3",
+          "tile": {
+            "x": 13,
+            "y": 9
+          },
+          "labelHeight": 100
+        },
+        {
+          "id": "w_1_4",
+          "tile": {
+            "x": 13,
+            "y": 12
+          },
+          "labelHeight": 100
+        },
+        {
+          "id": "w_2_0",
+          "tile": {
+            "x": 26,
+            "y": 0
+          },
+          "labelHeight": 100
+        },
+        {
+          "id": "w_2_1",
+          "tile": {
+            "x": 26,
+            "y": 3
+          },
+          "labelHeight": 100
+        },
+        {
+          "id": "w_2_2",
+          "tile": {
+            "x": 26,
+            "y": 6
+          },
+          "labelHeight": 100
+        },
+        {
+          "id": "w_3_0",
+          "tile": {
+            "x": 39,
+            "y": 0
+          },
+          "labelHeight": 100
+        },
+        {
+          "id": "w_3_1",
+          "tile": {
+            "x": 39,
+            "y": 3
+          },
+          "labelHeight": 100
+        },
+        {
+          "id": "w_3_2",
+          "tile": {
+            "x": 39,
+            "y": 6
+          },
+          "labelHeight": 100
+        },
+        {
+          "id": "w_3_3",
+          "tile": {
+            "x": 39,
+            "y": 9
+          },
+          "labelHeight": 100
+        },
+        {
+          "id": "w_4_0",
+          "tile": {
+            "x": 52,
+            "y": 0
+          },
+          "labelHeight": 100
+        },
+        {
+          "id": "w_4_1",
+          "tile": {
+            "x": 52,
+            "y": 3
+          },
+          "labelHeight": 100
+        },
+        {
+          "id": "w_4_2",
+          "tile": {
+            "x": 52,
+            "y": 6
+          },
+          "labelHeight": 100
+        },
+        {
+          "id": "w_4_3",
+          "tile": {
+            "x": 52,
+            "y": 9
+          },
+          "labelHeight": 100
+        },
+        {
+          "id": "w_5_0",
+          "tile": {
+            "x": 0,
+            "y": 26
+          },
+          "labelHeight": 100
+        },
+        {
+          "id": "w_5_1",
+          "tile": {
+            "x": 0,
+            "y": 29
+          },
+          "labelHeight": 100
+        },
+        {
+          "id": "w_5_2",
+          "tile": {
+            "x": 0,
+            "y": 32
+          },
+          "labelHeight": 100
+        },
+        {
+          "id": "w_6_0",
+          "tile": {
+            "x": 13,
+            "y": 26
+          },
+          "labelHeight": 100
+        },
+        {
+          "id": "w_6_1",
+          "tile": {
+            "x": 13,
+            "y": 29
+          },
+          "labelHeight": 100
+        },
+        {
+          "id": "w_6_2",
+          "tile": {
+            "x": 13,
+            "y": 32
+          },
+          "labelHeight": 100
+        },
+        {
+          "id": "w_6_3",
+          "tile": {
+            "x": 13,
+            "y": 35
+          },
+          "labelHeight": 100
+        },
+        {
+          "id": "w_7_0",
+          "tile": {
+            "x": 26,
+            "y": 26
+          },
+          "labelHeight": 100
+        },
+        {
+          "id": "w_7_1",
+          "tile": {
+            "x": 26,
+            "y": 29
+          },
+          "labelHeight": 100
+        },
+        {
+          "id": "w_7_2",
+          "tile": {
+            "x": 26,
+            "y": 32
+          },
+          "labelHeight": 100
+        },
+        {
+          "id": "w_8_0",
+          "tile": {
+            "x": 39,
+            "y": 26
+          },
+          "labelHeight": 100
+        },
+        {
+          "id": "w_8_1",
+          "tile": {
+            "x": 39,
+            "y": 29
+          },
+          "labelHeight": 100
+        },
+        {
+          "id": "w_8_2",
+          "tile": {
+            "x": 39,
+            "y": 32
+          },
+          "labelHeight": 100
+        },
+        {
+          "id": "w_9_0",
+          "tile": {
+            "x": 52,
+            "y": 26
+          },
+          "labelHeight": 100
+        },
+        {
+          "id": "w_9_1",
+          "tile": {
+            "x": 52,
+            "y": 29
+          },
+          "labelHeight": 100
+        },
+        {
+          "id": "w_9_2",
+          "tile": {
+            "x": 52,
+            "y": 32
+          },
+          "labelHeight": 100
+        }
+      ],
+      "rectangles": [
+        {
+          "id": "r_w_0",
+          "color": "c1",
+          "from": {
+            "x": -2,
+            "y": -2
+          },
+          "to": {
+            "x": 3,
+            "y": 14
+          }
+        },
+        {
+          "id": "r_w_1",
+          "color": "c2",
+          "from": {
+            "x": 11,
+            "y": -2
+          },
+          "to": {
+            "x": 16,
+            "y": 14
+          }
+        },
+        {
+          "id": "r_w_2",
+          "color": "c3",
+          "from": {
+            "x": 24,
+            "y": -2
+          },
+          "to": {
+            "x": 29,
+            "y": 8
+          }
+        },
+        {
+          "id": "r_w_3",
+          "color": "c4",
+          "from": {
+            "x": 37,
+            "y": -2
+          },
+          "to": {
+            "x": 42,
+            "y": 11
+          }
+        },
+        {
+          "id": "r_w_4",
+          "color": "c5",
+          "from": {
+            "x": 50,
+            "y": -2
+          },
+          "to": {
+            "x": 55,
+            "y": 11
+          }
+        },
+        {
+          "id": "r_w_5",
+          "color": "c6",
+          "from": {
+            "x": -2,
+            "y": 24
+          },
+          "to": {
+            "x": 3,
+            "y": 34
+          }
+        },
+        {
+          "id": "r_w_6",
+          "color": "c7",
+          "from": {
+            "x": 11,
+            "y": 24
+          },
+          "to": {
+            "x": 16,
+            "y": 37
+          }
+        },
+        {
+          "id": "r_w_7",
+          "color": "c8",
+          "from": {
+            "x": 24,
+            "y": 24
+          },
+          "to": {
+            "x": 29,
+            "y": 34
+          }
+        },
+        {
+          "id": "r_w_8",
+          "color": "c9",
+          "from": {
+            "x": 37,
+            "y": 24
+          },
+          "to": {
+            "x": 42,
+            "y": 34
+          }
+        },
+        {
+          "id": "r_w_9",
+          "color": "c10",
+          "from": {
+            "x": 50,
+            "y": 24
+          },
+          "to": {
+            "x": 55,
+            "y": 34
+          }
+        }
+      ],
+      "textBoxes": [
+        {
+          "id": "tb_w_0",
+          "tile": {
+            "x": -2,
+            "y": -3
+          },
+          "content": "A01 · Broken Access Control",
+          "fontSize": 0.55
+        },
+        {
+          "id": "tb_w_1",
+          "tile": {
+            "x": 11,
+            "y": -3
+          },
+          "content": "A02 · Cryptographic Failures",
+          "fontSize": 0.55
+        },
+        {
+          "id": "tb_w_2",
+          "tile": {
+            "x": 24,
+            "y": -3
+          },
+          "content": "A03 · Injection",
+          "fontSize": 0.55
+        },
+        {
+          "id": "tb_w_3",
+          "tile": {
+            "x": 37,
+            "y": -3
+          },
+          "content": "A04 · Insecure Design",
+          "fontSize": 0.55
+        },
+        {
+          "id": "tb_w_4",
+          "tile": {
+            "x": 50,
+            "y": -3
+          },
+          "content": "A05 · Security Misconfiguration",
+          "fontSize": 0.55
+        },
+        {
+          "id": "tb_w_5",
+          "tile": {
+            "x": -2,
+            "y": 23
+          },
+          "content": "A06 · Vulnerable & Outdated Components",
+          "fontSize": 0.55
+        },
+        {
+          "id": "tb_w_6",
+          "tile": {
+            "x": 11,
+            "y": 23
+          },
+          "content": "A07 · Identification & Auth Failures",
+          "fontSize": 0.55
+        },
+        {
+          "id": "tb_w_7",
+          "tile": {
+            "x": 24,
+            "y": 23
+          },
+          "content": "A08 · Software & Data Integrity",
+          "fontSize": 0.55
+        },
+        {
+          "id": "tb_w_8",
+          "tile": {
+            "x": 37,
+            "y": 23
+          },
+          "content": "A09 · Logging & Monitoring Failures",
+          "fontSize": 0.55
+        },
+        {
+          "id": "tb_w_9",
+          "tile": {
+            "x": 50,
+            "y": 23
+          },
+          "content": "A10 · Server-Side Request Forgery",
+          "fontSize": 0.55
+        }
+      ],
+      "connectors": [
+        {
+          "id": "k_w_0_0",
+          "color": "c1",
+          "style": "SOLID",
+          "anchors": [
+            {
+              "id": "an1",
+              "ref": {
+                "item": "w_0_0"
+              }
+            },
+            {
+              "id": "an2",
+              "ref": {
+                "item": "w_0_1"
+              }
+            }
+          ]
+        },
+        {
+          "id": "k_w_0_1",
+          "color": "c1",
+          "style": "SOLID",
+          "anchors": [
+            {
+              "id": "an3",
+              "ref": {
+                "item": "w_0_1"
+              }
+            },
+            {
+              "id": "an4",
+              "ref": {
+                "item": "w_0_2"
+              }
+            }
+          ]
+        },
+        {
+          "id": "k_w_0_2",
+          "color": "c1",
+          "style": "SOLID",
+          "anchors": [
+            {
+              "id": "an5",
+              "ref": {
+                "item": "w_0_2"
+              }
+            },
+            {
+              "id": "an6",
+              "ref": {
+                "item": "w_0_3"
+              }
+            }
+          ]
+        },
+        {
+          "id": "k_w_0_3",
+          "color": "c1",
+          "style": "SOLID",
+          "anchors": [
+            {
+              "id": "an7",
+              "ref": {
+                "item": "w_0_3"
+              }
+            },
+            {
+              "id": "an8",
+              "ref": {
+                "item": "w_0_4"
+              }
+            }
+          ]
+        },
+        {
+          "id": "k_w_1_0",
+          "color": "c2",
+          "style": "SOLID",
+          "anchors": [
+            {
+              "id": "an9",
+              "ref": {
+                "item": "w_1_0"
+              }
+            },
+            {
+              "id": "an10",
+              "ref": {
+                "item": "w_1_1"
+              }
+            }
+          ]
+        },
+        {
+          "id": "k_w_1_1",
+          "color": "c2",
+          "style": "SOLID",
+          "anchors": [
+            {
+              "id": "an11",
+              "ref": {
+                "item": "w_1_1"
+              }
+            },
+            {
+              "id": "an12",
+              "ref": {
+                "item": "w_1_2"
+              }
+            }
+          ]
+        },
+        {
+          "id": "k_w_1_2",
+          "color": "c2",
+          "style": "SOLID",
+          "anchors": [
+            {
+              "id": "an13",
+              "ref": {
+                "item": "w_1_2"
+              }
+            },
+            {
+              "id": "an14",
+              "ref": {
+                "item": "w_1_3"
+              }
+            }
+          ]
+        },
+        {
+          "id": "k_w_1_3",
+          "color": "c2",
+          "style": "SOLID",
+          "anchors": [
+            {
+              "id": "an15",
+              "ref": {
+                "item": "w_1_3"
+              }
+            },
+            {
+              "id": "an16",
+              "ref": {
+                "item": "w_1_4"
+              }
+            }
+          ]
+        },
+        {
+          "id": "k_w_2_0",
+          "color": "c3",
+          "style": "SOLID",
+          "anchors": [
+            {
+              "id": "an17",
+              "ref": {
+                "item": "w_2_0"
+              }
+            },
+            {
+              "id": "an18",
+              "ref": {
+                "item": "w_2_1"
+              }
+            }
+          ]
+        },
+        {
+          "id": "k_w_2_1",
+          "color": "c3",
+          "style": "SOLID",
+          "anchors": [
+            {
+              "id": "an19",
+              "ref": {
+                "item": "w_2_1"
+              }
+            },
+            {
+              "id": "an20",
+              "ref": {
+                "item": "w_2_2"
+              }
+            }
+          ]
+        },
+        {
+          "id": "k_w_3_0",
+          "color": "c4",
+          "style": "SOLID",
+          "anchors": [
+            {
+              "id": "an21",
+              "ref": {
+                "item": "w_3_0"
+              }
+            },
+            {
+              "id": "an22",
+              "ref": {
+                "item": "w_3_1"
+              }
+            }
+          ]
+        },
+        {
+          "id": "k_w_3_1",
+          "color": "c4",
+          "style": "SOLID",
+          "anchors": [
+            {
+              "id": "an23",
+              "ref": {
+                "item": "w_3_1"
+              }
+            },
+            {
+              "id": "an24",
+              "ref": {
+                "item": "w_3_2"
+              }
+            }
+          ]
+        },
+        {
+          "id": "k_w_3_2",
+          "color": "c4",
+          "style": "SOLID",
+          "anchors": [
+            {
+              "id": "an25",
+              "ref": {
+                "item": "w_3_2"
+              }
+            },
+            {
+              "id": "an26",
+              "ref": {
+                "item": "w_3_3"
+              }
+            }
+          ]
+        },
+        {
+          "id": "k_w_4_0",
+          "color": "c5",
+          "style": "SOLID",
+          "anchors": [
+            {
+              "id": "an27",
+              "ref": {
+                "item": "w_4_0"
+              }
+            },
+            {
+              "id": "an28",
+              "ref": {
+                "item": "w_4_1"
+              }
+            }
+          ]
+        },
+        {
+          "id": "k_w_4_1",
+          "color": "c5",
+          "style": "SOLID",
+          "anchors": [
+            {
+              "id": "an29",
+              "ref": {
+                "item": "w_4_1"
+              }
+            },
+            {
+              "id": "an30",
+              "ref": {
+                "item": "w_4_2"
+              }
+            }
+          ]
+        },
+        {
+          "id": "k_w_4_2",
+          "color": "c5",
+          "style": "SOLID",
+          "anchors": [
+            {
+              "id": "an31",
+              "ref": {
+                "item": "w_4_2"
+              }
+            },
+            {
+              "id": "an32",
+              "ref": {
+                "item": "w_4_3"
+              }
+            }
+          ]
+        },
+        {
+          "id": "k_w_5_0",
+          "color": "c6",
+          "style": "SOLID",
+          "anchors": [
+            {
+              "id": "an33",
+              "ref": {
+                "item": "w_5_0"
+              }
+            },
+            {
+              "id": "an34",
+              "ref": {
+                "item": "w_5_1"
+              }
+            }
+          ]
+        },
+        {
+          "id": "k_w_5_1",
+          "color": "c6",
+          "style": "SOLID",
+          "anchors": [
+            {
+              "id": "an35",
+              "ref": {
+                "item": "w_5_1"
+              }
+            },
+            {
+              "id": "an36",
+              "ref": {
+                "item": "w_5_2"
+              }
+            }
+          ]
+        },
+        {
+          "id": "k_w_6_0",
+          "color": "c7",
+          "style": "SOLID",
+          "anchors": [
+            {
+              "id": "an37",
+              "ref": {
+                "item": "w_6_0"
+              }
+            },
+            {
+              "id": "an38",
+              "ref": {
+                "item": "w_6_1"
+              }
+            }
+          ]
+        },
+        {
+          "id": "k_w_6_1",
+          "color": "c7",
+          "style": "SOLID",
+          "anchors": [
+            {
+              "id": "an39",
+              "ref": {
+                "item": "w_6_1"
+              }
+            },
+            {
+              "id": "an40",
+              "ref": {
+                "item": "w_6_2"
+              }
+            }
+          ]
+        },
+        {
+          "id": "k_w_6_2",
+          "color": "c7",
+          "style": "SOLID",
+          "anchors": [
+            {
+              "id": "an41",
+              "ref": {
+                "item": "w_6_2"
+              }
+            },
+            {
+              "id": "an42",
+              "ref": {
+                "item": "w_6_3"
+              }
+            }
+          ]
+        },
+        {
+          "id": "k_w_7_0",
+          "color": "c8",
+          "style": "SOLID",
+          "anchors": [
+            {
+              "id": "an43",
+              "ref": {
+                "item": "w_7_0"
+              }
+            },
+            {
+              "id": "an44",
+              "ref": {
+                "item": "w_7_1"
+              }
+            }
+          ]
+        },
+        {
+          "id": "k_w_7_1",
+          "color": "c8",
+          "style": "SOLID",
+          "anchors": [
+            {
+              "id": "an45",
+              "ref": {
+                "item": "w_7_1"
+              }
+            },
+            {
+              "id": "an46",
+              "ref": {
+                "item": "w_7_2"
+              }
+            }
+          ]
+        },
+        {
+          "id": "k_w_8_0",
+          "color": "c9",
+          "style": "SOLID",
+          "anchors": [
+            {
+              "id": "an47",
+              "ref": {
+                "item": "w_8_0"
+              }
+            },
+            {
+              "id": "an48",
+              "ref": {
+                "item": "w_8_1"
+              }
+            }
+          ]
+        },
+        {
+          "id": "k_w_8_1",
+          "color": "c9",
+          "style": "SOLID",
+          "anchors": [
+            {
+              "id": "an49",
+              "ref": {
+                "item": "w_8_1"
+              }
+            },
+            {
+              "id": "an50",
+              "ref": {
+                "item": "w_8_2"
+              }
+            }
+          ]
+        },
+        {
+          "id": "k_w_9_0",
+          "color": "c10",
+          "style": "SOLID",
+          "anchors": [
+            {
+              "id": "an51",
+              "ref": {
+                "item": "w_9_0"
+              }
+            },
+            {
+              "id": "an52",
+              "ref": {
+                "item": "w_9_1"
+              }
+            }
+          ]
+        },
+        {
+          "id": "k_w_9_1",
+          "color": "c10",
+          "style": "SOLID",
+          "anchors": [
+            {
+              "id": "an53",
+              "ref": {
+                "item": "w_9_1"
+              }
+            },
+            {
+              "id": "an54",
+              "ref": {
+                "item": "w_9_2"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

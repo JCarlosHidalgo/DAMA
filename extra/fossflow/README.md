@@ -10,11 +10,19 @@ It is **not** part of the DAMA stack: it is a self-contained visualization tool 
 
 ```
 extra/fossflow/
-├── Dockerfile                     # thin layer over stnsmith/fossflow:latest that bakes in the diagram
+├── Dockerfile                     # thin layer over stnsmith/fossflow:latest that bakes in the diagrams
 ├── compose.yaml                   # local build + port 8088 + persistent volume
 └── diagrams/
-    └── dama-architecture.json     # the diagram model (Isoflow format)
+    ├── dama-architecture.json     # the stack architecture (Isoflow format)
+    ├── owasp-web-top-10.json      # OWASP Web Top 10 (2021) controls in DAMA
+    └── owasp-api-top-10.json      # OWASP API Security Top 10 (2023) controls in DAMA
 ```
+
+There are **three** diagrams. Besides the architecture one, two security diagrams accompany
+`extra/OWASP/`: each OWASP list is rendered as one diagram where **every list item is a coloured
+rectangle** enclosing the concrete DAMA components that implement that control (one colour per item,
+A01…A10 / API1…API10), with connectors showing the order of the control flow inside each item.
+Open them the same way (Open / Load → pick the title).
 
 The base image `stnsmith/fossflow:latest` serves the SPA via nginx on port 80 and a Node (Express)
 backend on `:3001` behind `/api/`. With `ENABLE_SERVER_STORAGE=true` (the default), that backend
