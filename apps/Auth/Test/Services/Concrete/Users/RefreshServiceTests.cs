@@ -11,6 +11,8 @@ using Backend.Transporters.Entities;
 
 using DAMA.Software.MySqlUnitOfWork;
 
+using Microsoft.Extensions.Logging.Abstractions;
+
 using Moq;
 
 namespace Test.Services.Concrete.Users;
@@ -48,7 +50,8 @@ public class RefreshServiceTests
             _tenantAllowedServicesDao.Object,
             _accessTokenGenerator.Object,
             _refreshTokenGenerator.Object,
-            _unitOfWork.Object);
+            _unitOfWork.Object,
+            NullLogger<RefreshService>.Instance);
     }
 
     private static RefreshTokenWithOwner OwnerFor(RefreshToken token)

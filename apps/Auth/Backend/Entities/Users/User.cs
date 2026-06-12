@@ -19,4 +19,10 @@ public class User : IEntity
 
     [Flag]
     public bool IsDeleted { get; set; }
+
+    [Integer]
+    public int FailedLoginAttempts { get; set; }
+
+    [PreciseTimestamp]
+    public DateTime? LockedUntil { get; set; }
 }

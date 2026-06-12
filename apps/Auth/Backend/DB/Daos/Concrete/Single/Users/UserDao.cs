@@ -16,6 +16,9 @@ namespace Backend.DB.Daos.Concrete.Single.Users;
 public sealed class UserDao : MySQLSingleDao<User>,
     IUserAuthenticationDao, IUserRegistrationDao, IUserDirectoryDao
 {
+    private const int MaxFailedLoginAttempts = 5;
+    private const int LockoutSeconds = 900;
+
     public UserDao(MySqlConnection connection)
     {
         _tableName = "User";
@@ -222,7 +225,10 @@ public sealed class UserDao : MySQLSingleDao<User>,
                 Id = _mySqlReader.GetGuid("Id"),
                 UserName = _mySqlReader.GetString("UserName"),
                 PasswordHash = _mySqlReader.GetString("PasswordHash"),
-                Role = _mySqlReader.GetString("Role")
+                Role = _mySqlReader.GetString("Role"),
+                LockedUntil = _mySqlReader.IsDBNull(_mySqlReader.GetOrdinal("LockedUntil"))
+                    ? null
+                    : _mySqlReader.GetDateTime("LockedUntil")
             };
             Tenant tenant = new Tenant
             {
@@ -234,5 +240,52 @@ public sealed class UserDao : MySQLSingleDao<User>,
             await _mySqlReader.CloseAsync();
             return (UserWithTenant?)new UserWithTenant(user, tenant);
         });
+    }
+
+    public async Task RegisterFailedLoginAttemptAsync(Guid userId)
+    {
+        await MySQLRetryPolicy.ExecuteAsync(_connection, async () =>
+        {
+            MySqlCommand command = new MySqlCommand("RegisterFailedLoginAttempt", _connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            command.Parameters.AddWithValue("@userId", userId.ToString());
+            command.Parameters["@userId"].Direction = ParameterDirection.Input;
+            command.Parameters.AddWithValue("@maxAttempts", MaxFailedLoginAttempts);
+            command.Parameters["@maxAttempts"].Direction = ParameterDirection.Input;
+            command.Parameters.AddWithValue("@lockoutSeconds", LockoutSeconds);
+            command.Parameters["@lockoutSeconds"].Direction = ParameterDirection.Input;
+
+            return await command.ExecuteNonQueryAsync();
+        });
+    }
+
+    public async Task ResetFailedLoginAttemptsAsync(Guid userId, ITransactionContext transaction)
+    {
+        MySqlTransaction sqlTransaction = MySqlTransactionContextAccessor.Unwrap(transaction);
+        MySqlCommand command = new MySqlCommand("ResetFailedLoginAttempts", _connection, sqlTransaction)
+        {
+            CommandType = CommandType.StoredProcedure
+        };
+        command.Parameters.AddWithValue("@userId", userId.ToString());
+        command.Parameters["@userId"].Direction = ParameterDirection.Input;
+
+        await command.ExecuteNonQueryAsync();
+    }
+
+    public async Task UpdatePasswordHashAsync(Guid userId, string passwordHash, ITransactionContext transaction)
+    {
+        MySqlTransaction sqlTransaction = MySqlTransactionContextAccessor.Unwrap(transaction);
+        MySqlCommand command = new MySqlCommand("UpdateUserPasswordHash", _connection, sqlTransaction)
+        {
+            CommandType = CommandType.StoredProcedure
+        };
+        command.Parameters.AddWithValue("@userId", userId.ToString());
+        command.Parameters["@userId"].Direction = ParameterDirection.Input;
+        command.Parameters.AddWithValue("@passwordHash", passwordHash);
+        command.Parameters["@passwordHash"].Direction = ParameterDirection.Input;
+
+        await command.ExecuteNonQueryAsync();
     }
 }

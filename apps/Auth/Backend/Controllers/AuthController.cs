@@ -144,12 +144,15 @@ public class AuthController : ControllerBase
     [HttpPost("login")]
     public async Task<ActionResult<TokenResponseDto>> Login(LoginCredentialsDto request)
     {
-        TokenResponseDto? result = await _authenticationService.LoginAsync(request);
-        if (result is null)
+        LoginOutcome outcome = await _authenticationService.LoginAsync(request);
+        return outcome switch
         {
-            return Unauthorized(LoginCredentialsDtoValidator.InvalidPayloadMessage);
-        }
-        return Ok(result);
+            LoginOutcome.Success success => Ok(success.Tokens),
+            LoginOutcome.AccountLocked => StatusCode(StatusCodes.Status423Locked,
+                "Cuenta bloqueada temporalmente por intentos fallidos. Intente más tarde."),
+            LoginOutcome.InvalidCredentials => Unauthorized(LoginCredentialsDtoValidator.InvalidPayloadMessage),
+            _ => throw new UnreachableException()
+        };
     }
 
     [AllowAnonymous]

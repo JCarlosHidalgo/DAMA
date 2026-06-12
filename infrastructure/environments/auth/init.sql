@@ -9,6 +9,8 @@ CREATE TABLE IF NOT EXISTS User(
     PasswordHash    VARCHAR(200),
     Role            VARCHAR(50),
     IsDeleted       TINYINT(1) NOT NULL DEFAULT 0,
+    FailedLoginAttempts INT NOT NULL DEFAULT 0,
+    LockedUntil     DATETIME(6) NULL,
     ActiveUserName  VARCHAR(80) GENERATED ALWAYS AS (CASE WHEN IsDeleted = 0 THEN UserName ELSE NULL END) STORED,
     UNIQUE KEY uk_user_active_username (ActiveUserName)
 );
@@ -58,6 +60,7 @@ BEGIN
         u.UserName,
         u.PasswordHash,
         u.Role,
+        u.LockedUntil,
         t.Id       AS TenantId,
         t.Name,
         t.Timezone
@@ -68,6 +71,47 @@ BEGIN
     WHERE
         u.UserName = userName
         AND u.IsDeleted = 0;
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE RegisterFailedLoginAttempt(
+    IN userId VARCHAR(36),
+    IN maxAttempts INT,
+    IN lockoutSeconds INT
+)
+BEGIN
+    UPDATE User u
+    SET u.FailedLoginAttempts = u.FailedLoginAttempts + 1
+    WHERE u.Id = userId;
+
+    UPDATE User u
+    SET u.LockedUntil = UTC_TIMESTAMP(6) + INTERVAL lockoutSeconds SECOND,
+        u.FailedLoginAttempts = 0
+    WHERE u.Id = userId
+        AND u.FailedLoginAttempts >= maxAttempts;
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE ResetFailedLoginAttempts(IN userId VARCHAR(36))
+BEGIN
+    UPDATE User u
+    SET u.FailedLoginAttempts = 0,
+        u.LockedUntil = NULL
+    WHERE u.Id = userId;
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE UpdateUserPasswordHash(
+    IN userId VARCHAR(36),
+    IN passwordHash VARCHAR(200)
+)
+BEGIN
+    UPDATE User u
+    SET u.PasswordHash = passwordHash
+    WHERE u.Id = userId;
 END //
 DELIMITER ;
 

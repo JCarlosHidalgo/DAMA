@@ -3,6 +3,7 @@ using Backend.DB.Daos.Abstract.Single.Tokens;
 using Backend.Dtos.Users.Input;
 using Backend.Dtos.Users.Output;
 using Backend.Entities.Tenants;
+using Backend.Logging;
 using Backend.Security;
 using Backend.Services.Abstract.Users;
 using Backend.Transporters.Entities;
@@ -19,13 +20,15 @@ public class RefreshService : IRefreshService
     private readonly IAccessTokenGenerator _accessTokenGenerator;
     private readonly IRefreshTokenGenerator _refreshTokenGenerator;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly ILogger<RefreshService> _logger;
 
     public RefreshService(IRefreshTokenReadDao refreshTokenReadDao,
                           IRefreshTokenWriteDao refreshTokenWriteDao,
                           ITenantAllowedServicesDao tenantAllowedServicesDao,
                           IAccessTokenGenerator accessTokenGenerator,
                           IRefreshTokenGenerator refreshTokenGenerator,
-                          IUnitOfWork unitOfWork)
+                          IUnitOfWork unitOfWork,
+                          ILogger<RefreshService> logger)
     {
         _refreshTokenReadDao = refreshTokenReadDao;
         _refreshTokenWriteDao = refreshTokenWriteDao;
@@ -33,6 +36,7 @@ public class RefreshService : IRefreshService
         _accessTokenGenerator = accessTokenGenerator;
         _refreshTokenGenerator = refreshTokenGenerator;
         _unitOfWork = unitOfWork;
+        _logger = logger;
     }
 
     public async Task<TokenResponseDto?> RefreshAsync(RefreshTokenRequestDto request)
@@ -49,6 +53,7 @@ public class RefreshService : IRefreshService
             await using ITransactionScope reuseScope = await _unitOfWork.BeginAsync();
             await _refreshTokenWriteDao.RevokeAllForUserAsync(stored.Token.UserId, reuseScope);
             await reuseScope.CommitAsync();
+            LogEvents.RefreshTokenReuseDetected(_logger, stored.Token.UserId);
             return null;
         }
 
@@ -67,6 +72,8 @@ public class RefreshService : IRefreshService
         TenantAllowedServices? allowedServices =
             await _tenantAllowedServicesDao.ReadByTenantIdAsync(stored.Owner.Tenant.Id);
 
+        LogEvents.TokenRefreshed(_logger, stored.Token.UserId);
+
         return new TokenResponseDto
         {
             AccessToken = _accessTokenGenerator.Issue(stored.Owner.User, stored.Owner.Tenant, allowedServices),
@@ -79,5 +86,6 @@ public class RefreshService : IRefreshService
         await using ITransactionScope scope = await _unitOfWork.BeginAsync();
         await _refreshTokenWriteDao.RevokeAllForUserAsync(userId, scope);
         await scope.CommitAsync();
+        LogEvents.UserLoggedOut(_logger, userId);
     }
 }
