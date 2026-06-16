@@ -28,7 +28,7 @@ La carpeta tiene dos niveles:
 | 0 | [0-como-encajan-los-estandares.md](0-como-encajan-los-estandares.md) | Marco general | ¿Cómo se complementan los 3 estándares? |
 | 1 | [1-requisitos-iso-29148.md](1-requisitos-iso-29148.md) | ISO/IEC/IEEE 29148:2018 | ¿Qué debe construirse? (SRS) |
 | 2 | [2-diseno-ieee-1016.md](2-diseno-ieee-1016.md) | IEEE 1016-2009 | ¿Cómo se construye? (SDD) |
-| 3 | [3-calidad-iso-25010.md](3-calidad-iso-25010.md) | ISO/IEC 25010:2011 | ¿Qué tan bien quedó? (calidad) |
+| 3 | [3-calidad-iso-25010.md](3-calidad-iso-25010.md) | ISO/IEC 25010:2023 | ¿Qué tan bien quedó? (calidad) |
 | 4 | [4-estructura-marco-practico.md](4-estructura-marco-practico.md) | Estructura del capítulo | ¿Cómo se ordena el Marco Práctico? |
 | 5 | [5-errores-comunes-y-citas.md](5-errores-comunes-y-citas.md) | Buenas prácticas | ¿Qué evitar y cómo citar? |
 

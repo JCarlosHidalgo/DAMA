@@ -8,7 +8,7 @@ Cada estándar cubre una fase distinta del proceso. No compiten: se complementan
 |---|---|---|---|
 | Análisis / Requisitos | **ISO/IEC/IEEE 29148:2018** | ¿Qué debe construirse? | SRS (Especificación de Requisitos) |
 | Diseño | **IEEE 1016-2009** | ¿Cómo se construye? | SDD (Descripción del Diseño) |
-| Pruebas / Evaluación | **ISO/IEC 25010:2011** | ¿Qué tan bien quedó? | Plan y resultados de evaluación de calidad |
+| Pruebas / Evaluación | **ISO/IEC 25010:2023** | ¿Qué tan bien quedó? | Plan y resultados de evaluación de calidad |
 
 **Reglas de oro:**
 

@@ -1,62 +1,66 @@
-# 3. ISO/IEC 25010:2011 — Calidad / Evaluación
+# 3. ISO/IEC 25010:2023 — Calidad / Evaluación
 
-> Sección 3 de la plantilla, aterrizada en DAMA.
+> Sección 3 de la plantilla, aterrizada en DAMA. **Se usa la edición vigente 2023** (no la 2011),
+> por decisión explícita: el objetivo es evaluar DAMA cumpliendo estrictamente la norma actual.
 
-**Qué es:** el modelo de calidad del producto de software de la familia **SQuaRE**. Define
-**8 características** de calidad. Úsalo para estructurar el capítulo de pruebas/evaluación de
-forma rigurosa y medible.
+**Qué es:** el modelo de calidad del producto de software de la familia **SQuaRE**. La edición
+**2023** define **9 características** (la 2011 definía 8). Cambios clave respecto a 2011:
 
-> Existe una revisión **ISO/IEC 25010:2023** con 9 características. Verifica cuál exige la
-> universidad; 2011 sigue siendo la más citada en tesis.
+- **Usabilidad → Interaction Capability** (capacidad de interacción).
+- **Portabilidad → Flexibility** (flexibilidad), que además incorpora **Scalability**.
+- **Se añade Safety** (seguridad física/operacional), característica nueva.
+- **Reliability** renombra *Maturity* → *Faultlessness*; **Security** añade *Resistance*.
 
-## 3.1 Las 8 características (versión 2011)
+> Fuente del modelo: portal oficial SQuaRE (iso25000.com) y resumen de ISO/IEC 25010:2023. Verifica
+> la nomenclatura final contra el ejemplar de la norma que exija tu universidad antes de citar.
 
-| # | Característica | Significado breve |
+## 3.1 Las 9 características y sus subcaracterísticas (2023)
+
+| # | Característica | Subcaracterísticas (2023) |
 |---|---|---|
-| 1 | Adecuación funcional | ¿Hace lo que debe, de forma correcta y completa? |
-| 2 | Eficiencia de desempeño | Tiempos de respuesta, uso de recursos. |
-| 3 | Compatibilidad | Coexistencia e interoperabilidad. |
-| 4 | Usabilidad | Facilidad de aprendizaje y uso. |
-| 5 | Fiabilidad | Madurez, disponibilidad, tolerancia a fallos. |
-| 6 | Seguridad | Confidencialidad, integridad, autenticidad. |
-| 7 | Mantenibilidad | Facilidad de modificar/corregir el software. |
-| 8 | Portabilidad | Adaptabilidad a distintos entornos. |
+| 1 | **Functional Suitability** (adecuación funcional) | Functional completeness · correctness · appropriateness |
+| 2 | **Performance Efficiency** (eficiencia de desempeño) | Time behaviour · Resource utilization · Capacity |
+| 3 | **Compatibility** (compatibilidad) | Co-existence · Interoperability |
+| 4 | **Interaction Capability** (capacidad de interacción) | Appropriateness recognizability · Learnability · Operability · User error protection · User engagement · Inclusivity · User assistance · Self-descriptiveness |
+| 5 | **Reliability** (fiabilidad) | Faultlessness · Availability · Fault tolerance · Recoverability |
+| 6 | **Security** (seguridad) | Confidentiality · Integrity · Non-repudiation · Accountability · Authenticity · Resistance |
+| 7 | **Maintainability** (mantenibilidad) | Modularity · Reusability · Analysability · Modifiability · Testability |
+| 8 | **Flexibility** (flexibilidad) | Adaptability · Scalability · Installability · Replaceability |
+| 9 | **Safety** (seguridad física/operacional) | Operational constraint · Risk identification · Fail safe · Hazard warning · Safe integration |
 
-**No hay que evaluar las 8.** Se seleccionan las relevantes y se justifica.
+## 3.2 Enfoque de evaluación para DAMA
 
----
+A diferencia de un *tailoring* que descarta características de entrada, aquí la norma 2023 se usa
+como **juez de DAMA en las 9 características**: cada subcaracterística se evalúa y se marca su
+**aplicabilidad** con justificación (no se omite sin más):
 
-## Cómo aplica a DAMA
+- **Aplica** — se evalúa con métrica y evidencia del repo.
+- **No aplica (justificado)** — se documenta por qué una subcaracterística no es pertinente al
+  dominio de DAMA. (Nota: en DAMA incluso **Safety** aplica, reinterpretada como integridad
+  económica de los cobros; ver `academico/5.3`.)
+- **Falta contexto** — aplica, pero requiere un insumo aún no disponible (p. ej. resultados de
+  prueba de carga, evaluación de accesibilidad).
 
-Características seleccionadas para evaluar (con evidencia ya existente en el repo):
+El detalle por característica vive en
+[`academico/5.3-evaluacion-por-caracteristicas-de-calidad.md`](academico/5.3-evaluacion-por-caracteristicas-de-calidad.md);
+el plan y los casos, en `academico/5.1` y `academico/5.2`.
 
-| Característica | Por qué aplica a DAMA | Evidencia / método en el repo |
-|---|---|---|
-| **Adecuación funcional** | El sistema debe cumplir los RF de cada dominio | Suites NUnit en Auth/Attendance/CourseManagement/Payment (~450 pruebas de lógica de negocio) + suite del frontend. |
-| **Seguridad** | SaaS multitenant con datos y pagos | Catálogo OWASP completo en [`../OWASP/`](../OWASP/) (Web Top 10 2021 y API Security Top 10 2023): control de acceso *default-deny*, *account lockout*, rehash transparente, auditoría. |
-| **Eficiencia de desempeño** | Consultas y reportes bajo carga | Optimizaciones reales: conteo en SQL en Attendance, *batch* concurrente del Outbox, compresión gzip de respuestas JSON en el gateway. |
-| **Fiabilidad** | Servicio siempre disponible | Health checks `/health/ready` profundos, patrón Outbox + consumidor idempotente, reintentos no aplicados a operaciones no idempotentes (Todotix). |
-| **Mantenibilidad** | Cinco servicios uniformes | *Gates* de complejidad con SonarAnalyzer en todos los backends, uniformidad estructural entre servicios, capa de lógica pura en el frontend con cobertura al 100%. |
+## 3.3 De la característica a una métrica medible (plantilla → `academico/5.3`)
 
-> Compatibilidad y portabilidad pueden documentarse de forma breve (contenedores Docker,
-> ejecución idéntica dev/prod) y justificarse como secundarias para el alcance de la tesis.
-
-### De la característica a una métrica medible (plantilla → `academico/5.3`)
-
-| Característica | Métrica | Método de medición | Esperado | Obtenido |
+| Característica | Métrica | Método | Esperado | Obtenido |
 |---|---|---|---|---|
-| Adecuación funcional | % de RF con prueba que pasa | Ejecución de suites NUnit + frontend | 100% | _por llenar_ |
-| Seguridad | Ítems OWASP cubiertos | Revisión del catálogo `../OWASP/` | 10/10 + 10/10 | _por llenar_ |
-| Eficiencia | Tiempo de respuesta p95 | Prueba de carga (ej. JMeter, 100 usuarios) | < 2 s | _por llenar_ |
-| Mantenibilidad | Cero violaciones de complejidad | Build con *gates* SonarAnalyzer | 0 | _por llenar_ |
+| Functional Suitability | % de RF con prueba que pasa | Suites NUnit + frontend | 100% | _por llenar_ |
+| Security | Subcaracterísticas con control verificado | Catálogo OWASP `../OWASP/` | 6/6 cubiertas | _por llenar_ |
+| Maintainability | Violaciones de complejidad | *Gates* SonarAnalyzer | 0 | _por llenar_ |
+| Performance Efficiency | Tiempo de respuesta p95 / capacidad | Prueba de carga | _definir_ | _por llenar_ |
 
-### Comandos de evidencia (se detallan en `academico/5.x`)
+## 3.4 Insumos del repositorio (comandos)
 
 - Pruebas backend: `dotnet test apps/<Servicio>/Test/<Proyecto>.csproj`
 - Pruebas frontend: `cd apps/Frontend && bun run test:ci`
 - Cobertura con *gate*: `cd apps/Frontend && bun run test:coverage:gate`
 - Estilo/complejidad: `dotnet format <Project>.csproj --verify-no-changes`
+- Seguridad: catálogo OWASP en [`../OWASP/`](../OWASP/) (Web Top 10 2021 + API Top 10 2023).
 
-> Recuerda el alcance de las suites: por configuración de `.runsettings`, las pruebas cubren
-> **lógica de negocio**, no infraestructura. Credentials es un *dummy* de solo-claims y no tiene
-> casos de prueba.
+> Alcance de las suites: por `.runsettings` cubren **lógica de negocio**, no infraestructura.
+> Credentials es un *dummy* de claims sin casos de prueba.
