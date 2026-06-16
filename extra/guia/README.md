@@ -43,8 +43,10 @@ actual de la redacción:
   (1016: 3.1–3.7, con arquitectura, casos de uso, clases, modelo de datos, secuencia, interfaz y
   despliegue; UML autogenerado por Doxygen y UML autorado en PlantUML bajo `../graphics/academico/`)
   y `3.4 Implementación` (stack tecnológico y justificación, estructura del código/módulos y
-  desarrollo por iteraciones, datado con `git`).
-- ⬜ **Esqueleto:** el resto del capítulo (3.5–3.7), listo para completarse en olas posteriores.
+  desarrollo por iteraciones, datado con `git`) y `3.5 Pruebas y evaluación de calidad`
+  (plan, casos y resultados medidos —1 251 pruebas en verde— y evaluación por las 9 características
+  de ISO/IEC 25010:2023, con las brechas de carga y accesibilidad declaradas).
+- ⬜ **Esqueleto:** el resto del capítulo (3.6–3.7), listo para completarse en olas posteriores.
 
 Ver [`academico/README.md`](academico/README.md) para el detalle de archivos y su estado.
 
