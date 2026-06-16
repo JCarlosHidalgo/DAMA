@@ -1,0 +1,91 @@
+{
+  "name": "DAMA – Desarrollo (fases / WBS)",
+  "title": "DAMA – Desarrollo (fases / WBS)",
+  "version": "1.0",
+  "fitToScreen": true,
+  "icons": [],
+  "colors": [
+    { "id": "c-blue", "value": "#3b82f6" },
+    { "id": "c-orange", "value": "#f59e0b" },
+    { "id": "c-green", "value": "#10b981" },
+    { "id": "c-purple", "value": "#8b5cf6" },
+    { "id": "c-grey", "value": "#94a3b8" },
+    { "id": "c-red", "value": "#ef4444" }
+  ],
+  "items": [
+    { "id": "A", "name": "A · Viabilidad y alcance", "icon": "document" },
+    { "id": "B", "name": "B · Requisitos (SRS) + stack", "icon": "document" },
+    { "id": "C", "name": "C · Arquitectura + gRPC", "icon": "loadbalancer" },
+    { "id": "D", "name": "D · Diseño de datos", "icon": "storage" },
+    { "id": "E", "name": "E · Backend Auth", "icon": "lock" },
+    { "id": "F", "name": "F · CourseManagement", "icon": "server" },
+    { "id": "G", "name": "G · Attendance", "icon": "server" },
+    { "id": "H", "name": "H · Payment", "icon": "paymentcard" },
+    { "id": "I", "name": "I · Credentials", "icon": "document" },
+    { "id": "J", "name": "J · Outbox + RabbitMQ", "icon": "queue" },
+    { "id": "K", "name": "K · Frontend Angular 21", "icon": "desktop" },
+    { "id": "L", "name": "L · Infraestructura", "icon": "cloud" },
+    { "id": "M", "name": "M · Pruebas + uniformidad", "icon": "server" },
+    { "id": "N", "name": "N · OWASP + ISO + docs", "icon": "lock" },
+    { "id": "O", "name": "O · Despliegue producción", "icon": "cloud" }
+  ],
+  "views": [
+    {
+      "id": "main",
+      "name": "Fases / WBS",
+      "items": [
+        { "id": "A", "tile": { "x": -20, "y": -2 }, "labelHeight": 100 },
+        { "id": "B", "tile": { "x": -20, "y": 2 }, "labelHeight": 100 },
+        { "id": "C", "tile": { "x": -13, "y": -2 }, "labelHeight": 100 },
+        { "id": "D", "tile": { "x": -13, "y": 2 }, "labelHeight": 100 },
+        { "id": "E", "tile": { "x": -6, "y": -4 }, "labelHeight": 100 },
+        { "id": "J", "tile": { "x": -6, "y": 0 }, "labelHeight": 100 },
+        { "id": "L", "tile": { "x": -6, "y": 4 }, "labelHeight": 100 },
+        { "id": "F", "tile": { "x": -1, "y": -6 }, "labelHeight": 100 },
+        { "id": "K", "tile": { "x": -1, "y": -2 }, "labelHeight": 100 },
+        { "id": "H", "tile": { "x": -1, "y": 2 }, "labelHeight": 100 },
+        { "id": "I", "tile": { "x": -1, "y": 6 }, "labelHeight": 100 },
+        { "id": "G", "tile": { "x": 4, "y": -6 }, "labelHeight": 100 },
+        { "id": "M", "tile": { "x": 10, "y": -2 }, "labelHeight": 100 },
+        { "id": "N", "tile": { "x": 10, "y": 2 }, "labelHeight": 100 },
+        { "id": "O", "tile": { "x": 10, "y": 6 }, "labelHeight": 100 }
+      ],
+      "rectangles": [
+        { "id": "r-concepcion", "color": "c-blue", "from": { "x": -22, "y": -4 }, "to": { "x": -18, "y": 4 } },
+        { "id": "r-desarrollo", "color": "c-orange", "from": { "x": -15, "y": -4 }, "to": { "x": -11, "y": 4 } },
+        { "id": "r-realizacion", "color": "c-green", "from": { "x": -8, "y": -8 }, "to": { "x": 6, "y": 8 } },
+        { "id": "r-despliegue", "color": "c-purple", "from": { "x": 8, "y": -4 }, "to": { "x": 12, "y": 8 } }
+      ],
+      "textBoxes": [
+        { "id": "tb-concepcion", "tile": { "x": -22, "y": -5 }, "content": "1. Concepción", "fontSize": 0.7 },
+        { "id": "tb-desarrollo", "tile": { "x": -15, "y": -5 }, "content": "2. Desarrollo", "fontSize": 0.7 },
+        { "id": "tb-realizacion", "tile": { "x": -8, "y": -9 }, "content": "3. Realización", "fontSize": 0.7 },
+        { "id": "tb-despliegue", "tile": { "x": 8, "y": -5 }, "content": "4. Endurecimiento y despliegue", "fontSize": 0.7 }
+      ],
+      "connectors": [
+        { "id": "k-AB", "color": "c-red", "style": "SOLID", "description": "crítica", "anchors": [ { "id": "n1", "ref": { "item": "A" } }, { "id": "n2", "ref": { "item": "B" } } ] },
+        { "id": "k-BC", "color": "c-red", "style": "SOLID", "description": "crítica", "anchors": [ { "id": "n3", "ref": { "item": "B" } }, { "id": "n4", "ref": { "item": "C" } } ] },
+        { "id": "k-BD", "color": "c-grey", "style": "DOTTED", "anchors": [ { "id": "n5", "ref": { "item": "B" } }, { "id": "n6", "ref": { "item": "D" } } ] },
+        { "id": "k-CE", "color": "c-red", "style": "SOLID", "description": "crítica", "anchors": [ { "id": "n7", "ref": { "item": "C" } }, { "id": "n8", "ref": { "item": "E" } } ] },
+        { "id": "k-DE", "color": "c-grey", "style": "DOTTED", "anchors": [ { "id": "n9", "ref": { "item": "D" } }, { "id": "n10", "ref": { "item": "E" } } ] },
+        { "id": "k-CJ", "color": "c-grey", "style": "DOTTED", "anchors": [ { "id": "n11", "ref": { "item": "C" } }, { "id": "n12", "ref": { "item": "J" } } ] },
+        { "id": "k-CL", "color": "c-grey", "style": "DOTTED", "anchors": [ { "id": "n13", "ref": { "item": "C" } }, { "id": "n14", "ref": { "item": "L" } } ] },
+        { "id": "k-EF", "color": "c-red", "style": "SOLID", "description": "crítica", "anchors": [ { "id": "n15", "ref": { "item": "E" } }, { "id": "n16", "ref": { "item": "F" } } ] },
+        { "id": "k-EK", "color": "c-red", "style": "SOLID", "description": "crítica", "anchors": [ { "id": "n17", "ref": { "item": "E" } }, { "id": "n18", "ref": { "item": "K" } } ] },
+        { "id": "k-EH", "color": "c-grey", "style": "DOTTED", "anchors": [ { "id": "n19", "ref": { "item": "E" } }, { "id": "n20", "ref": { "item": "H" } } ] },
+        { "id": "k-EI", "color": "c-grey", "style": "DOTTED", "anchors": [ { "id": "n21", "ref": { "item": "E" } }, { "id": "n22", "ref": { "item": "I" } } ] },
+        { "id": "k-JG", "color": "c-grey", "style": "DOTTED", "anchors": [ { "id": "n23", "ref": { "item": "J" } }, { "id": "n24", "ref": { "item": "G" } } ] },
+        { "id": "k-JH", "color": "c-grey", "style": "DOTTED", "anchors": [ { "id": "n25", "ref": { "item": "J" } }, { "id": "n26", "ref": { "item": "H" } } ] },
+        { "id": "k-FG", "color": "c-red", "style": "SOLID", "description": "crítica", "anchors": [ { "id": "n27", "ref": { "item": "F" } }, { "id": "n28", "ref": { "item": "G" } } ] },
+        { "id": "k-GM", "color": "c-red", "style": "SOLID", "description": "crítica", "anchors": [ { "id": "n29", "ref": { "item": "G" } }, { "id": "n30", "ref": { "item": "M" } } ] },
+        { "id": "k-KM", "color": "c-red", "style": "SOLID", "description": "crítica", "anchors": [ { "id": "n31", "ref": { "item": "K" } }, { "id": "n32", "ref": { "item": "M" } } ] },
+        { "id": "k-HM", "color": "c-grey", "style": "DOTTED", "anchors": [ { "id": "n33", "ref": { "item": "H" } }, { "id": "n34", "ref": { "item": "M" } } ] },
+        { "id": "k-IM", "color": "c-grey", "style": "DOTTED", "anchors": [ { "id": "n35", "ref": { "item": "I" } }, { "id": "n36", "ref": { "item": "M" } } ] },
+        { "id": "k-LM", "color": "c-grey", "style": "DOTTED", "anchors": [ { "id": "n37", "ref": { "item": "L" } }, { "id": "n38", "ref": { "item": "M" } } ] },
+        { "id": "k-MN", "color": "c-red", "style": "SOLID", "description": "crítica", "anchors": [ { "id": "n39", "ref": { "item": "M" } }, { "id": "n40", "ref": { "item": "N" } } ] },
+        { "id": "k-NO", "color": "c-red", "style": "SOLID", "description": "crítica", "anchors": [ { "id": "n41", "ref": { "item": "N" } }, { "id": "n42", "ref": { "item": "O" } } ] },
+        { "id": "k-LO", "color": "c-grey", "style": "DOTTED", "anchors": [ { "id": "n43", "ref": { "item": "L" } }, { "id": "n44", "ref": { "item": "O" } } ] }
+      ]
+    }
+  ]
+}

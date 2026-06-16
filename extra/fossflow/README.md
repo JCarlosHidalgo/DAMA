@@ -15,14 +15,20 @@ extra/fossflow/
 └── diagrams/
     ├── dama-architecture.json     # the stack architecture (Isoflow format)
     ├── owasp-web-top-10.json      # OWASP Web Top 10 (2021) controls in DAMA
-    └── owasp-api-top-10.json      # OWASP API Security Top 10 (2023) controls in DAMA
+    ├── owasp-api-top-10.json      # OWASP API Security Top 10 (2023) controls in DAMA
+    └── desarrollo-fases-wbs.json  # DAMA development phases / WBS with CPM critical path
 ```
 
-There are **three** diagrams. Besides the architecture one, two security diagrams accompany
+There are **four** diagrams. Besides the architecture one, two security diagrams accompany
 `extra/OWASP/`: each OWASP list is rendered as one diagram where **every list item is a coloured
 rectangle** enclosing the concrete DAMA components that implement that control (one colour per item,
 A01…A10 / API1…API10), with connectors showing the order of the control flow inside each item.
 Open them the same way (Open / Load → pick the title).
+
+The fourth diagram (**"DAMA – Desarrollo (fases / WBS)"**) accompanies the academic methodology
+section `extra/guia/academico/1-metodología-de-desarrollo.md`: it renders the four project phases
+(Concepción → Desarrollo → Realización → Despliegue) as coloured zones holding their work packages
+(activities A–O), with red connectors highlighting the CPM critical path.
 
 The base image `stnsmith/fossflow:latest` serves the SPA via nginx on port 80 and a Node (Express)
 backend on `:3001` behind `/api/`. With `ENABLE_SERVER_STORAGE=true` (the default), that backend
