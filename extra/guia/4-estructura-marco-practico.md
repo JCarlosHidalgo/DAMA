@@ -54,9 +54,9 @@ El prefijo del archivo es el número de sub-sección sin el "3." (3.1 → `1-`, 
 | 3.3.5 | [`academico/3.5-diagramas-de-secuencia.md`](academico/3.5-diagramas-de-secuencia.md) | ✅ Redactado | 1016 / PlantUML |
 | 3.3.6 | [`academico/3.6-diseno-de-interfaz.md`](academico/3.6-diseno-de-interfaz.md) | ✅ Redactado | 1016 / 25010 |
 | 3.3.7 | [`academico/3.7-diagrama-de-despliegue.md`](academico/3.7-diagrama-de-despliegue.md) | ✅ Redactado | 1016 / FossFlow |
-| 3.4.1 | [`academico/4.1-stack-tecnologico-y-justificacion.md`](academico/4.1-stack-tecnologico-y-justificacion.md) | ⬜ | — |
-| 3.4.2 | [`academico/4.2-estructura-del-codigo-y-modulos.md`](academico/4.2-estructura-del-codigo-y-modulos.md) | ⬜ | — / Doxygen·Compodoc |
-| 3.4.3 | [`academico/4.3-desarrollo-por-iteraciones.md`](academico/4.3-desarrollo-por-iteraciones.md) | ⬜ | — |
+| 3.4.1 | [`academico/4.1-stack-tecnologico-y-justificacion.md`](academico/4.1-stack-tecnologico-y-justificacion.md) | ✅ Redactado | .csproj/package.json |
+| 3.4.2 | [`academico/4.2-estructura-del-codigo-y-modulos.md`](academico/4.2-estructura-del-codigo-y-modulos.md) | ✅ Redactado | Doxygen·Compodoc |
+| 3.4.3 | [`academico/4.3-desarrollo-por-iteraciones.md`](academico/4.3-desarrollo-por-iteraciones.md) | ✅ Redactado | git log (olas) |
 | 3.5.1 | [`academico/5.1-plan-de-pruebas.md`](academico/5.1-plan-de-pruebas.md) | ⬜ | 25010 |
 | 3.5.2 | [`academico/5.2-casos-de-prueba-y-resultados.md`](academico/5.2-casos-de-prueba-y-resultados.md) | ⬜ | 25010 |
 | 3.5.3 | [`academico/5.3-evaluacion-por-caracteristicas-de-calidad.md`](academico/5.3-evaluacion-por-caracteristicas-de-calidad.md) | ⬜ | 25010 |

@@ -41,8 +41,10 @@ actual de la redacción:
   diagramas) y `3.2 Análisis y especificación de requisitos` (29148: 2.1–2.5, con 35 RF, 24 RNF y
   la matriz de trazabilidad OE → acciones → requisitos → diseño → prueba) y `3.3 Diseño del sistema`
   (1016: 3.1–3.7, con arquitectura, casos de uso, clases, modelo de datos, secuencia, interfaz y
-  despliegue; UML autogenerado por Doxygen y UML autorado en PlantUML bajo `../graphics/academico/`).
-- ⬜ **Esqueleto:** el resto del capítulo (3.4–3.7), listo para completarse en olas posteriores.
+  despliegue; UML autogenerado por Doxygen y UML autorado en PlantUML bajo `../graphics/academico/`)
+  y `3.4 Implementación` (stack tecnológico y justificación, estructura del código/módulos y
+  desarrollo por iteraciones, datado con `git`).
+- ⬜ **Esqueleto:** el resto del capítulo (3.5–3.7), listo para completarse en olas posteriores.
 
 Ver [`academico/README.md`](academico/README.md) para el detalle de archivos y su estado.
 

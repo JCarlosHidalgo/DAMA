@@ -22,9 +22,9 @@ sobre el repositorio real.
 | [3.5-diagramas-de-secuencia.md](3.5-diagramas-de-secuencia.md) | 3.3.5 | ✅ Redactado |
 | [3.6-diseno-de-interfaz.md](3.6-diseno-de-interfaz.md) | 3.3.6 | ✅ Redactado |
 | [3.7-diagrama-de-despliegue.md](3.7-diagrama-de-despliegue.md) | 3.3.7 | ✅ Redactado |
-| [4.1-stack-tecnologico-y-justificacion.md](4.1-stack-tecnologico-y-justificacion.md) | 3.4.1 | ⬜ |
-| [4.2-estructura-del-codigo-y-modulos.md](4.2-estructura-del-codigo-y-modulos.md) | 3.4.2 | ⬜ |
-| [4.3-desarrollo-por-iteraciones.md](4.3-desarrollo-por-iteraciones.md) | 3.4.3 | ⬜ |
+| [4.1-stack-tecnologico-y-justificacion.md](4.1-stack-tecnologico-y-justificacion.md) | 3.4.1 | ✅ Redactado |
+| [4.2-estructura-del-codigo-y-modulos.md](4.2-estructura-del-codigo-y-modulos.md) | 3.4.2 | ✅ Redactado |
+| [4.3-desarrollo-por-iteraciones.md](4.3-desarrollo-por-iteraciones.md) | 3.4.3 | ✅ Redactado |
 | [5.1-plan-de-pruebas.md](5.1-plan-de-pruebas.md) | 3.5.1 | ⬜ |
 | [5.2-casos-de-prueba-y-resultados.md](5.2-casos-de-prueba-y-resultados.md) | 3.5.2 | ⬜ |
 | [5.3-evaluacion-por-caracteristicas-de-calidad.md](5.3-evaluacion-por-caracteristicas-de-calidad.md) | 3.5.3 | ⬜ |
