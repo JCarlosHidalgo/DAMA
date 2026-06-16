@@ -10,11 +10,11 @@ sobre el repositorio real.
 | Archivo | Sub-sección | Estado |
 |---------|-------------|--------|
 | [1-metodología-de-desarrollo.md](1-metodología-de-desarrollo.md) | 3.1 Metodología (CPM) | ✅ Redactado |
-| [2.1-descripcion-general-del-sistema.md](2.1-descripcion-general-del-sistema.md) | 3.2.1 | ⬜ Esqueleto |
-| [2.2-roles-de-usuario.md](2.2-roles-de-usuario.md) | 3.2.2 | ⬜ |
-| [2.3-requisitos-funcionales.md](2.3-requisitos-funcionales.md) | 3.2.3 | ⬜ |
-| [2.4-requisitos-no-funcionales.md](2.4-requisitos-no-funcionales.md) | 3.2.4 | ⬜ |
-| [2.5-matriz-de-trazabilidad.md](2.5-matriz-de-trazabilidad.md) | 3.2.5 | ⬜ |
+| [2.1-descripcion-general-del-sistema.md](2.1-descripcion-general-del-sistema.md) | 3.2.1 | ✅ Redactado |
+| [2.2-roles-de-usuario.md](2.2-roles-de-usuario.md) | 3.2.2 | ✅ Redactado |
+| [2.3-requisitos-funcionales.md](2.3-requisitos-funcionales.md) | 3.2.3 | ✅ Redactado |
+| [2.4-requisitos-no-funcionales.md](2.4-requisitos-no-funcionales.md) | 3.2.4 | ✅ Redactado |
+| [2.5-matriz-de-trazabilidad.md](2.5-matriz-de-trazabilidad.md) | 3.2.5 | ✅ Redactado |
 | [3.1-arquitectura.md](3.1-arquitectura.md) | 3.3.1 | ⬜ |
 | [3.2-casos-de-uso.md](3.2-casos-de-uso.md) | 3.3.2 | ⬜ |
 | [3.3-diagrama-de-clases.md](3.3-diagrama-de-clases.md) | 3.3.3 | ⬜ |

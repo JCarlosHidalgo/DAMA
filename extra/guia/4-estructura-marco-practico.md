@@ -42,11 +42,11 @@ El prefijo del archivo es el número de sub-sección sin el "3." (3.1 → `1-`, 
 | Sub-sección | Archivo | Estado | Estándar / fuente |
 |---|---|---|---|
 | 3.1 | [`academico/1-metodología-de-desarrollo.md`](academico/1-metodología-de-desarrollo.md) | ✅ Redactado | CPM (cpm.txt) |
-| 3.2.1 | [`academico/2.1-descripcion-general-del-sistema.md`](academico/2.1-descripcion-general-del-sistema.md) | ⬜ Esqueleto | 29148 |
-| 3.2.2 | [`academico/2.2-roles-de-usuario.md`](academico/2.2-roles-de-usuario.md) | ⬜ | 29148 |
-| 3.2.3 | [`academico/2.3-requisitos-funcionales.md`](academico/2.3-requisitos-funcionales.md) | ⬜ | 29148 |
-| 3.2.4 | [`academico/2.4-requisitos-no-funcionales.md`](academico/2.4-requisitos-no-funcionales.md) | ⬜ | 29148 |
-| 3.2.5 | [`academico/2.5-matriz-de-trazabilidad.md`](academico/2.5-matriz-de-trazabilidad.md) | ⬜ | 29148 |
+| 3.2.1 | [`academico/2.1-descripcion-general-del-sistema.md`](academico/2.1-descripcion-general-del-sistema.md) | ✅ Redactado | 29148 |
+| 3.2.2 | [`academico/2.2-roles-de-usuario.md`](academico/2.2-roles-de-usuario.md) | ✅ Redactado | 29148 |
+| 3.2.3 | [`academico/2.3-requisitos-funcionales.md`](academico/2.3-requisitos-funcionales.md) | ✅ Redactado | 29148 |
+| 3.2.4 | [`academico/2.4-requisitos-no-funcionales.md`](academico/2.4-requisitos-no-funcionales.md) | ✅ Redactado | 29148 |
+| 3.2.5 | [`academico/2.5-matriz-de-trazabilidad.md`](academico/2.5-matriz-de-trazabilidad.md) | ✅ Redactado | 29148 |
 | 3.3.1 | [`academico/3.1-arquitectura.md`](academico/3.1-arquitectura.md) | ⬜ | 1016 |
 | 3.3.2 | [`academico/3.2-casos-de-uso.md`](academico/3.2-casos-de-uso.md) | ⬜ | 1016 |
 | 3.3.3 | [`academico/3.3-diagrama-de-clases.md`](academico/3.3-diagrama-de-clases.md) | ⬜ | 1016 / Doxygen |

@@ -38,8 +38,9 @@ La sección 4 mapea el índice del capítulo (3.1–3.7) a un archivo por sub-se
 actual de la redacción:
 
 - ✅ **Redactado:** `3.1 Metodología de desarrollo` (con análisis de Ruta Crítica / CPM y sus
-  diagramas).
-- ⬜ **Esqueleto:** el resto del capítulo (3.2–3.7), listo para completarse en olas posteriores.
+  diagramas) y `3.2 Análisis y especificación de requisitos` (29148: 2.1–2.5, con 35 RF, 24 RNF y
+  la matriz de trazabilidad OE → acciones → requisitos → diseño → prueba).
+- ⬜ **Esqueleto:** el resto del capítulo (3.3–3.7), listo para completarse en olas posteriores.
 
 Ver [`academico/README.md`](academico/README.md) para el detalle de archivos y su estado.
 
