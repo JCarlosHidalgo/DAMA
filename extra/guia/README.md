@@ -45,8 +45,10 @@ actual de la redacción:
   y `3.4 Implementación` (stack tecnológico y justificación, estructura del código/módulos y
   desarrollo por iteraciones, datado con `git`) y `3.5 Pruebas y evaluación de calidad`
   (plan, casos y resultados medidos —1 251 pruebas en verde— y evaluación por las 9 características
-  de ISO/IEC 25010:2023, con las brechas de carga y accesibilidad declaradas).
-- ⬜ **Esqueleto:** el resto del capítulo (3.6–3.7), listo para completarse en olas posteriores.
+  de ISO/IEC 25010:2023, con las brechas de carga y accesibilidad declaradas) y `3.6 Despliegue`
+  (estrategia dev/prod, despliegue continuo en Dokploy + Cloudflare + TLS automático + respaldos,
+  con CI automatizada propuesta vía Jenkins y declarada como no implementada).
+- ⬜ **Esqueleto:** el cierre del capítulo (3.7 Resultados), listo para completarse en la última ola.
 
 Ver [`academico/README.md`](academico/README.md) para el detalle de archivos y su estado.
 
