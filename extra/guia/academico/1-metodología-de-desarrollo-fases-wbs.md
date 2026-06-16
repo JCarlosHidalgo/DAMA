@@ -22,11 +22,11 @@ draw.io.
 ## Cómo abrirlo
 
 El diagrama vive en formato Isoflow en
-[`../../fossflow/diagrams/desarrollo-fases-wbs.json`](../../fossflow/diagrams/desarrollo-fases-wbs.json).
+[`../../graphics/diagrams/desarrollo-fases-wbs.json`](../../graphics/diagrams/desarrollo-fases-wbs.json).
 Para visualizarlo en la instancia local de FossFlow:
 
 ```bash
-cd extra/fossflow
+cd extra/graphics
 docker compose up --build
 ```
 
@@ -73,5 +73,5 @@ Luego abrir **http://localhost:8088**, pulsar **Open / Load** y seleccionar
 ```
 
 > El JSON completo (con la vista, posiciones, zonas y conectores) es el archivo
-> `../../fossflow/diagrams/desarrollo-fases-wbs.json`. Aquí se muestra el modelo de nodos por
+> `../../graphics/diagrams/desarrollo-fases-wbs.json`. Aquí se muestra el modelo de nodos por
 > brevedad; la fuente de verdad es ese archivo.

@@ -186,7 +186,7 @@ POST /api/auth/login
    5. ──► 200 { AccessToken, RefreshToken }
 ```
 
-Diagrama FossFLOW: rectángulo **"A07 · Identification & Auth Failures"** en `extra/fossflow/diagrams/owasp-web-top-10.json`, con los nodos `JWT validation params`, `Account Lockout 423`, `Refresh rotation + reuse` y `Rate-limit login (nginx)`.
+Diagrama FossFLOW: rectángulo **"A07 · Identification & Auth Failures"** en `extra/graphics/diagrams/owasp-web-top-10.json`, con los nodos `JWT validation params`, `Account Lockout 423`, `Refresh rotation + reuse` y `Rate-limit login (nginx)`.
 
 ## Verificación
 - Suite de Auth: `cd apps/Auth/Test && dotnet test --filter "FullyQualifiedName~Login"` y `~Refresh`.

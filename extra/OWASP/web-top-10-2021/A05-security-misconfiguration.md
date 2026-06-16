@@ -116,7 +116,7 @@ arranque del backend
          · sin AddSwaggerGen/UseSwagger → cero superficie de docs en runtime
 ```
 
-En el diagrama FossFLOW `extra/fossflow/diagrams/owasp-web-top-10.json`, este ítem es el rectángulo **A05 · Security Misconfiguration**, que agrupa los nodos **nginx security headers**, **SecretsValidationModule**, **ProblemDetails (sin stack)** y **Secrets solo por env**.
+En el diagrama FossFLOW `extra/graphics/diagrams/owasp-web-top-10.json`, este ítem es el rectángulo **A05 · Security Misconfiguration**, que agrupa los nodos **nginx security headers**, **SecretsValidationModule**, **ProblemDetails (sin stack)** y **Secrets solo por env**.
 
 ## Verificación
 

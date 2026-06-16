@@ -105,7 +105,7 @@ Los clientes (Attendance, Payment) instalan la CA en su trust store al arrancar 
 | Refresh token | 32B aleatorios, índice SHA-256 | `RefreshTokenGenerator.cs:25,40` |
 | gRPC interno | TLS (CA propia, certs SHA-256) | `bootstrap-tls.sh:55` |
 
-Diagrama FossFLOW: rectángulo **"A02 · Cryptographic Failures"** en `extra/fossflow/diagrams/owasp-web-top-10.json`, nodos `RS256 JwtTokenSigner`, `PBKDF2 PasswordHasher 210k`, `AES-256-GCM AppKeyCipher`, `HMAC CallbackSignature` y `TLS gRPC interno`.
+Diagrama FossFLOW: rectángulo **"A02 · Cryptographic Failures"** en `extra/graphics/diagrams/owasp-web-top-10.json`, nodos `RS256 JwtTokenSigner`, `PBKDF2 PasswordHasher 210k`, `AES-256-GCM AppKeyCipher`, `HMAC CallbackSignature` y `TLS gRPC interno`.
 
 ## Verificación
 - `grep -rn "Sha1\|MD5\|DES\|RijndaelManaged\|ECB" apps/` → sin coincidencias en código de producción.

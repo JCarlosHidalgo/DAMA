@@ -64,17 +64,17 @@ Cada documento de ítem sigue la misma estructura: **qué exige OWASP**, **cómo
 ## Diagramas (FossFLOW)
 
 El flujo de los componentes de cada lista se grafica con la instancia FossFLOW del repo
-([`extra/fossflow/`](../fossflow/README.md)). Hay **dos diagramas nuevos**, uno por lista:
+([`extra/graphics/`](../graphics/README.md)). Hay **dos diagramas nuevos**, uno por lista:
 
-- `extra/fossflow/diagrams/owasp-web-top-10.json` → **OWASP Web Top 10 (2021) – DAMA**
-- `extra/fossflow/diagrams/owasp-api-top-10.json` → **OWASP API Security Top 10 (2023) – DAMA**
+- `extra/graphics/diagrams/owasp-web-top-10.json` → **OWASP Web Top 10 (2021) – DAMA**
+- `extra/graphics/diagrams/owasp-api-top-10.json` → **OWASP API Security Top 10 (2023) – DAMA**
 
 En cada diagrama, **cada ítem de la lista es un rectángulo con un color propio** (A01…A10 / API1…API10)
 que encierra los componentes concretos de DAMA que implementan ese control; los conectores dentro del
 rectángulo muestran el orden del flujo. Para verlos:
 
 ```bash
-cd extra/fossflow && docker compose up --build   # http://localhost:8088
+cd extra/graphics && docker compose up --build   # http://localhost:8088
 # Open / Load → "OWASP Web Top 10 (2021) – DAMA"  o  "OWASP API Security Top 10 (2023) – DAMA"
 ```
 

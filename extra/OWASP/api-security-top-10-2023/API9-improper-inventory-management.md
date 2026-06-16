@@ -82,7 +82,7 @@ inventario de la API
    ▼  entornos separados: compose.dev.yaml vs compose.prod.yaml · .env.dev vs .env.prod
 ```
 
-En el diagrama FossFLOW `extra/fossflow/diagrams/owasp-api-top-10.json`, este ítem es el rectángulo **API9 · Improper Inventory Management**, que agrupa los nodos **Bruno api-endpoints**, **Gateway unico ingress** y **Health endpoints**.
+En el diagrama FossFLOW `extra/graphics/diagrams/owasp-api-top-10.json`, este ítem es el rectángulo **API9 · Improper Inventory Management**, que agrupa los nodos **Bruno api-endpoints**, **Gateway unico ingress** y **Health endpoints**.
 
 ## Verificación
 

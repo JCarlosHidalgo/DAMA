@@ -1,0 +1,40 @@
+@startuml secuencia-asistencia-grpc
+title DAMA — Secuencia: marcar asistencia con verificacion gRPC (Attendance -> CourseManagement)
+skinparam shadowing false
+autonumber
+
+actor Student
+participant "SPA\n(Angular 21)" as SPA
+participant "api-gateway\n(nginx)" as GW
+participant "Attendance\nAttendanceController" as Ctrl
+participant "AttendanceService" as Svc
+participant "CourseManagement\nClassExistence (gRPC/TLS)" as CM
+database "Attendance DB" as DB
+
+Student -> SPA : escanea codigo QR de la clase
+SPA -> GW : POST /api/attendance/scheduled
+GW -> Ctrl : marcar asistencia (Authorize: Student)
+Ctrl -> Svc : MarkScheduledAttendance(classId, fecha)
+Svc -> CM : ClassExists(classId)  [gRPC sobre TLS]
+note right of CM : el interceptor reenvia el JWT del usuario
+CM --> Svc : Exists / DoesNotExist
+
+alt la clase no existe
+  Svc --> Ctrl : ClassNotFound
+  Ctrl --> GW : 404 Not Found
+else la clase existe
+  Svc -> DB : INSERT asistencia\n(UNIQUE tenant+clase+fecha+estudiante)
+  alt ya estaba marcada (clave duplicada)
+    DB --> Svc : 1062 duplicate
+    Svc --> Ctrl : YaMarcada
+    Ctrl --> GW : 200 OK (idempotente)
+  else primera marca
+    DB --> Svc : ok
+    Svc --> Ctrl : Marcada
+    Ctrl --> GW : 201 Created
+  end
+end
+GW --> SPA : respuesta
+SPA --> Student : confirmacion de asistencia
+
+@enduml

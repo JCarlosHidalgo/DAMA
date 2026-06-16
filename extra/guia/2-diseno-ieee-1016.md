@@ -29,7 +29,7 @@ complementarias, cada una respondiendo a una preocupación distinta.
 Patrón elegido: **microservicios** detrás de un *api-gateway* nginx, con SPA Angular 21 como
 cliente. Justificación: aislamiento de dominios (autenticación, cursos, asistencia, pagos,
 credenciales), despliegue independiente y límites de seguridad claros en el borde. La vista
-isométrica del stack ya existe en [`../fossflow/diagrams/dama-architecture.json`](../fossflow/diagrams/dama-architecture.json).
+isométrica del stack ya existe en [`../graphics/diagrams/dama-architecture.json`](../graphics/diagrams/dama-architecture.json).
 
 ### Estrategia de tenancy en la BD (decisión de diseño clave → `academico/3.4`)
 
@@ -62,8 +62,10 @@ código con la herramienta de documentación de cada stack, y el documento acad�
 | Clases (estructural) | **Doxygen** | Grafo de clases/colaboración (`UML_LOOK`) y jerarquía de herencia (`GRAPHICAL_HIERARCHY`). |
 | Despliegue / arquitectura de servicios | **FossFlow** | Vista isométrica `dama-architecture.json`. |
 
-Solo casos de uso y secuencia no se autogeneran; su fuente se define en la ola correspondiente
-(ver los esqueletos `academico/3.2` y `academico/3.5`).
+Solo casos de uso y secuencia no se autogeneran: se **autoran en PlantUML** (`.puml` versionado en
+`../graphics/academico/`) y se renderizan con el contenedor `doxygen` del repositorio (imagen
+`juancarloshidalgososa/doxygen:1.17.0`, que trae Graphviz y PlantUML). El `.md` referencia el `.puml`
+y su comando; no embebe UML a mano (ver `academico/3.2` y `academico/3.5`).
 
 ### Diccionario de datos (rellenar en `academico/3.4`)
 

@@ -120,7 +120,7 @@ Monitoreo de disponibilidad
 Regla transversal: ningún Password / Token / Appkey / firma entra en un log.
 ```
 
-Diagrama FossFLOW: rectángulo **"A09 · Logging & Monitoring Failures"** en `extra/fossflow/diagrams/owasp-web-top-10.json`, nodos `LogEvents source-gen`, `JSON structured logs` y `Health /ready checks`.
+Diagrama FossFLOW: rectángulo **"A09 · Logging & Monitoring Failures"** en `extra/graphics/diagrams/owasp-web-top-10.json`, nodos `LogEvents source-gen`, `JSON structured logs` y `Health /ready checks`.
 
 ## Verificación
 - `grep -n "EventId = 30\|EventId = 50" apps/Auth/Backend/Logging/LogEvents.cs` → lista los eventos de auditoría de identidad y tenant.

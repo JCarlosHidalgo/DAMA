@@ -1,0 +1,35 @@
+services:
+  fossflow:
+    build: .
+    container_name: dama-fossflow
+    ports:
+      - "8088:80"
+    environment:
+      - NODE_ENV=production
+      - ENABLE_SERVER_STORAGE=true
+      - STORAGE_PATH=/data/diagrams
+    volumes:
+      - ./diagrams:/data/diagrams
+    restart: unless-stopped
+
+  doxygen:
+    image: juancarloshidalgososa/doxygen:1.17.0
+    container_name: dama-doxygen
+    user: "${HOST_UID:-1000}:${HOST_GID:-1000}"
+    entrypoint: ["/bin/sh", "-c"]
+    volumes:
+      - ../../:/work:ro
+      - ./out:/out
+    command:
+      - |
+        set -e
+        mkdir -p /out/doxygen /out/academico
+        echo '== Doxygen: auto-generated UML from the Auth pilot backend =='
+        cd /work/apps/Auth/Backend
+        ( cat /work/infrastructure/docs/doxygen/Doxyfile; \
+          echo 'OUTPUT_DIRECTORY=/out/doxygen'; \
+          echo 'PLANTUML_JAR_PATH=/usr/share/plantuml/plantuml.jar' ) | doxygen -
+        echo '== PlantUML: hand-authored UML (use cases + sequence) from academico/ =='
+        java -jar /usr/share/plantuml/plantuml.jar -tsvg -o /out/academico /work/extra/graphics/academico/*.puml
+        echo '== Done. Output under extra/graphics/out/ (doxygen/, academico/) =='
+    profiles: ["docs"]

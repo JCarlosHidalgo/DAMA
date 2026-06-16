@@ -1,23 +1,52 @@
-# FossFlow — DAMA architecture diagram
+# graphics — DAMA diagram tooling
 
-A local instance of [FossFlow](https://github.com/stan-smith/FossFLOW) (an open-source isometric
-diagramming tool, a fork of Isoflow) that displays the architecture diagram of the DAMA stack.
+Self-contained diagram tooling for the DAMA documentation. It is **not** part of the DAMA stack and
+does not touch `infrastructure/`. It hosts two complementary generators, wired in `compose.yaml`:
 
-It is **not** part of the DAMA stack: it is a self-contained visualization tool that does not touch
-`infrastructure/`.
+1. **FossFlow** — a local instance of [FossFlow](https://github.com/stan-smith/FossFLOW) (an
+   open-source isometric diagramming tool, a fork of Isoflow) that displays the non-UML isometric
+   views (architecture, OWASP control flows, development phases/WBS).
+2. **Doxygen + PlantUML** — the published image `juancarloshidalgososa/doxygen:1.17.0` (Doxygen
+   1.17.0 with Graphviz `dot` and PlantUML preinstalled), used to (a) auto-generate the UML graphs
+   of the backend from source and (b) render the hand-authored UML under `academico/`.
 
 ## Contents
 
 ```
-extra/fossflow/
+extra/graphics/
 ├── Dockerfile                     # thin layer over stnsmith/fossflow:latest that bakes in the diagrams
-├── compose.yaml                   # local build + port 8088 + persistent volume
-└── diagrams/
-    ├── dama-architecture.json     # the stack architecture (Isoflow format)
-    ├── owasp-web-top-10.json      # OWASP Web Top 10 (2021) controls in DAMA
-    ├── owasp-api-top-10.json      # OWASP API Security Top 10 (2023) controls in DAMA
-    └── desarrollo-fases-wbs.json  # DAMA development phases / WBS with CPM critical path
+├── compose.yaml                   # fossflow viewer (port 8088) + doxygen one-shot (profile "docs")
+├── .gitignore                     # ignores out/ (generated docs)
+├── diagrams/                      # FossFlow isometric views (Isoflow JSON, non-UML)
+│   ├── dama-architecture.json     # the stack architecture
+│   ├── owasp-web-top-10.json      # OWASP Web Top 10 (2021) controls in DAMA
+│   ├── owasp-api-top-10.json      # OWASP API Security Top 10 (2023) controls in DAMA
+│   └── desarrollo-fases-wbs.json  # DAMA development phases / WBS with CPM critical path
+├── academico/                     # hand-authored UML (PlantUML) for the thesis design chapter
+│   ├── casos-de-uso.puml          # use-case diagram (3.3.2)
+│   ├── secuencia-login.puml       # sequence: login JWT/refresh (3.3.5)
+│   ├── secuencia-asistencia-grpc.puml        # sequence: attendance + gRPC (3.3.5)
+│   └── secuencia-pago-todotix-outbox.puml    # sequence: payment Todotix + Outbox (3.3.5)
+└── out/                           # generated output (gitignored): out/doxygen, out/academico
 ```
+
+## Doxygen + PlantUML (UML for the design chapter)
+
+The `doxygen` service uses the published image (Graphviz + PlantUML bundled) to generate every UML
+diagram referenced by the academic design sections (3.3.3 classes, 3.3.2 use cases, 3.3.5 sequence).
+It is a **one-shot** under the `docs` profile, so it does not start with the FossFlow viewer:
+
+```bash
+cd extra/graphics
+docker compose --profile docs run --rm doxygen
+# Output (gitignored):
+#   out/doxygen/html/    — auto-generated UML of the Auth pilot backend (classes, collaboration, dirs)
+#   out/academico/       — SVG renders of casos-de-uso.puml and the three secuencia-*.puml
+```
+
+The same image also renders the PlantUML files on its own (it bundles `plantuml.jar` at
+`/usr/share/plantuml/plantuml.jar`). The academic `.md` files reference these `.puml` sources and
+this command; no UML is drawn by hand inside the Markdown.
 
 There are **four** diagrams. Besides the architecture one, two security diagrams accompany
 `extra/OWASP/`: each OWASP list is rendered as one diagram where **every list item is a coloured
@@ -38,7 +67,7 @@ reads/writes diagrams as `*.json` files in `/data/diagrams`. The `Dockerfile` dr
 ## Run
 
 ```bash
-cd extra/fossflow
+cd extra/graphics
 docker compose up --build
 ```
 

@@ -112,7 +112,7 @@ request body (JSON)
 
 La defensa contra mass-assignment es estructural: el cliente no tiene dónde poner un campo privilegiado (el DTO no lo expone) y el builder lo fija él mismo. La defensa contra exposición excesiva es la separación request/response DTO + AutoMapper a proyecciones de lectura controladas.
 
-En el diagrama FossFLOW `extra/fossflow/diagrams/owasp-api-top-10.json`, este ítem es el rectángulo **API3 · Broken Object Property Level Authorization** que agrupa: **DTOs ISP (req/resp)**, **Builders (sin mass-assign)** y **FluentValidation** (con **Response validation** como nodo de apoyo del lado de la salida).
+En el diagrama FossFLOW `extra/graphics/diagrams/owasp-api-top-10.json`, este ítem es el rectángulo **API3 · Broken Object Property Level Authorization** que agrupa: **DTOs ISP (req/resp)**, **Builders (sin mass-assign)** y **FluentValidation** (con **Response validation** como nodo de apoyo del lado de la salida).
 
 ## Verificación
 

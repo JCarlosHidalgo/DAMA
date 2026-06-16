@@ -86,7 +86,7 @@ Cuando la deuda se captura, Payment emite `payment.captured` por outbox/RabbitMQ
 
 ## Flujo de los componentes
 
-Rectángulo **API6** del diagrama FossFLOW `extra/fossflow/diagrams/owasp-api-top-10.json` (nodos `Tier gating (suscripcion)` → `Callback HMAC signature` → `Idempotent inbox`):
+Rectángulo **API6** del diagrama FossFLOW `extra/graphics/diagrams/owasp-api-top-10.json` (nodos `Tier gating (suscripcion)` → `Callback HMAC signature` → `Idempotent inbox`):
 
 ```
 Student (rol + tier ≥ 3)

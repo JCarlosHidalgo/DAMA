@@ -86,7 +86,7 @@ No hay Entity Framework ni un ORM que traduzca expresiones a SQL interpolado. El
 
 ## Flujo de los componentes
 
-Rectángulo **A03 Injection** del diagrama FossFLOW `extra/fossflow/diagrams/owasp-web-top-10.json` (nodos `FluentValidation filter` → `DAO parametrizado` → `Stored Procedures`):
+Rectángulo **A03 Injection** del diagrama FossFLOW `extra/graphics/diagrams/owasp-web-top-10.json` (nodos `FluentValidation filter` → `DAO parametrizado` → `Stored Procedures`):
 
 ```
 Petición HTTP (DTO)

@@ -1,0 +1,79 @@
+@startuml casos-de-uso
+title DAMA — Diagrama de casos de uso (por actor)
+left to right direction
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+actor "Admin\n(operador global)" as Admin
+actor "Client\n(gestor de academia)" as Client
+actor "Teacher\n(profesor)" as Teacher
+actor "Student\n(estudiante)" as Student
+actor "Todotix\n(pasarela de pagos)" as Todotix
+
+rectangle "DAMA" {
+
+  package "Identidad y academias (Auth)" {
+    usecase "Iniciar sesion" as UC_login
+    usecase "Renovar / cerrar sesion" as UC_session
+    usecase "Registrar academia" as UC_tenant_create
+    usecase "Listar / renombrar academias" as UC_tenant_manage
+    usecase "Ver distribucion por nivel" as UC_tier
+    usecase "Cambiar zona horaria" as UC_timezone
+    usecase "Registrar profesores / estudiantes" as UC_register_users
+    usecase "Listar / buscar / eliminar usuarios" as UC_directory
+  }
+
+  package "Oferta academica (CourseManagement)" {
+    usecase "Gestionar cursos" as UC_courses
+    usecase "Gestionar clases y grupos" as UC_classes
+    usecase "Ver horario propio" as UC_schedule
+  }
+
+  package "Asistencia (Attendance)" {
+    usecase "Marcar asistencia (codigo QR)" as UC_attendance_mark
+    usecase "Consultar asistencia" as UC_attendance_view
+    usecase "Acreditar clases restantes" as UC_remain_credit
+  }
+
+  package "Cobros (Payment)" {
+    usecase "Configurar credenciales de cobro" as UC_pay_creds
+    usecase "Gestionar plantillas de deuda" as UC_debt_templates
+    usecase "Pagar deuda (QR)" as UC_pay_debt
+    usecase "Pagar suscripcion (QR)" as UC_pay_subscription
+    usecase "Ver resumen / analitica" as UC_pay_analytics
+  }
+}
+
+Admin --> UC_login
+Admin --> UC_tenant_create
+Admin --> UC_tenant_manage
+Admin --> UC_tier
+Admin --> UC_pay_analytics
+
+Client --> UC_login
+Client --> UC_session
+Client --> UC_timezone
+Client --> UC_register_users
+Client --> UC_directory
+Client --> UC_courses
+Client --> UC_classes
+Client --> UC_debt_templates
+Client --> UC_pay_creds
+Client --> UC_remain_credit
+Client --> UC_pay_analytics
+
+Teacher --> UC_login
+Teacher --> UC_schedule
+Teacher --> UC_attendance_view
+
+Student --> UC_login
+Student --> UC_schedule
+Student --> UC_attendance_mark
+Student --> UC_pay_debt
+Student --> UC_pay_subscription
+
+UC_pay_debt ..> Todotix : <<include>>
+UC_pay_subscription ..> Todotix : <<include>>
+UC_pay_creds ..> Todotix : <<include>>
+
+@enduml

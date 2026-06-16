@@ -89,7 +89,7 @@ petición /api/<svc>/*
 arranque: SecretsValidationModule (Order -100) → fail-fast, sin defaults inseguros
 ```
 
-En el diagrama FossFLOW `extra/fossflow/diagrams/owasp-api-top-10.json`, este ítem es el rectángulo **API8 · Security Misconfiguration**, que agrupa los nodos **nginx headers + HSTS**, **CORS allowlist**, **SQL parametrizado** y **Secrets fail-fast**.
+En el diagrama FossFLOW `extra/graphics/diagrams/owasp-api-top-10.json`, este ítem es el rectángulo **API8 · Security Misconfiguration**, que agrupa los nodos **nginx headers + HSTS**, **CORS allowlist**, **SQL parametrizado** y **Secrets fail-fast**.
 
 ## Verificación
 

@@ -96,7 +96,7 @@ request (Authorization: Bearer <jwt>)
 
 Las dos comprobaciones son ortogonales: el rol decide *qué tipo de usuario* puede invocar; el tier decide *qué plan* lo desbloquea. Una función premium para `Student` exige ambas (`[Authorize(Roles = UserRoles.Student)]` + `[RequiresServiceTier(3)]`).
 
-En el diagrama FossFLOW `extra/fossflow/diagrams/owasp-api-top-10.json`, este ítem es el rectángulo **API5 · Broken Function Level Authorization** que agrupa: **[Authorize(Roles)]**, **RequiresServiceTier** y **FallbackPolicy** (con **Tier gating (suscripcion)** como nodo de apoyo).
+En el diagrama FossFLOW `extra/graphics/diagrams/owasp-api-top-10.json`, este ítem es el rectángulo **API5 · Broken Function Level Authorization** que agrupa: **[Authorize(Roles)]**, **RequiresServiceTier** y **FallbackPolicy** (con **Tier gating (suscripcion)** como nodo de apoyo).
 
 ## Verificación
 

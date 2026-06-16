@@ -101,7 +101,7 @@ request con id en la ruta (p.ej. GET /api/payment/qr/{id}/status)
 
 La defensa es en dos capas: el `WHERE ... AND TenantId` impide el cruce **entre** tenants, y el chequeo de propiedad impide el cruce **entre estudiantes** dentro de un tenant.
 
-En el diagrama FossFLOW `extra/fossflow/diagrams/owasp-api-top-10.json`, este ítem es el rectángulo **API1 · Broken Object Level Authorization** que agrupa: **IClaimContext (tenant)**, **GetByIdForTenant** y **Ownership check Student**.
+En el diagrama FossFLOW `extra/graphics/diagrams/owasp-api-top-10.json`, este ítem es el rectángulo **API1 · Broken Object Level Authorization** que agrupa: **IClaimContext (tenant)**, **GetByIdForTenant** y **Ownership check Student**.
 
 ## Verificación
 

@@ -109,7 +109,7 @@ Canal síncrono gRPC interno
   cliente con ca.crt en trust store ──► valida cert de servidor por SAN ──► canal confiable
 ```
 
-Diagrama FossFLOW: rectángulo **"A08 · Software & Data Integrity"** en `extra/fossflow/diagrams/owasp-web-top-10.json`, nodos `processed_events idempotente`, `TLS CA trust store` y `System.Text.Json`.
+Diagrama FossFLOW: rectángulo **"A08 · Software & Data Integrity"** en `extra/graphics/diagrams/owasp-web-top-10.json`, nodos `processed_events idempotente`, `TLS CA trust store` y `System.Text.Json`.
 
 ## Verificación
 - Idempotencia: `cd apps/Attendance/Test && dotnet test --filter "Handler"` — re-disparar el mismo `EventId` no duplica el efecto (segunda pasada → `AlreadyProcessed`).

@@ -62,7 +62,7 @@ Salida interna gRPC
    Payment    ──► Subscription:AuthUrl        (config)
 ```
 
-Diagrama FossFLOW: rectángulo **"API7 · Server-Side Request Forgery"** en `extra/fossflow/diagrams/owasp-api-top-10.json`, nodos `Todotix BaseUrl por config` y `gRPC discovery fijo`.
+Diagrama FossFLOW: rectángulo **"API7 · Server-Side Request Forgery"** en `extra/graphics/diagrams/owasp-api-top-10.json`, nodos `Todotix BaseUrl por config` y `gRPC discovery fijo`.
 
 ## Verificación
 - `grep -rn "new Uri(" apps/*/Backend --include=*.cs` → todos los destinos salen de `configuration[...]` / `Options`, ninguno de un DTO de request.

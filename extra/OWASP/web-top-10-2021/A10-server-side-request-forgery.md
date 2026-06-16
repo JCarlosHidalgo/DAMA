@@ -75,7 +75,7 @@ Entrada no autenticada (callback) ──► sólo escalares (transaction_id, err
      NO contiene URL ──► verificación de firma HMAC antes de procesar
 ```
 
-Diagrama FossFLOW: rectángulo **"A10 · Server-Side Request Forgery"** en `extra/fossflow/diagrams/owasp-web-top-10.json`, nodos `Todotix BaseUrl por config`, `gRPC service discovery fijo` y `Sin URL desde el usuario`.
+Diagrama FossFLOW: rectángulo **"A10 · Server-Side Request Forgery"** en `extra/graphics/diagrams/owasp-web-top-10.json`, nodos `Todotix BaseUrl por config`, `gRPC service discovery fijo` y `Sin URL desde el usuario`.
 
 ## Verificación
 - `grep -rn "new Uri(" apps/*/Backend --include=*.cs` → todos los `Uri` se construyen desde `configuration[...]` / `Options`, ninguno desde un DTO o query string.

@@ -120,7 +120,7 @@ Cliente API ──► POST /api/auth/login
    POST /api/auth/refresh ──► rota token; si ya estaba revocado ──► revoca TODAS las sesiones
 ```
 
-Diagrama FossFLOW: rectángulo **"API2 · Broken Authentication"** en `extra/fossflow/diagrams/owasp-api-top-10.json`, nodos `RS256 JWT`, `Account Lockout`, `Refresh reuse detection` y `Rate-limit login`.
+Diagrama FossFLOW: rectángulo **"API2 · Broken Authentication"** en `extra/graphics/diagrams/owasp-api-top-10.json`, nodos `RS256 JWT`, `Account Lockout`, `Refresh reuse detection` y `Rate-limit login`.
 
 ## Verificación
 - `cd apps/Auth/Test && dotnet test --filter "FullyQualifiedName~Login"` / `~Refresh`.

@@ -47,13 +47,13 @@ El prefijo del archivo es el número de sub-sección sin el "3." (3.1 → `1-`, 
 | 3.2.3 | [`academico/2.3-requisitos-funcionales.md`](academico/2.3-requisitos-funcionales.md) | ✅ Redactado | 29148 |
 | 3.2.4 | [`academico/2.4-requisitos-no-funcionales.md`](academico/2.4-requisitos-no-funcionales.md) | ✅ Redactado | 29148 |
 | 3.2.5 | [`academico/2.5-matriz-de-trazabilidad.md`](academico/2.5-matriz-de-trazabilidad.md) | ✅ Redactado | 29148 |
-| 3.3.1 | [`academico/3.1-arquitectura.md`](academico/3.1-arquitectura.md) | ⬜ | 1016 |
-| 3.3.2 | [`academico/3.2-casos-de-uso.md`](academico/3.2-casos-de-uso.md) | ⬜ | 1016 |
-| 3.3.3 | [`academico/3.3-diagrama-de-clases.md`](academico/3.3-diagrama-de-clases.md) | ⬜ | 1016 / Doxygen |
-| 3.3.4 | [`academico/3.4-modelo-de-datos-y-diccionario.md`](academico/3.4-modelo-de-datos-y-diccionario.md) | ⬜ | 1016 |
-| 3.3.5 | [`academico/3.5-diagramas-de-secuencia.md`](academico/3.5-diagramas-de-secuencia.md) | ⬜ | 1016 |
-| 3.3.6 | [`academico/3.6-diseno-de-interfaz.md`](academico/3.6-diseno-de-interfaz.md) | ⬜ | 1016 / 25010 |
-| 3.3.7 | [`academico/3.7-diagrama-de-despliegue.md`](academico/3.7-diagrama-de-despliegue.md) | ⬜ | 1016 / FossFlow |
+| 3.3.1 | [`academico/3.1-arquitectura.md`](academico/3.1-arquitectura.md) | ✅ Redactado | 1016 |
+| 3.3.2 | [`academico/3.2-casos-de-uso.md`](academico/3.2-casos-de-uso.md) | ✅ Redactado | 1016 / PlantUML |
+| 3.3.3 | [`academico/3.3-diagrama-de-clases.md`](academico/3.3-diagrama-de-clases.md) | ✅ Redactado | 1016 / Doxygen |
+| 3.3.4 | [`academico/3.4-modelo-de-datos-y-diccionario.md`](academico/3.4-modelo-de-datos-y-diccionario.md) | ✅ Redactado | 1016 |
+| 3.3.5 | [`academico/3.5-diagramas-de-secuencia.md`](academico/3.5-diagramas-de-secuencia.md) | ✅ Redactado | 1016 / PlantUML |
+| 3.3.6 | [`academico/3.6-diseno-de-interfaz.md`](academico/3.6-diseno-de-interfaz.md) | ✅ Redactado | 1016 / 25010 |
+| 3.3.7 | [`academico/3.7-diagrama-de-despliegue.md`](academico/3.7-diagrama-de-despliegue.md) | ✅ Redactado | 1016 / FossFlow |
 | 3.4.1 | [`academico/4.1-stack-tecnologico-y-justificacion.md`](academico/4.1-stack-tecnologico-y-justificacion.md) | ⬜ | — |
 | 3.4.2 | [`academico/4.2-estructura-del-codigo-y-modulos.md`](academico/4.2-estructura-del-codigo-y-modulos.md) | ⬜ | — / Doxygen·Compodoc |
 | 3.4.3 | [`academico/4.3-desarrollo-por-iteraciones.md`](academico/4.3-desarrollo-por-iteraciones.md) | ⬜ | — |

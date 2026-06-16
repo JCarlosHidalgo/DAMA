@@ -88,7 +88,7 @@ request (Authorization: Bearer <jwt>)
 
 Si un endpoint no declara política, el `FallbackPolicy` igual exige autenticación (deny-by-default); si declara `[Authorize(Roles)]`, suma el filtro de rol; si declara `[AllowAnonymous]`, la apertura es explícita y rastreable.
 
-En el diagrama FossFLOW `extra/fossflow/diagrams/owasp-web-top-10.json`, este ítem es el rectángulo **A01 · Broken Access Control** que agrupa: **JwtBearer middleware**, **FallbackPolicy deny-by-default**, **[Authorize(Roles)]**, **IClaimContext**, **Tenant-filter DAO** y **JWT validation params**.
+En el diagrama FossFLOW `extra/graphics/diagrams/owasp-web-top-10.json`, este ítem es el rectángulo **A01 · Broken Access Control** que agrupa: **JwtBearer middleware**, **FallbackPolicy deny-by-default**, **[Authorize(Roles)]**, **IClaimContext**, **Tenant-filter DAO** y **JWT validation params**.
 
 ## Verificación
 

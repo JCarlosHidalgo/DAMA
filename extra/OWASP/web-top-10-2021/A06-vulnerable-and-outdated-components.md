@@ -94,7 +94,7 @@ proceso de gestión de dependencias
    ▼  actualización disciplinada: bump explícito de Version + republicar paquete interno
 ```
 
-En el diagrama FossFLOW `extra/fossflow/diagrams/owasp-web-top-10.json`, este ítem es el rectángulo **A06 · Vulnerable & Outdated Components**, que agrupa los nodos **.NET 9 + NuGet fijado**, **SonarAnalyzer** y **Paquetes internos NuGet**.
+En el diagrama FossFLOW `extra/graphics/diagrams/owasp-web-top-10.json`, este ítem es el rectángulo **A06 · Vulnerable & Outdated Components**, que agrupa los nodos **.NET 9 + NuGet fijado**, **SonarAnalyzer** y **Paquetes internos NuGet**.
 
 ## Verificación
 

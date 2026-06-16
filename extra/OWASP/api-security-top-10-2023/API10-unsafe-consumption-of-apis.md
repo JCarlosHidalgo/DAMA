@@ -132,7 +132,7 @@ Todotix ──► GET /api/payment/qr/callback?transaction_id&error&cancel_order
             (timeouts + circuit breaker protegen toda salida a Todotix)
 ```
 
-Diagrama FossFLOW: rectángulo **"API10 · Unsafe Consumption of APIs"** en `extra/fossflow/diagrams/owasp-api-top-10.json`, nodos `Signature verify`, `Response validation`, `Idempotent inbox` y `Circuit breaker`.
+Diagrama FossFLOW: rectángulo **"API10 · Unsafe Consumption of APIs"** en `extra/graphics/diagrams/owasp-api-top-10.json`, nodos `Signature verify`, `Response validation`, `Idempotent inbox` y `Circuit breaker`.
 
 ## Verificación
 - Firma: `cd apps/Payment/Test && dotnet test --filter "Callback"` — un callback con `sig` inválida no encola ni transiciona (200 OK + log `TodotixCallbackInvalidSignature`).

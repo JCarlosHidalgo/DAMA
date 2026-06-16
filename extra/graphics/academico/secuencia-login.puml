@@ -1,0 +1,52 @@
+@startuml secuencia-login
+title DAMA — Secuencia: inicio de sesion (JWT RS256 + refresh token)
+skinparam shadowing false
+autonumber
+
+actor Usuario
+participant "SPA\n(Angular 21)" as SPA
+participant "api-gateway\n(nginx)" as GW
+participant "Auth\nAuthController" as Ctrl
+participant "AuthenticationService" as Svc
+participant "UserDao" as Dao
+database "Auth DB\n(MySQL)" as DB
+
+Usuario -> SPA : credenciales
+SPA -> GW : POST /api/auth/login
+note right of GW : limit_req zone=login (5 r/m)
+GW -> Ctrl : login (AllowAnonymous)
+Ctrl -> Svc : Authenticate(credenciales)
+Svc -> Dao : ReadUserWithTenantByUserName
+Dao -> DB : CALL GetUserWithTenantByUserName
+DB --> Dao : usuario + tenant
+Dao --> Svc : usuario
+
+alt cuenta bloqueada (LockedUntil > now)
+  Svc --> Ctrl : AccountLocked
+  Ctrl --> GW : 423 Locked
+else credenciales invalidas
+  Svc -> Dao : incrementar FailedLoginAttempts
+  Svc --> Ctrl : InvalidCredentials
+  Ctrl --> GW : 401 Unauthorized
+else credenciales validas
+  Svc -> Svc : firmar JWT (RS256) + emitir RefreshToken
+  Svc -> Dao : guardar hash del RefreshToken
+  Svc --> Ctrl : access token + refresh token
+  Ctrl --> GW : 200 OK
+end
+GW --> SPA : respuesta
+SPA --> Usuario : sesion iniciada
+
+== Renovacion ==
+SPA -> GW : POST /api/auth/refresh
+GW -> Ctrl : refresh
+Ctrl -> Svc : rotar refresh token
+Svc --> Ctrl : nuevo access + refresh
+Ctrl --> SPA : 200 OK
+
+note over SPA, DB
+  En peticiones posteriores, cada servicio valida el JWT
+  con la clave publica RSA (sin llamar a Auth).
+end note
+
+@enduml

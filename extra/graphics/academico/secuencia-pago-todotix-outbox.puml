@@ -1,0 +1,54 @@
+@startuml secuencia-pago-todotix-outbox
+title DAMA — Secuencia: cobro de deuda (Todotix) y credito via Outbox -> RabbitMQ -> consumidor idempotente
+skinparam shadowing false
+autonumber
+
+actor Student
+participant "SPA" as SPA
+participant "api-gateway" as GW
+participant "Payment\nQrPaymentController" as PCtrl
+participant "TodotixOutboxWorker" as TOW
+participant "Todotix\n(externo)" as Todotix
+participant "PaymentCallbackWorker" as PCW
+participant "OutboxPublisher" as OP
+queue "RabbitMQ\n(dama.events)" as MQ
+participant "Attendance\nPaymentCapturedConsumer" as ACons
+database "Payment DB" as PDB
+database "Attendance DB" as ADB
+
+== Generacion del cobro QR ==
+Student -> SPA : pagar deuda
+SPA -> GW : POST /api/payment/qr/{templateId}
+GW -> PCtrl : crear pago QR (Authorize: Student)
+PCtrl -> PDB : INSERT PendingQrPayment + todotix_outbox\n(misma transaccion)
+PCtrl --> SPA : pago pendiente
+TOW -> PDB : leer todotix_outbox pendiente
+TOW -> Todotix : registrar deuda (HTTP)
+Todotix --> TOW : URL del QR
+TOW -> PDB : guardar QrImageUrl
+SPA -> Student : muestra el codigo QR
+
+== Confirmacion (callback) y credito asincrono ==
+Todotix -> GW : callback de pago (firmado)
+GW -> PCtrl : encolar en payment_callback_inbox
+PCW -> Todotix : re-consultar estado de la deuda
+Todotix --> PCW : pagado
+PCW -> PDB : PendingQrPayment -> SuccessQrPayment\n+ INSERT outbox_events (payment.captured)
+OP -> PDB : leer outbox_events sin publicar
+OP -> MQ : publicar payment.captured
+MQ -> ACons : entregar evento
+ACons -> ADB : TryMarkProcessed(EventId) [processed_events]
+alt evento ya procesado (duplicado)
+  ADB --> ACons : 1062 duplicate -> ACK sin re-aplicar
+else primera vez
+  ACons -> ADB : acreditar StudentRemainClasses\n+ payment_credit_ledger (misma transaccion)
+  ACons -> MQ : ACK
+end
+
+note over PDB, ADB
+  Garantias: el credito es at-least-once (puede reentregarse),
+  por eso processed_events impone idempotencia. No se reintenta
+  el registro no idempotente en Todotix.
+end note
+
+@enduml

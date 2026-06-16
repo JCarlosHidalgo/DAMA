@@ -122,7 +122,7 @@ cliente
    └─▶ RabbitMQ consumers    : prefetchCount 10 (autoAck false)
 ```
 
-En el diagrama FossFLOW `extra/fossflow/diagrams/owasp-api-top-10.json`, este ítem es el rectángulo **API4 · Unrestricted Resource Consumption**, que agrupa los nodos **Rate-limit nginx**, **Tope de paginacion**, **client_max_body_size** y **gRPC timeout + breaker**.
+En el diagrama FossFLOW `extra/graphics/diagrams/owasp-api-top-10.json`, este ítem es el rectángulo **API4 · Unrestricted Resource Consumption**, que agrupa los nodos **Rate-limit nginx**, **Tope de paginacion**, **client_max_body_size** y **gRPC timeout + breaker**.
 
 ## Verificación
 

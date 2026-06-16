@@ -15,13 +15,13 @@ sobre el repositorio real.
 | [2.3-requisitos-funcionales.md](2.3-requisitos-funcionales.md) | 3.2.3 | ✅ Redactado |
 | [2.4-requisitos-no-funcionales.md](2.4-requisitos-no-funcionales.md) | 3.2.4 | ✅ Redactado |
 | [2.5-matriz-de-trazabilidad.md](2.5-matriz-de-trazabilidad.md) | 3.2.5 | ✅ Redactado |
-| [3.1-arquitectura.md](3.1-arquitectura.md) | 3.3.1 | ⬜ |
-| [3.2-casos-de-uso.md](3.2-casos-de-uso.md) | 3.3.2 | ⬜ |
-| [3.3-diagrama-de-clases.md](3.3-diagrama-de-clases.md) | 3.3.3 | ⬜ |
-| [3.4-modelo-de-datos-y-diccionario.md](3.4-modelo-de-datos-y-diccionario.md) | 3.3.4 | ⬜ |
-| [3.5-diagramas-de-secuencia.md](3.5-diagramas-de-secuencia.md) | 3.3.5 | ⬜ |
-| [3.6-diseno-de-interfaz.md](3.6-diseno-de-interfaz.md) | 3.3.6 | ⬜ |
-| [3.7-diagrama-de-despliegue.md](3.7-diagrama-de-despliegue.md) | 3.3.7 | ⬜ |
+| [3.1-arquitectura.md](3.1-arquitectura.md) | 3.3.1 | ✅ Redactado |
+| [3.2-casos-de-uso.md](3.2-casos-de-uso.md) | 3.3.2 | ✅ Redactado |
+| [3.3-diagrama-de-clases.md](3.3-diagrama-de-clases.md) | 3.3.3 | ✅ Redactado |
+| [3.4-modelo-de-datos-y-diccionario.md](3.4-modelo-de-datos-y-diccionario.md) | 3.3.4 | ✅ Redactado |
+| [3.5-diagramas-de-secuencia.md](3.5-diagramas-de-secuencia.md) | 3.3.5 | ✅ Redactado |
+| [3.6-diseno-de-interfaz.md](3.6-diseno-de-interfaz.md) | 3.3.6 | ✅ Redactado |
+| [3.7-diagrama-de-despliegue.md](3.7-diagrama-de-despliegue.md) | 3.3.7 | ✅ Redactado |
 | [4.1-stack-tecnologico-y-justificacion.md](4.1-stack-tecnologico-y-justificacion.md) | 3.4.1 | ⬜ |
 | [4.2-estructura-del-codigo-y-modulos.md](4.2-estructura-del-codigo-y-modulos.md) | 3.4.2 | ⬜ |
 | [4.3-desarrollo-por-iteraciones.md](4.3-desarrollo-por-iteraciones.md) | 3.4.3 | ⬜ |
@@ -31,10 +31,19 @@ sobre el repositorio real.
 | [6-despliegue.md](6-despliegue.md) | 3.6 | ⬜ |
 | [7-resultados.md](7-resultados.md) | 3.7 | ⬜ |
 
-## Archivos de diagramas del piloto (3.1)
+## Archivos de diagramas
 
+**Metodología (3.1):**
 - [`1-metodología-de-desarrollo-cpm-ruta-critica.drawio`](1-metodología-de-desarrollo-cpm-ruta-critica.drawio) — red CPM (draw.io).
 - [`1-metodología-de-desarrollo-fases-wbs.md`](1-metodología-de-desarrollo-fases-wbs.md) — diagrama FossFlow de fases/WBS.
+
+**Diseño (3.3) — UML autorado en PlantUML** (en `../../graphics/academico/`, renderizado por el
+contenedor `doxygen`):
+- `casos-de-uso.puml` — diagrama de casos de uso (3.3.2).
+- `secuencia-login.puml`, `secuencia-asistencia-grpc.puml`, `secuencia-pago-todotix-outbox.puml` — secuencias (3.3.5).
+
+> El UML estructural (clases, colaboración, directorios) de 3.3.1/3.3.3 lo **autogenera Doxygen**
+> desde el código; no se versiona como `.puml`.
 
 ## Convenciones
 

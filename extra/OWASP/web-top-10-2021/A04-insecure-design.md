@@ -107,7 +107,7 @@ En Auth/CourseManagement/Payment el mismo archivo añade una **segunda** regla q
 
 ## Flujo de los componentes
 
-Rectángulo **A04 Insecure Design** del diagrama FossFLOW `extra/fossflow/diagrams/owasp-web-top-10.json` (nodos `Outbox + Inbox`, `Idempotencia processed_events`, `Multitenancy por tenant`, `Account Lockout`):
+Rectángulo **A04 Insecure Design** del diagrama FossFLOW `extra/graphics/diagrams/owasp-web-top-10.json` (nodos `Outbox + Inbox`, `Idempotencia processed_events`, `Multitenancy por tenant`, `Account Lockout`):
 
 ```
 Mutación de agregado (transacción)
