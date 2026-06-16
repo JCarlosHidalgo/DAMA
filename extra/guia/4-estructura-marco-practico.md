@@ -61,7 +61,7 @@ El prefijo del archivo es el número de sub-sección sin el "3." (3.1 → `1-`, 
 | 3.5.2 | [`academico/5.2-casos-de-prueba-y-resultados.md`](academico/5.2-casos-de-prueba-y-resultados.md) | ✅ Redactado | 25010:2023 |
 | 3.5.3 | [`academico/5.3-evaluacion-por-caracteristicas-de-calidad.md`](academico/5.3-evaluacion-por-caracteristicas-de-calidad.md) | ✅ Redactado | 25010:2023 |
 | 3.6 | [`academico/6-despliegue.md`](academico/6-despliegue.md) | ✅ Redactado | environments.md / Dokploy |
-| 3.7 | [`academico/7-resultados.md`](academico/7-resultados.md) | ⬜ | — |
+| 3.7 | [`academico/7-resultados.md`](academico/7-resultados.md) | ✅ Redactado | síntesis / trazabilidad |
 
 ## Nota sobre 3.1 (Metodología) vs. los estándares
 

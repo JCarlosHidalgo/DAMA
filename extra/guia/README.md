@@ -47,8 +47,9 @@ actual de la redacción:
   (plan, casos y resultados medidos —1 251 pruebas en verde— y evaluación por las 9 características
   de ISO/IEC 25010:2023, con las brechas de carga y accesibilidad declaradas) y `3.6 Despliegue`
   (estrategia dev/prod, despliegue continuo en Dokploy + Cloudflare + TLS automático + respaldos,
-  con CI automatizada propuesta vía Jenkins y declarada como no implementada).
-- ⬜ **Esqueleto:** el cierre del capítulo (3.7 Resultados), listo para completarse en la última ola.
+  con CI automatizada propuesta vía Jenkins y declarada como no implementada) y `3.7 Resultados`
+  (síntesis frente a los cinco objetivos y cierre de la trazabilidad de punta a punta).
+- ✅ **Capítulo completo:** las secciones 3.1–3.7 del Marco Práctico están redactadas.
 
 Ver [`academico/README.md`](academico/README.md) para el detalle de archivos y su estado.
 
