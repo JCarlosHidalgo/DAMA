@@ -49,7 +49,7 @@ The same image also renders the PlantUML files on its own (it bundles `plantuml.
 this command; no UML is drawn by hand inside the Markdown.
 
 There are **four** diagrams. Besides the architecture one, two security diagrams accompany
-`extra/OWASP/`: each OWASP list is rendered as one diagram where **every list item is a coloured
+`extra/guia/academico/5.4-cumplimiento-owasp/`: each OWASP list is rendered as one diagram where **every list item is a coloured
 rectangle** enclosing the concrete DAMA components that implement that control (one colour per item,
 A01…A10 / API1…API10), with connectors showing the order of the control flow inside each item.
 Open them the same way (Open / Load → pick the title).

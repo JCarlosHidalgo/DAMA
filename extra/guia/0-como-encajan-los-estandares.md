@@ -34,7 +34,7 @@ DAMA es un SaaS web multitenant; encaja de lleno en el flujo de los tres estánd
   [sección 2](2-diseno-ieee-1016.md) y los archivos `academico/3.x`.
 - **Calidad (25010).** Hay evidencia objetiva medible: suites NUnit en cuatro backends, suite del
   frontend con *gate* de cobertura, *gates* de complejidad con SonarAnalyzer, y el endurecimiento
-  documentado en [`../OWASP/`](../OWASP/) (OWASP Web Top 10 2021 y API Security Top 10 2023). Ver
+  documentado en [`academico/5.4-cumplimiento-owasp/`](academico/5.4-cumplimiento-owasp/) (OWASP Web Top 10 2021 y API Security Top 10 2023). Ver
   [sección 3](3-calidad-iso-25010.md) y los archivos `academico/5.x`.
 
 ### Cadena de trazabilidad de ejemplo (DAMA)
@@ -44,7 +44,7 @@ OE: "Garantizar el aislamiento de datos entre academias"
   └─ RNF (29148): "El sistema deberá filtrar todo acceso a datos por TenantId."
        └─ Diseño (1016): tenancy de esquema compartido con columna TenantId + IClaimContext
             └─ Prueba (25010 · Seguridad): casos que verifican que un tenant no lee datos de otro
-                 └─ Evidencia: OWASP A01 (Broken Access Control) en ../OWASP/web-top-10-2021/
+                 └─ Evidencia: OWASP A01 (Broken Access Control) en academico/5.4-cumplimiento-owasp/web-top-10-2021/
 ```
 
 Este hilo —objetivo → requisito → diseño → prueba → evidencia en el repo— es el patrón que

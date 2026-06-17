@@ -69,6 +69,6 @@ Ningún diagrama UML se dibuja a mano en Markdown. Se usan tres fuentes según e
 - Plantilla original: [`guia-estandares-marco-practico.md`](../../guia-estandares-marco-practico.md)
 - Marco metodológico CPM: [`cpm.txt`](../../cpm.txt)
 - Diagramas FossFlow: [`../graphics/`](../graphics/)
-- Cumplimiento OWASP (insumo de calidad/seguridad): [`../OWASP/`](../OWASP/)
+- Cumplimiento OWASP (insumo de calidad/seguridad): [`academico/5.4-cumplimiento-owasp/`](academico/5.4-cumplimiento-owasp/)
 - Documentación de código: `infrastructure/docs/doxygen/` (backends) y
   `infrastructure/docs/compodoc/` (frontend).

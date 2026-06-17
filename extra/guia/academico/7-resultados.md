@@ -45,7 +45,7 @@ conformidad), no se encubren como cumplimiento.
 La seguridad (OE-5) se trabajó en **tres olas de endurecimiento** —control de acceso denegado por
 defecto, límites de recursos en el gateway, y reforzamiento de autenticación/criptografía/auditoría—
 y se documentó frente a los catálogos **OWASP Web Top 10 (2021)** y **API Security Top 10 (2023)**:
-**veinte ítems** revisados en total (`extra/OWASP/`). Esta cobertura es la evidencia principal del
+**veinte ítems** revisados en total (`extra/guia/academico/5.4-cumplimiento-owasp/`). Esta cobertura es la evidencia principal del
 veredicto de la característica *Security* (3.5.3 §6).
 
 ## 3.7.4 Resultados cuantitativos
@@ -58,7 +58,7 @@ veredicto de la característica *Security* (3.5.3 §6).
 | Pruebas automatizadas en verde | **1 251** (598 backend + 653 frontend), 0 fallos, 0 omitidas | 5.2 |
 | Archivos de prueba | 199 | 5.2 |
 | Características de calidad evaluadas (25010:2023) | 9 (7 cumplen + 2 con brecha) | 5.3 |
-| Ítems OWASP revisados | 20 (Web 10 + API 10) | `extra/OWASP/` |
+| Ítems OWASP revisados | 20 (Web 10 + API 10) | `extra/guia/academico/5.4-cumplimiento-owasp/` |
 | Ventana de desarrollo | 30 de mayo – 16 de junio de 2026 | `git log` |
 | Estado de despliegue | En producción (Dokploy + Cloudflare) | 3.6 |
 
@@ -107,7 +107,7 @@ for s in Auth Attendance CourseManagement Payment; do ( cd apps/$s/Test && dotne
 cd apps/Frontend && bun run test:ci
 
 # Cobertura OWASP (20 ítems) y suites por servicio (cierre de trazabilidad)
-ls extra/OWASP/web-top-10-2021 extra/OWASP/api-security-top-10-2023
+ls extra/guia/academico/5.4-cumplimiento-owasp/web-top-10-2021 extra/guia/academico/5.4-cumplimiento-owasp/api-security-top-10-2023
 ls apps/*/Test
 
 # Acciones por objetivo: integraciones del WBS (3.1/4.3)

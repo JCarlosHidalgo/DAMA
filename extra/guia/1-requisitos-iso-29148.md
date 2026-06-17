@@ -57,7 +57,7 @@ vía `IClaimContext`) son:
 - **Integración externa:** registro y cobro de deudas a través de **Todotix** (credenciales
   cifradas por tenant).
 - **Seguridad como RNF de primera clase:** ver el catálogo de controles ya implementados en
-  [`../OWASP/`](../OWASP/), que sirve de fuente directa para los RNF de seguridad.
+  [`academico/5.4-cumplimiento-owasp/`](academico/5.4-cumplimiento-owasp/), que sirve de fuente directa para los RNF de seguridad.
 
 ### Plantilla de requisitos (rellenar en `academico/2.3` y `academico/2.4`)
 

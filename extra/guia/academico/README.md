@@ -28,6 +28,7 @@ sobre el repositorio real.
 | [5.1-plan-de-pruebas.md](5.1-plan-de-pruebas.md) | 3.5.1 | ✅ Redactado |
 | [5.2-casos-de-prueba-y-resultados.md](5.2-casos-de-prueba-y-resultados.md) | 3.5.2 | ✅ Redactado |
 | [5.3-evaluacion-por-caracteristicas-de-calidad.md](5.3-evaluacion-por-caracteristicas-de-calidad.md) | 3.5.3 | ✅ Redactado |
+| [5.4-cumplimiento-owasp.md](5.4-cumplimiento-owasp.md) + [`5.4-cumplimiento-owasp/`](5.4-cumplimiento-owasp/) | 3.5.4 | ✅ Redactado |
 | [6-despliegue.md](6-despliegue.md) | 3.6 | ✅ Redactado |
 | [7-resultados.md](7-resultados.md) | 3.7 | ✅ Redactado |
 

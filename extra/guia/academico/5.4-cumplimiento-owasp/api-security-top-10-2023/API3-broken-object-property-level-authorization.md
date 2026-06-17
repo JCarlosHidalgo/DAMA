@@ -12,36 +12,11 @@ BOPLA combina *mass assignment* (el cliente escribe propiedades que no debería,
 
 El DTO de entrada expone **sólo** lo que el cliente puede escribir. El rol, el id y el hash de contraseña los pone el servidor en el builder, no el cuerpo.
 
-El DTO de registro lleva únicamente credenciales — no hay propiedad `Role` ni `Id` que enviar. `apps/Auth/Backend/Dtos/Users/Input/RegisterCredentialsDto.cs:3`:
+El DTO de registro lleva únicamente credenciales (`Username` y `Password`) e implementa la interfaz `ICredentialsPayload` — no existe propiedad `Role` ni `Id` que enviar (`apps/Auth/Backend/Dtos/Users/Input/RegisterCredentialsDto.cs:3`).
 
-```csharp
-public class RegisterCredentialsDto : ICredentialsPayload
-{
-    public required string Username { get; set; } = string.Empty;
-    public required string Password { get; set; } = string.Empty;
-}
-```
+El **rol lo decide el punto de acceso**, que lo pasa como parámetro al servicio (por ejemplo `UserRole.Teacher` al registrar un profesor), no leyéndolo del cuerpo (`apps/Auth/Backend/Controllers/AuthController.cs:64`).
 
-El **rol lo decide el endpoint**, pasándolo como parámetro al servicio, no leyéndolo del cuerpo. `apps/Auth/Backend/Controllers/AuthController.cs:64`:
-
-```csharp
-RegisterUserOutcome outcome = await _userRegistrationService.RegisterAsync(request, UserRole.Teacher);
-```
-
-Y el builder fija explícitamente cada campo de la entidad — `Id` generado en servidor, `PasswordHash` calculado, `Role` desde el parámetro, no desde el DTO. `apps/Auth/Backend/Builders/UserEntityBuilder.cs:18`:
-
-```csharp
-public User BuildUser(ICredentialsPayload request, UserRole role)
-{
-    User user = new User();
-    string hashedPassword = _passwordHasher.HashPassword(user, request.Password);
-    user.Id = Guid.NewGuid();
-    user.UserName = request.Username;
-    user.PasswordHash = hashedPassword;
-    user.Role = role.Value;
-    return user;
-}
-```
+Y el builder fija explícitamente cada campo de la entidad: el `Id` se genera en el servidor con `Guid.NewGuid()`, el `PasswordHash` se calcula con el *hasher*, el `Role` proviene del parámetro y el `UserName` del DTO — ninguno se toma a ciegas del cuerpo (`apps/Auth/Backend/Builders/UserEntityBuilder.cs:18`).
 
 El builder recibe la **interfaz** `ICredentialsPayload` (`apps/Auth/Backend/Dtos/Users/Input/ICredentialsPayload.cs:3`), que sólo expone `Username` y `Password` — aun si el DTO concreto creciera con más propiedades, el builder no puede leerlas.
 
@@ -59,39 +34,11 @@ ASP.NET no liga interfaces desde `[FromBody]`, así que el controlador mantiene 
 
 Todo argumento de acción con un `IValidator<>` registrado se valida antes de ejecutar la acción; el primer fallo corta con 400. Los controladores no inyectan validadores ni llaman `ValidateAsync`.
 
-`apps/Auth/Backend/Filters/FluentValidationActionFilter.cs:22`
+El filtro recorre los argumentos de la acción, resuelve para cada uno su `IValidator<>` por reflexión, ejecuta la validación y, al primer resultado inválido, asigna un `BadRequestObjectResult` con el primer mensaje de error sin llamar a la acción (`apps/Auth/Backend/Filters/FluentValidationActionFilter.cs:22`).
 
-```csharp
-public async Task OnActionExecutionAsync(ActionExecutingContext actionContext, ActionExecutionDelegate next)
-{
-    ...
-    foreach (object? argument in actionContext.ActionArguments.Values)
-    {
-        ...
-        Type validatorInterfaceType = typeof(IValidator<>).MakeGenericType(argument.GetType());
-        IValidator? validator = (IValidator?)_serviceProvider.GetService(validatorInterfaceType);
-        if (validator is null) { continue; }
-        ...
-        if (!validationResult.IsValid)
-        {
-            actionContext.Result = new BadRequestObjectResult(validationResult.Errors[0].ErrorMessage);
-            return;
-        }
-    }
-    await next();
-}
-```
+El validador concreto restringe la forma y el contenido de cada propiedad escribible: el de registro acota la longitud mínima y máxima y el patrón (regex) de `Username` y `Password` (`apps/Auth/Backend/Validators/Users/RegisterCredentialsDtoValidator.cs:17`).
 
-El validador concreto restringe forma y contenido de cada propiedad escribible. `apps/Auth/Backend/Validators/Users/RegisterCredentialsDtoValidator.cs:17` acota longitud y regex de `Username`/`Password`:
-
-```csharp
-RuleFor(x => x.Username)
-    .MinimumLength(MinUsernameLength).WithMessage(InvalidUsernameMessage)
-    .MaximumLength(MaxUsernameLength).WithMessage(InvalidUsernameMessage)
-    .Matches(UsernameRegex).WithMessage(InvalidUsernameMessage);
-```
-
-Cada split de DTO trae su propio validador concreto (Register vs Login tienen `RegisterCredentialsDtoValidator` y `LoginCredentialsDtoValidator`), de modo que cada flujo valida sólo sus propiedades.
+Cada división de DTO trae su propio validador concreto (Register vs Login tienen `RegisterCredentialsDtoValidator` y `LoginCredentialsDtoValidator`), de modo que cada flujo valida sólo sus propiedades.
 
 ## Flujo de los componentes
 
@@ -112,7 +59,7 @@ request body (JSON)
 
 La defensa contra mass-assignment es estructural: el cliente no tiene dónde poner un campo privilegiado (el DTO no lo expone) y el builder lo fija él mismo. La defensa contra exposición excesiva es la separación request/response DTO + AutoMapper a proyecciones de lectura controladas.
 
-En el diagrama FossFLOW `extra/graphics/diagrams/owasp-api-top-10.json`, este ítem es el rectángulo **API3 · Broken Object Property Level Authorization** que agrupa: **DTOs ISP (req/resp)**, **Builders (sin mass-assign)** y **FluentValidation** (con **Response validation** como nodo de apoyo del lado de la salida).
+En el diagrama FossFlow `extra/graphics/diagrams/owasp-api-top-10.json`, este ítem es el rectángulo **API3 · Broken Object Property Level Authorization** que agrupa: **DTOs ISP (req/resp)**, **Builders (sin mass-assign)** y **FluentValidation** (con **Response validation** como nodo de apoyo del lado de la salida).
 
 ## Verificación
 
@@ -120,7 +67,7 @@ En el diagrama FossFLOW `extra/graphics/diagrams/owasp-api-top-10.json`, este í
 - `dotnet test` en cada `apps/<Svc>/Test/` valida que los handlers/builders construyen entidades con los campos esperados.
 - Manual con Bruno: enviar en el cuerpo de `POST /api/auth/register/student` una propiedad extra `"role": "Admin"` no tiene efecto — el DTO no la liga y el builder fija `Role` desde `UserRole.Student`.
 
-## Notas / brechas conocidas
+## Notas y brechas conocidas
 
 - La protección contra mass-assignment depende de que los DTOs de entrada no expongan campos privilegiados y de que los builders fijen esos campos. Un DTO nuevo que añadiera por descuido una propiedad sensible escribible **sí** sería ligado por `[FromBody]`; la disciplina es: campos que decide el servidor → parámetro del endpoint + builder, nunca propiedad del DTO de entrada (pattern #13 y #10 en `apps/CLAUDE.md`).
 - No hay un mecanismo de "ignore-list" de propiedades a nivel de framework; la seguridad es por construcción (DTO mínimo + builder explícito), no por configuración de binder.

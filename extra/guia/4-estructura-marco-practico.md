@@ -30,6 +30,7 @@ CAPÍTULO 3 — MARCO PRÁCTICO
     3.5.1 Plan de pruebas
     3.5.2 Casos de prueba y resultados
     3.5.3 Evaluación por características de calidad
+    3.5.4 Cumplimiento de seguridad (OWASP Web/API Top 10)
 3.6 Despliegue (CI/CD, nube)
 3.7 Resultados
 ```
@@ -60,6 +61,7 @@ El prefijo del archivo es el número de sub-sección sin el "3." (3.1 → `1-`, 
 | 3.5.1 | [`academico/5.1-plan-de-pruebas.md`](academico/5.1-plan-de-pruebas.md) | ✅ Redactado | 25010:2023 |
 | 3.5.2 | [`academico/5.2-casos-de-prueba-y-resultados.md`](academico/5.2-casos-de-prueba-y-resultados.md) | ✅ Redactado | 25010:2023 |
 | 3.5.3 | [`academico/5.3-evaluacion-por-caracteristicas-de-calidad.md`](academico/5.3-evaluacion-por-caracteristicas-de-calidad.md) | ✅ Redactado | 25010:2023 |
+| 3.5.4 | [`academico/5.4-cumplimiento-owasp.md`](academico/5.4-cumplimiento-owasp.md) (+ carpeta `5.4-cumplimiento-owasp/`) | ✅ Redactado | OWASP Web/API Top 10 |
 | 3.6 | [`academico/6-despliegue.md`](academico/6-despliegue.md) | ✅ Redactado | environments.md / Dokploy |
 | 3.7 | [`academico/7-resultados.md`](academico/7-resultados.md) | ✅ Redactado | síntesis / trazabilidad |
 

@@ -10,73 +10,25 @@ Una inyección ocurre cuando datos no confiables del usuario se interpretan como
 
 ### 1. DAOs parametrizados — nunca concatenan entrada del usuario
 
-Cada acceso a MySQL se hace con `MySqlCommand` y `Parameters.AddWithValue`; los valores viajan como parámetros enlazados, no como texto interpolado en la sentencia. El único `INSERT` literal del `UserDao` usa placeholders `@…`:
-
-`apps/Auth/Backend/DB/Daos/Concrete/Single/Users/UserDao.cs:64`
-```csharp
-const string sql = "INSERT INTO User (Id, UserName, PasswordHash, Role) " +
-                   "VALUES (@Id, @UserName, @PasswordHash, @Role);";
-MySqlCommand com = new MySqlCommand(sql, _connection, sqlTransaction);
-com.Parameters.AddWithValue("@Id", user.Id);
-com.Parameters.AddWithValue("@UserName", user.UserName);
-```
+Cada acceso a MySQL se hace con `MySqlCommand` y `Parameters.AddWithValue`; los valores viajan como parámetros enlazados, no como texto interpolado en la sentencia. El único `INSERT` literal del `UserDao` declara la sentencia como constante con placeholders `@Id`, `@UserName`, `@PasswordHash`, `@Role` y enlaza cada valor con `Parameters.AddWithValue` sobre el `MySqlCommand` (`apps/Auth/Backend/DB/Daos/Concrete/Single/Users/UserDao.cs:64`).
 
 No hay `string.Format`, interpolación `$"..."` ni `+` con datos de petición dentro de ninguna sentencia SQL: el texto SQL es siempre una constante y los valores siempre parámetros.
 
 ### 2. Stored procedures con `CommandType.StoredProcedure`
 
-Las lecturas/escrituras de negocio invocan *stored procedures* por nombre, pasando los argumentos como parámetros de entrada. El nombre del SP es una constante del código (jamás se arma con datos del usuario):
-
-`apps/Auth/Backend/DB/Daos/Concrete/Single/Users/UserDao.cs:249`
-```csharp
-MySqlCommand command = new MySqlCommand("RegisterFailedLoginAttempt", _connection)
-{
-    CommandType = CommandType.StoredProcedure
-};
-command.Parameters.AddWithValue("@userId", userId.ToString());
-command.Parameters["@userId"].Direction = ParameterDirection.Input;
-```
+Las lecturas/escrituras de negocio invocan *stored procedures* por nombre, pasando los argumentos como parámetros de entrada. El nombre del SP es una constante del código (jamás se arma con datos del usuario): el `MySqlCommand` se construye con el nombre literal `RegisterFailedLoginAttempt`, se fija `CommandType = CommandType.StoredProcedure` y el `@userId` se enlaza con `AddWithValue` y dirección `Input` (`apps/Auth/Backend/DB/Daos/Concrete/Single/Users/UserDao.cs:249`).
 
 ### 3. Los SP no construyen SQL dinámico
 
-Los procedimientos en `infrastructure/environments/<svc>/init.sql` son SQL estático: sin `PREPARE`/`EXECUTE`, sin `CONCAT` para armar consultas, sin `EXEC`. La estructura de la consulta es fija y solo los valores son variables. Ejemplo:
+Los procedimientos en `infrastructure/environments/<svc>/init.sql` son SQL estático: sin `PREPARE`/`EXECUTE`, sin `CONCAT` para armar consultas, sin `EXEC`. La estructura de la consulta es fija y solo los valores son variables. Por ejemplo, el procedimiento `GetUsersByRoleForTenantPaged` recibe `tenantId`, `userRole`, `pageOffset` y `pageSize` como parámetros `IN`, ejecuta un `SELECT` fijo con `INNER JOIN` entre `User` y `TenantDomain` filtrado por `td.TenantId`, `u.Role` y `u.IsDeleted`, y pagina con `LIMIT pageSize OFFSET pageOffset` (`infrastructure/environments/auth/init.sql:119`).
 
-`infrastructure/environments/auth/init.sql:119`
-```sql
-CREATE PROCEDURE GetUsersByRoleForTenantPaged(
-    IN tenantId VARCHAR(36),
-    IN userRole VARCHAR(50),
-    IN pageOffset INT,
-    IN pageSize INT
-)
-BEGIN
-    SELECT u.Id, u.UserName
-    FROM User u
-        INNER JOIN TenantDomain td ON td.UserId = u.Id
-    WHERE td.TenantId = tenantId
-        AND u.Role = userRole
-        AND u.IsDeleted = 0
-    ORDER BY u.UserName ASC, u.Id ASC
-    LIMIT pageSize OFFSET pageOffset;
-END //
-```
-
-**Convención anti-colisión (relevante para inyección lógica):** los parámetros `camelCase` (`tenantId`) colisionarían con columnas `PascalCase` (`TenantId`) — `WHERE TenantId = tenantId` sería siempre verdadero y filtraría de más. Por eso todo `WHERE` califica la columna con el **alias de tabla**: `td.TenantId = tenantId` (línea 133). Esto evita que el filtro de tenant se neutralice silenciosamente — un fallo de aislamiento, no de inyección clásica, pero la misma disciplina de no mezclar identificadores.
+**Convención anti-colisión (relevante para inyección lógica):** los parámetros `camelCase` (`tenantId`) colisionarían con columnas `PascalCase` (`TenantId`) — `WHERE TenantId = tenantId` sería siempre verdadero y filtraría de más. Por eso todo `WHERE` califica la columna con el **alias de tabla**: `td.TenantId = tenantId` (`infrastructure/environments/auth/init.sql:133`). Esto evita que el filtro de academia se neutralice silenciosamente — un fallo de aislamiento, no de inyección clásica, pero la misma disciplina de no mezclar identificadores.
 
 ### 4. Validación de entrada automática (FluentValidation, filtro global)
 
 Antes de llegar al DAO, todo DTO de entrada se valida en un único punto: un `IAsyncActionFilter` MVC registrado globalmente resuelve el `IValidator<>` de cada argumento de la acción, ejecuta `ValidateAsync` y cortocircuita con un 400 ante el primer fallo. Los controladores **no** inyectan validadores ni llaman `ValidateAsync`.
 
-`apps/Auth/Backend/Filters/FluentValidationActionFilter.cs:40`
-```csharp
-IValidationContext validationContext = BuildValidationContext(argument, ruleSetNames);
-ValidationResult validationResult = await validator.ValidateAsync(validationContext);
-if (!validationResult.IsValid)
-{
-    actionContext.Result = new BadRequestObjectResult(validationResult.Errors[0].ErrorMessage);
-    return;
-}
-```
+El filtro construye el contexto de validación de cada argumento de la acción, ejecuta `ValidateAsync` y, si el resultado no es válido, asigna como resultado de la acción un `BadRequestObjectResult` con el primer mensaje de error y detiene la ejecución antes de llegar al controlador (`apps/Auth/Backend/Filters/FluentValidationActionFilter.cs:40`).
 
 Registro global del filtro en `apps/Auth/Backend/Modules/MvcModule.cs` (`AddControllers(options => options.Filters.Add<FluentValidationActionFilter>())`); los validadores concretos viven en `apps/*/Backend/Validators/` y se descubren con `AddValidatorsFromAssemblyContaining<Program>()`. Es una *allowlist* por DTO: longitudes, formatos y campos permitidos se declaran por tipo.
 
@@ -86,7 +38,7 @@ No hay Entity Framework ni un ORM que traduzca expresiones a SQL interpolado. El
 
 ## Flujo de los componentes
 
-Rectángulo **A03 Injection** del diagrama FossFLOW `extra/graphics/diagrams/owasp-web-top-10.json` (nodos `FluentValidation filter` → `DAO parametrizado` → `Stored Procedures`):
+Rectángulo **A03 Injection** del diagrama FossFlow `extra/graphics/diagrams/owasp-web-top-10.json` (nodos `FluentValidation filter` → DAO parametrizado → procedimientos almacenados):
 
 ```
 Petición HTTP (DTO)
@@ -125,7 +77,7 @@ MySQL
   ```
 - Tests: las suites de Auth/Attendance/CourseManagement/Payment ejercitan los validadores y los DAOs contra `mysql:9` (Testcontainers).
 
-## Notas / brechas conocidas
+## Notas y brechas conocidas
 
 - **Credentials no tiene DTOs de entrada ni DB**, por lo que su `MvcModule` no registra el filtro de validación y no tiene DAOs — no es una brecha, es ausencia de superficie (servicio *stateless* de solo-claims).
 - La protección depende de que los SP nuevos sigan siendo SQL estático. **Regla a mantener:** toda consulta sobre `User` (y agregados con tenant) se expresa como un SP nuevo con sufijo `*ForTenant` y alias de tabla en el `WHERE`, nunca como SQL ad-hoc en el DAO (patrón #8 de `apps/CLAUDE.md`).

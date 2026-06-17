@@ -50,7 +50,7 @@ el plan y los casos, en `academico/5.1` y `academico/5.2`.
 | Característica | Métrica | Método | Esperado | Obtenido |
 |---|---|---|---|---|
 | Functional Suitability | % de RF con prueba que pasa | Suites NUnit + frontend | 100% | _por llenar_ |
-| Security | Subcaracterísticas con control verificado | Catálogo OWASP `../OWASP/` | 6/6 cubiertas | _por llenar_ |
+| Security | Subcaracterísticas con control verificado | Catálogo OWASP `academico/5.4-cumplimiento-owasp/` | 6/6 cubiertas | _por llenar_ |
 | Maintainability | Violaciones de complejidad | *Gates* SonarAnalyzer | 0 | _por llenar_ |
 | Performance Efficiency | Tiempo de respuesta p95 / capacidad | Prueba de carga | _definir_ | _por llenar_ |
 
@@ -60,7 +60,7 @@ el plan y los casos, en `academico/5.1` y `academico/5.2`.
 - Pruebas frontend: `cd apps/Frontend && bun run test:ci`
 - Cobertura con *gate*: `cd apps/Frontend && bun run test:coverage:gate`
 - Estilo/complejidad: `dotnet format <Project>.csproj --verify-no-changes`
-- Seguridad: catálogo OWASP en [`../OWASP/`](../OWASP/) (Web Top 10 2021 + API Top 10 2023).
+- Seguridad: catálogo OWASP en [`academico/5.4-cumplimiento-owasp/`](academico/5.4-cumplimiento-owasp/) (Web Top 10 2021 + API Top 10 2023).
 
 > Alcance de las suites: por `.runsettings` cubren **lógica de negocio**, no infraestructura.
 > Credentials es un *dummy* de claims sin casos de prueba.

@@ -31,7 +31,7 @@ completo en esta carpeta.
 ## Estructura de la carpeta
 
 ```
-extra/OWASP/
+extra/guia/academico/5.4-cumplimiento-owasp/
 ├── README.md                                  # este archivo
 ├── web-top-10-2021/                           # un .md por cada A01…A10
 │   ├── A01-broken-access-control.md
@@ -57,14 +57,14 @@ extra/OWASP/
     └── API10-unsafe-consumption-of-apis.md
 ```
 
-Cada documento de ítem sigue la misma estructura: **qué exige OWASP**, **cómo lo cumple DAMA** (con
-`ruta:línea` y fragmentos de código/configuración), **flujo de los componentes involucrados**, y
-**notas / brechas conocidas**.
+Cada documento de ítem sigue la misma estructura: **qué exige OWASP**, **cómo lo cumple DAMA**
+(en prosa, con citas `ruta:línea` al código y la configuración reales), **flujo de los componentes
+involucrados**, y **notas y brechas conocidas**.
 
-## Diagramas (FossFLOW)
+## Diagramas (FossFlow)
 
-El flujo de los componentes de cada lista se grafica con la instancia FossFLOW del repo
-([`extra/graphics/`](../graphics/README.md)). Hay **dos diagramas nuevos**, uno por lista:
+El flujo de los componentes de cada lista se grafica con la instancia FossFlow del repo
+([`extra/graphics/`](../../../graphics/README.md)). Hay **dos diagramas**, uno por lista:
 
 - `extra/graphics/diagrams/owasp-web-top-10.json` → **OWASP Web Top 10 (2021) – DAMA**
 - `extra/graphics/diagrams/owasp-api-top-10.json` → **OWASP API Security Top 10 (2023) – DAMA**
