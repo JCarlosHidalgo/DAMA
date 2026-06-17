@@ -18,6 +18,27 @@ Cada estándar cubre una fase distinta del proceso. No compiten: se complementan
    omites.
 3. **Cita correctamente** cada estándar (ver [sección 5](5-errores-comunes-y-citas.md)).
 
+## El marco de proceso que engloba a los tres estándares
+
+Los tres estándares anteriores son de **producto**: cada uno rige *un artefacto* (requisitos, diseño,
+calidad). El **proceso** de realización de software que los encadena —y la estructura de su
+documentación— lo norman dos estándares de **ciclo de vida**, que aquí se citan como marco de
+referencia:
+
+- **ISO/IEC/IEEE 12207:2017** — *Software life cycle processes*. Define los **procesos técnicos** del
+  ciclo de vida (definición de requisitos, definición de arquitectura, definición de diseño,
+  implementación, integración, verificación, transición, validación, operación). Los estándares de
+  producto 29148 / 1016 / 25010 son, precisamente, los que esos procesos invocan para producir cada
+  artefacto.
+- **ISO/IEC/IEEE 15289:2019** — *Content of life-cycle information items*. Norma el **contenido y la
+  estructura de los documentos** (los "ítems de información") que el ciclo de vida genera.
+
+> **Nota de honestidad.** La estructura del capítulo (ver [sección 4](4-estructura-marco-practico.md))
+> **no se construyó para conformar a 12207/15289**; se organizó como capítulo de tesis bajo el
+> reglamento universitario. El mapeo a los procesos de 12207 es **retrospectivo**: evidencia que la
+> secuencia de fases ya cubre los procesos técnicos del ciclo de vida, sin declarar una conformidad
+> formal con el estándar. La correspondencia detallada sección-por-proceso está en la sección 4.
+
 ---
 
 ## Cómo aplica a DAMA

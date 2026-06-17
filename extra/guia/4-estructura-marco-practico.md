@@ -65,6 +65,29 @@ El prefijo del archivo es el número de sub-sección sin el "3." (3.1 → `1-`, 
 | 3.6 | [`academico/6-despliegue.md`](academico/6-despliegue.md) | ✅ Redactado | environments.md / Dokploy |
 | 3.7 | [`academico/7-resultados.md`](academico/7-resultados.md) | ✅ Redactado | síntesis / trazabilidad |
 
+## Correspondencia con el ciclo de vida (ISO/IEC/IEEE 12207 / 15289)
+
+El orden de las secciones 3.x no es arbitrario: mapea, de forma **retrospectiva**, con los procesos
+técnicos de **ISO/IEC/IEEE 12207:2017** (procesos del ciclo de vida del software), mientras que la
+estructura de los documentos en sí se referencia con **ISO/IEC/IEEE 15289:2019** (contenido de los
+ítems de información). DAMA **no declara conformidad formal** con 12207/15289 —la estructura sigue el
+reglamento de trabajos de grado y los estándares de producto por fase (ver
+[sección 0](0-como-encajan-los-estandares.md))—, pero el mapeo evidencia que el capítulo cubre los
+procesos del ciclo de vida:
+
+| Sección del capítulo | Proceso técnico de ISO/IEC/IEEE 12207:2017 | Estándar de producto que lo materializa |
+|---|---|---|
+| 3.1 Metodología | Planificación del proyecto (proceso de gestión técnica, no técnico) | CPM (no ISO) |
+| 3.2 Requisitos | Definición de requisitos de stakeholders + de sistema/software | ISO/IEC/IEEE 29148 |
+| 3.3 Diseño | Definición de arquitectura + Definición de diseño | IEEE 1016 |
+| 3.4 Implementación | Implementación (+ Integración) | — |
+| 3.5 Pruebas y calidad | Verificación + Validación | ISO/IEC 25010:2023 |
+| 3.6 Despliegue | Transición (y Operación) | — |
+| 3.7 Resultados | Cierre/síntesis (no es un proceso técnico de 12207) | — |
+
+Las secciones 3.2–3.6 mapean casi 1:1 con los procesos técnicos de 12207; 3.1 corresponde a la
+gestión del proyecto y 3.7 al cierre, que el estándar no modela como procesos técnicos.
+
 ## Nota sobre 3.1 (Metodología) vs. los estándares
 
 La metodología de desarrollo y la planificación del proyecto son transversales: no las cubre
