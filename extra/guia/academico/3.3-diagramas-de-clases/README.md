@@ -19,14 +19,14 @@ La estructura completa y las reglas están en [`_plantilla.md`](_plantilla.md).
 
 ## Estado
 
-| Archivo | Servicio | Estado |
-|---------|----------|--------|
-| [`_plantilla.md`](_plantilla.md) | (plantilla reutilizable) | ✅ |
-| [`credentials.md`](credentials.md) | Credentials | ✅ Redactado (piloto) |
-| `auth.md` | Auth | ⬜ Pendiente |
-| `course-management.md` | CourseManagement | ⬜ Pendiente |
-| `attendance.md` | Attendance | ⬜ Pendiente |
-| `payment.md` | Payment | ⬜ Pendiente |
-| [`frontend.md`](frontend.md) | Frontend (Angular / Compodoc) | ✅ Redactado |
+| Archivo | Servicio | Sección | Estado |
+|---------|----------|---------|--------|
+| [`_plantilla.md`](_plantilla.md) | (plantilla reutilizable) | — | ✅ |
+| [`credentials.md`](credentials.md) | Credentials | 3.3.3.6 | ✅ Redactado (piloto) |
+| [`auth.md`](auth.md) | Auth | 3.3.3.7 | ✅ Redactado |
+| [`course-management.md`](course-management.md) | CourseManagement | 3.3.3.8 | ✅ Redactado |
+| [`attendance.md`](attendance.md) | Attendance | 3.3.3.9 | ✅ Redactado |
+| [`payment.md`](payment.md) | Payment | 3.3.3.10 | ✅ Redactado |
+| [`frontend.md`](frontend.md) | Frontend (Angular / Compodoc) | 3.3.3.11 | ✅ Redactado |
 
 > Las imágenes se generan con: `cd extra/graphics && docker compose --profile docs run --rm doxygen`.

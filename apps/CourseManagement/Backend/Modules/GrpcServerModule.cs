@@ -15,6 +15,5 @@ public sealed class GrpcServerModule : IServiceModule, IAppModule
     public void Configure(WebApplication app)
     {
         app.MapGrpcService<ClassExistenceGrpcService>();
-        app.MapGrpcService<CourseExistenceGrpcService>();
     }
 }

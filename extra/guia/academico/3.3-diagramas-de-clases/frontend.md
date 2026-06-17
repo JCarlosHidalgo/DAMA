@@ -1,9 +1,9 @@
-# 3.3.3.N Diagramado del frontend (Angular 21 / Compodoc)
+# 3.3.3.11 Diagramado del frontend (Angular 21 / Compodoc)
 
 > Contraparte de los archivos de backend, adaptada al frontend. Sigue el mismo enfoque a)/b) de la
 > [plantilla](_plantilla.md), pero la herramienta es **Compodoc** (no Doxygen), porque es el
-> generador de documentación del stack Angular. El índice `N` se asigna al ensamblar el capítulo
-> (después de los cinco servicios de backend).
+> generador de documentación del stack Angular. Es la **sección final** del capítulo, después de los
+> cinco servicios de backend (3.3.3.6 a 3.3.3.10).
 >
 > **Decisiones de adaptación (acordadas):**
 > - **Fuente:** Compodoc — grafo de dependencias, grafo por componente (entradas/salidas, *providers*

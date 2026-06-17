@@ -45,7 +45,7 @@ procedures* deben calificar columnas con alias de tabla para evitar colisión
 - **API REST** por servicio, expuesta tras el gateway con rutas kebab-case en minúsculas.
 - **SPA Angular 21** que consume el gateway; URLs públicas inyectadas por entorno (build-arg para
   el bundle, envsubst de runtime para CORS del gateway).
-- **gRPC con TLS** para contratos internos (`class_existence`/`course_existence` entre
+- **gRPC con TLS** para contratos internos (`class_existence` entre
   CourseManagement↔Attendance, `tenant_subscription` Payment→Auth).
 - **Mensajería asíncrona:** patrón Outbox + RabbitMQ + consumidor idempotente.
 

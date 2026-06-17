@@ -1,4 +1,4 @@
-# 3.3.3.4 Diagramado del servicio Credentials (piloto)
+# 3.3.3.6 Diagramado del servicio Credentials (piloto)
 
 > **Piloto** del diagramado detallado de clases (3.3.3), elegido por ser el servicio con **menos
 > clases**. Estructura definida en [`_plantilla.md`](_plantilla.md). Todos los grafos citados los

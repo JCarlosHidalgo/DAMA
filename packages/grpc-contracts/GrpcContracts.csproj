@@ -5,12 +5,12 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <PackageId>DAMA.Software.GrpcContracts</PackageId>
-    <Version>1.0.0</Version>
+    <Version>1.1.0</Version>
     <Author>Juan Carlos Hidalgo Sosa</Author>
     <Authors>Juan Carlos Hidalgo Sosa</Authors>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <Product>GrpcContracts</Product>
-    <Description>Shared gRPC contracts for the DAMA platform. Hosts every cross-service .proto: ClassExistence and CourseExistence (Attendance -> CourseManagement) and TenantSubscription (Payment -> Auth).</Description>
+    <Description>Shared gRPC contracts for the DAMA platform. Hosts every cross-service .proto: ClassExistence (Attendance -> CourseManagement) and TenantSubscription (Payment -> Auth).</Description>
     <Copyright>CC BY-SA 4.0, 2026</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageTags>gRPC,Protobuf,DAMA</PackageTags>
@@ -28,7 +28,6 @@
 
   <ItemGroup>
     <Protobuf Include="Protos\class_existence.proto" GrpcServices="Both" />
-    <Protobuf Include="Protos\course_existence.proto" GrpcServices="Both" />
     <Protobuf Include="Protos\tenant_subscription.proto" GrpcServices="Both" />
     <None Include="README.md" Pack="true" PackagePath="\" />
   </ItemGroup>

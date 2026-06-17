@@ -7,7 +7,6 @@ Shared home for **every** cross-service gRPC contract in the DAMA microservices 
 Protobuf service definitions under `Protos/` (all generated into the single C# namespace `DAMA.Software.GrpcContracts`):
 
 - **`class_existence.proto`** — `ClassExistence.ScheduledExists(...)` / `UniqueExists(...) → ClassExistsResponse`. Implemented by `CourseManagementService`; consumed by `AttendanceService` to confirm a scheduled or unique class exists before recording attendance.
-- **`course_existence.proto`** — `CourseExistence.Exists(CourseExistsRequest) → CourseExistsResponse`. Implemented by `CourseManagementService`.
 - **`tenant_subscription.proto`** — `TenantSubscription.UpdateTenantSubscription(UpdateTenantSubscriptionRequest) → UpdateTenantSubscriptionResponse`. Implemented by `AuthService`; consumed by `PaymentService` to apply a tenant's new pyramid level + expiry the moment a subscription QR payment is captured (synchronous, in-band with the capture).
 
 `Grpc.Tools` generates both the client and server stubs at build time (`GrpcServices="Both"`), so the same package serves consumers and producers.
@@ -15,7 +14,7 @@ Protobuf service definitions under `Protos/` (all generated into the single C# n
 ## Usage
 
 ```xml
-<PackageReference Include="DAMA.Software.GrpcContracts" Version="1.0.0" />
+<PackageReference Include="DAMA.Software.GrpcContracts" Version="1.1.0" />
 ```
 
 Server side derives from the generated `*.<Service>Base` and is mapped with `app.MapGrpcService<...>()`; client side registers `AddGrpcClient<<Service>.<Service>Client>(...)` pointing at the peer's `Services:*Url`.
