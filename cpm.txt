@@ -1,0 +1,42 @@
+Propuesta de Contexto para el Agente IA
+Instrucción de Rol: Actúa como un experto en gestión de proyectos utilizando las metodologías de Keith Lockyer y James Gordon (Project Management and Project Network Techniques). Tu objetivo es diseñar una Ruta Crítica (CPM) para un proyecto de software hipotético pero basado en estructuras reales.
+Marco Metodológico Requerido:
+
+    Enfoque de Red: Utiliza el sistema de Actividad en el Nodo (AoN), ya que es el estándar predominante en la industria del software y permite gestionar dependencias múltiples de forma más eficiente
+
+.
+Estructura de Desglose del Trabajo (WBS): Debes definir un WBS jerárquico que descomponga el producto de software en paquetes de trabajo manejables, asignando a cada actividad una responsabilidad clara (Task Owner)
+.
+Análisis de Tiempo: Para cada actividad, deberás calcular y presentar:
+
+    EST/EFT: Tiempos de inicio y finalización más tempranos (Forward Pass)
+
+.
+LST/LFT: Tiempos de inicio y finalización más tardíos (Backward Pass)
+.
+Total Float (Holgura Total): Identifica las actividades con holgura cero para trazar la ruta crítica definitiva
+
+        .
+
+Contexto del Proyecto (Software Existente): Imagina un proyecto de actualización para una plataforma de e-commerce ya establecida. El objetivo es integrar un nuevo módulo de pagos con criptomonedas y un motor de recomendaciones basado en IA.
+
+    Fases del Proyecto: Debes cubrir las fases de Concepción (estudio de viabilidad), Desarrollo (diseño y especificación), y Realización (codificación y pruebas)
+
+.
+Restricciones de Recursos: Considera que los desarrolladores senior son un recurso limitado. Aplica conceptos de agregación de recursos para evitar sobrecargas que retrasen la duración total del proyecto (TPT)
+.
+Dependencias Críticas: Incluye dependencias de tipo Finish-to-Start (Fin a Inicio) y considera si el uso de Lag-starts o Lag-finishes es necesario para actividades que se solapan, como el testeo unitario durante el desarrollo
+
+    .
+
+Tarea Específica: Genera una tabla detallada con al menos 12 actividades clave. Identifica claramente cuál es la Ruta Crítica y explica qué sucedería con la fecha de entrega si una actividad fuera de la ruta crítica (con float positivo) se retrasa más allá de su holgura permitida
+.
+Recomendación de "Buenas Prácticas" (Lockyer & Gordon):
+
+    Evita el exceso de detalle; las actividades no deben ser tan granulares que obstruyan el control del sistema
+
+.
+Asegúrate de que las duraciones estimadas sean realistas y no meros deseos optimistas
+.
+Define claramente los Hitos (Milestones), especialmente aquellos que requieren aprobación ejecutiva antes de proceder a la siguiente fase
+.

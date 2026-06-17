@@ -8,6 +8,9 @@ infrastructure/.env.dev
 infrastructure/.env.prod
 infrastructure/tls/
 
+# Learning path (local docs; not tracked)
+extra/lecciones/
+
 # OS / editor
 .DS_Store
 .vs/
