@@ -73,10 +73,18 @@ docker compose up --build
 
 Then open **http://localhost:8088**.
 
+> **Wait for the container to report `healthy` before opening the page.** The entrypoint runs an
+> `npm install` and starts the Node backend (`:3001`) just before nginx, so there is a brief window
+> where the SPA loads but `/api/` is not answering yet. If you open during that window, FossFlow
+> falls back to browser-local storage and caches that decision for 60 s — so only the diagram cached
+> in `localStorage` shows up. The `healthcheck` in `compose.yaml` (it polls `/api/storage/status`)
+> exists so `docker compose up` only marks the service healthy once the backend is ready.
+
 > The diagram **does not open by itself** when the page loads (FossFlow remembers the "last opened"
-> one in the browser's `localStorage`, which cannot be pre-seeded from the server). To view it:
-> click the **Open / Load** button (the server storage manager) and select
-> **"DAMA – Arquitectura"**. It opens with a single click.
+> one in the browser's `localStorage`, which cannot be pre-seeded from the server). All four live in
+> the server storage manager: click the **Open / Load** button and pick the title. It opens with a
+> single click. If you only see one entry there, the browser cached a stale list from before the
+> other three were added — hard-reload (Ctrl+Shift+R), or clear site data for `localhost:8088`.
 
 Port `8088` is configurable in `compose.yaml` (`"8088:80"`).
 
