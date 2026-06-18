@@ -2,6 +2,10 @@
 
 > **Estado:** ✅ — Todo acceso a datos pasa por *stored procedures* parametrizados o queries con parámetros nombrados; la entrada se valida automáticamente con un filtro MVC global. No existe SQL dinámico, concatenación ni ORM con interpolación de cadenas.
 
+## Introducción
+
+Esta ficha documenta cómo DAMA mitiga el riesgo de **inyección** (A03), que aparece cuando datos no confiables del usuario se interpretan como código o comandos (SQL, NoSQL, OS, LDAP). El documento expone la evidencia técnica de la separación entre datos e instrucciones: DAOs parametrizados que nunca concatenan entrada del usuario, stored procedures invocados por nombre con `CommandType.StoredProcedure`, procedimientos de `init.sql` sin SQL dinámico y la validación de entrada automática mediante un filtro MVC global de FluentValidation. Se complementa con la ausencia de ORM con interpolación de cadenas, los comandos de verificación y las brechas conocidas.
+
 ## Qué exige OWASP
 
 Una inyección ocurre cuando datos no confiables del usuario se interpretan como código o comandos (SQL, NoSQL, OS, LDAP…). OWASP exige separar datos de instrucciones: usar APIs parametrizadas (consultas preparadas / *stored procedures* sin SQL dinámico), validar la entrada en el servidor con una *allowlist*, y escapar cualquier residuo. El control clave es que el atacante nunca pueda alterar la estructura de la consulta.

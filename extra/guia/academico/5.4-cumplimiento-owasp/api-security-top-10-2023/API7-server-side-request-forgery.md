@@ -2,6 +2,10 @@
 
 > **Estado:** 🟢 — Acotado por diseño: ninguna API de DAMA acepta una URI/URL del cliente para que el servidor la consulte. La única salida HTTP externa (Todotix) tiene `BaseUrl` fija por configuración y el tráfico gRPC interno usa discovery fijo por nombre de contenedor.
 
+## Introducción
+
+Esta ficha aborda el riesgo API7 del OWASP API Security Top 10 2023: la falsificación de solicitudes del lado del servidor (SSRF), que ocurre cuando un punto de acceso obtiene un recurso remoto a partir de una URI controlada por el cliente sin validarla. El documento detalla cómo DAMA lo acota por diseño: ningún punto de acceso recibe una URL del cliente para consultarla server-side, la única salida HTTP externa (Todotix) tiene la `BaseUrl` fija por configuración con rutas literales, y las aristas gRPC internas resuelven su destino por nombre de contenedor inyectado por configuración, no por la petición.
+
 ## Qué exige OWASP
 SSRF en APIs ocurre cuando un endpoint obtiene un recurso remoto a partir de una URI que el cliente controla, sin validarla — permitiendo alcanzar servicios internos o destinos arbitrarios. La defensa: no aceptar URLs/identificadores de recurso remotos del cliente; cuando haya salida saliente, fijar el destino por allow-list/configuración.
 

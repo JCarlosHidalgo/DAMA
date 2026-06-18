@@ -2,6 +2,10 @@
 
 > **Estado:** ✅ — Al consumir Todotix, DAMA verifica la firma HMAC del callback antes de procesar, valida la respuesta deserializada (null-checks + `Error == 0`) sin confiar ciegamente en campos ambiguos, encola en un inbox idempotente que **re-consulta** a Todotix antes de transicionar, y protege el `HttpClient` con timeouts y circuit breaker.
 
+## Introducción
+
+Esta ficha aborda el riesgo API10 del OWASP API Security Top 10 2023: el consumo no seguro de APIs de terceros, que exige tratar sus datos con el mismo recelo que los de un usuario —validar lo recibido, no confiar en datos sin verificar, y acotar las llamadas salientes—. El documento detalla cómo DAMA lo cumple al consumir Todotix: verifica la firma HMAC del callback en tiempo constante antes de procesar, valida la respuesta deserializada sin confiar ciegamente en campos ambiguos (como `existente`), encola en un inbox idempotente que re-consulta a Todotix antes de transicionar, y protege el `HttpClient` con timeouts y *circuit breaker*.
+
 ## Qué exige OWASP
 Tratar los datos de una API de terceros con el mismo recelo que los de un usuario: validar y sanear lo recibido, no confiar en redirecciones ni en datos sin verificar, aplicar timeouts y límites a las llamadas salientes, y no propagar a otros componentes una respuesta del tercero sin comprobarla.
 

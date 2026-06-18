@@ -2,6 +2,10 @@
 
 > **Estado:** 🟢 — Existe un inventario versionado de todos los puntos de acceso (colecciones Bruno por servicio), un **único punto de entrada** (el api-gateway nginx; los backends no publican puerto al host), sondas de disponibilidad (`/health`, `/health/ready`) y entornos dev/prod separados con su propia config. Es un control de **proceso/gobernanza**: depende de mantener el inventario sincronizado con el código.
 
+## Introducción
+
+Esta ficha aborda el riesgo API9 del OWASP API Security Top 10 2023: la gestión inadecuada de inventario, donde APIs, versiones o entornos "fantasma" desplegados sin documentar amplían la superficie de ataque sin vigilancia. El documento detalla cómo DAMA lo cumple como control de proceso y gobernanza: un inventario versionado de todos los puntos de acceso en colecciones Bruno por servicio, un único punto de entrada (la puerta de enlace nginx, con los backends sin puerto al host), sondas de disponibilidad (`/health` y `/health/ready`), y entornos dev/prod separados con su propia configuración por variable de entorno.
+
 ## Qué exige OWASP
 
 La mala gestión de inventario de APIs ocurre cuando hay APIs o versiones "fantasma" desplegadas sin documentar (entornos viejos, *debug*, hosts olvidados, versiones deprecadas) que amplían la superficie de ataque sin vigilancia. OWASP pide un inventario actualizado de todos los hosts, entornos, versiones y puntos de acceso, y limitar el acceso a entornos no productivos.

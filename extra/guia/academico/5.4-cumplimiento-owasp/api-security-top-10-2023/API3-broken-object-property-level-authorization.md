@@ -2,6 +2,10 @@
 
 > **Estado:** ✅ — Los DTOs están segregados por interfaz, los campos sensibles (rol, ids, timestamps) los fija el servidor en builders y nunca el cuerpo, y todo input pasa por un filtro de validación FluentValidation.
 
+## Introducción
+
+Esta ficha aborda el riesgo API3 del OWASP API Security Top 10 2023: la autorización a nivel de propiedad de objeto rota (BOPLA), que combina *mass assignment* —el cliente escribe propiedades privilegiadas que no debería— y exposición excesiva de datos en la respuesta. El documento detalla cómo DAMA lo cumple de forma estructural: los DTOs de entrada exponen sólo las propiedades escribibles, los campos sensibles (rol, id, hash) los fija el servidor en los builders a partir de interfaces segregadas (ISP), y todo input atraviesa el filtro global de FluentValidation antes de ejecutar la acción.
+
 ## Qué exige OWASP
 
 BOPLA combina *mass assignment* (el cliente escribe propiedades que no debería, p. ej. `role`, `tenantId`, `isAdmin`) y *excessive data exposure* (la respuesta filtra propiedades que el usuario no debería ver). OWASP exige autorizar el acceso a nivel de **propiedad**: validar exactamente qué campos puede leer y escribir cada consumidor, no aceptar/devolver objetos completos a ciegas.

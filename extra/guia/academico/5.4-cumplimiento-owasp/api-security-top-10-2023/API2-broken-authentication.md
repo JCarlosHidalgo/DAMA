@@ -2,6 +2,10 @@
 
 > **Estado:** ✅ — Emisión/validación de JWT RS256 con parámetros estrictos, bloqueo de cuenta (423), rotación de refresh tokens con detección de reuso y rate-limit de login en el gateway.
 
+## Introducción
+
+Esta ficha aborda el riesgo API2 del OWASP API Security Top 10 2023: la autenticación rota, donde los mecanismos de la API no resisten fuerza bruta o credential stuffing, emiten o validan tokens de forma débil, o no permiten invalidarlos. El documento detalla cómo DAMA lo cumple desde Auth como único emisor: JWT firmados con RS256 (clave asimétrica que descarta `alg:none`), validación estricta de emisor/audiencia/vigencia/firma en cada servicio, bloqueo de cuenta tras intentos fallidos (423), credenciales con PBKDF2, rotación de refresh tokens con detección de reuso, y rate-limit del login en la puerta de enlace.
+
 ## Qué exige OWASP
 Los mecanismos de autenticación de la API deben resistir credential stuffing y fuerza bruta, almacenar credenciales con hashes fuertes, emitir tokens con firma verificable (sin algoritmos débiles ni `alg:none`), validar siempre firma/emisor/audiencia/expiración, y permitir invalidar tokens. No deben filtrar si un usuario existe ni aceptar tokens fabricados.
 

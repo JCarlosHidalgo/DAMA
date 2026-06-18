@@ -2,6 +2,10 @@
 
 > **Estado:** 🟢 — Acotado por diseño: la **única** salida HTTP externa es Todotix, con `BaseUrl` fija por configuración, y el tráfico gRPC interno usa **service discovery fijo** por nombre de contenedor desde variables de entorno. Ningún endpoint acepta una URL del usuario para hacer fetch.
 
+## Introducción
+
+Esta ficha documenta cómo DAMA acota la **falsificación de solicitudes del lado del servidor** (A10), el riesgo de que un atacante induzca al servidor a hacer peticiones a destinos que controla o a recursos internos. El documento expone la evidencia técnica de una superficie saliente acotada por diseño: la única salida HTTP externa es Todotix con `BaseUrl` fija por configuración, las rutas son literales y los datos del usuario viajan en el body (nunca en la URL), el gRPC interno usa service discovery fijo por nombre de contenedor desde variables de entorno, y ningún endpoint acepta una URL del usuario para hacer fetch. Concluye con el flujo de componentes, los comandos de verificación y las brechas conocidas (la garantía depende de no introducir a futuro un endpoint que tome URLs del usuario).
+
 ## Qué exige OWASP
 Prevenir que un atacante induzca al servidor a hacer peticiones a destinos que él controla o a recursos internos. La defensa central es no construir el destino de una petición saliente a partir de entrada del usuario: usar destinos fijos/allow-list por configuración, nunca una URL que llegue en el body o el query string.
 

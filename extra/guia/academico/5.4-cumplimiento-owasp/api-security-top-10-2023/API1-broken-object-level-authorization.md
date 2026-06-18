@@ -2,6 +2,10 @@
 
 > **Estado:** ✅ — Todo acceso a un objeto se filtra por el `tenantId` del token dentro del `WHERE` del DAO, y los recursos por-estudiante suman un chequeo de propiedad explícito.
 
+## Introducción
+
+Esta ficha aborda el riesgo API1 del OWASP API Security Top 10 2023: la autorización a nivel de objeto rota (antes IDOR), en la que un atacante manipula el identificador de un recurso para leer u operar objetos que no le pertenecen. El documento detalla cómo DAMA lo cumple con una defensa en dos capas: el `tenantId` se toma del token firmado vía `IClaimContext` y nunca de la petición, el filtro por academia vive siempre en el `WHERE` del DAO (`SELECT ... AND TenantId = @tenantId`), y los recursos por-estudiante suman un chequeo de propiedad explícito que combina rol e identidad del token.
+
 ## Qué exige OWASP
 
 La autorización a nivel de objeto rota (antes IDOR) es el riesgo número uno de la lista de APIs: el atacante manipula el `id` de un objeto en la ruta o el cuerpo para leer u operar recursos que no le pertenecen. OWASP exige validar, **en cada acceso a cada objeto**, que el usuario autenticado tiene derecho sobre *ese* objeto concreto — no basta con que esté autenticado.

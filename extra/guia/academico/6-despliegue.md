@@ -15,6 +15,19 @@
 
 ---
 
+## Introducción
+
+Esta sección documenta el proceso de despliegue de DAMA como infraestructura como código sobre
+contenedores Docker, partiendo de la estrategia general —el mismo artefacto por servicio,
+configurado solo por variables de entorno— y contrastando las dos formas de correr el sistema,
+desarrollo y producción. Detalla el despliegue continuo operativo en Dokploy (con sus pasos de
+runbook), los dos planos de TLS sin gestión manual de certificados (Cloudflare en el borde y
+`tls-init` en el canal interno), la gestión de datos (bases gestionadas, esquema sin migraciones,
+respaldos S3 y administración con DbGate) y el arranque con fallo rápido ante secretos ausentes.
+Declara con honestidad que la integración continua (CI) no está automatizada —las barreras de
+calidad de 3.5 se corren a mano— y propone Jenkins, marcado explícitamente como no implementado,
+para cerrarla; cierra con la verificación post-despliegue y los comandos de demostración.
+
 ## 3.6.1 Estrategia general
 
 DAMA se despliega como un conjunto de **contenedores Docker**, uno por pieza (los cinco backends, la

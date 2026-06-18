@@ -9,6 +9,10 @@
 
 ---
 
+## Introducción
+
+Esta sección describe cómo se condujo y planificó el desarrollo de DAMA. Primero expone el enfoque metodológico adoptado —iterativo e incremental, por ramas de característica integradas en olas verificables— y luego lo complementa con la planificación temporal mediante el Método de la Ruta Crítica (CPM) sobre una red Actividad-en-Nodo: la Estructura de Desglose del Trabajo (WBS), el análisis de tiempos (forward/backward pass, holguras), las dos rutas críticas paralelas, los hitos y la nivelación del recurso escaso. Cierra con comandos de solo lectura que permiten verificar el proceso sobre el historial del repositorio y una conclusión de la sección.
+
 ## 3.1.1 Enfoque metodológico adoptado
 
 El desarrollo de DAMA siguió un enfoque **iterativo e incremental**, organizado en **ramas de

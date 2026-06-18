@@ -2,6 +2,10 @@
 
 > **Estado:** ✅ — Logging estructurado en JSON con source generators `[LoggerMessage]`, eventos de auditoría para toda operación sensible (login, refresh, borrado de usuario, alta/renombrado de tenant), readiness por dependencia en `/health/ready`, y la regla firme de **nunca registrar secretos, contraseñas ni tokens**.
 
+## Introducción
+
+Esta ficha documenta cómo DAMA atiende los **fallos de registro y monitoreo de seguridad** (A09), el riesgo de no registrar los eventos de seguridad relevantes en un formato consumible —ni exponer señales de disponibilidad— sin filtrar datos sensibles en los propios logs. El documento recorre la evidencia técnica: el logging estructurado en JSON mediante source generators `[LoggerMessage]` con `EventId` estable, los eventos de auditoría que cubren toda operación sensible (login, refresh, borrado de usuario, alta/renombrado de tenant y la frontera con Todotix), la readiness por dependencia en `/health/ready` y la regla firme de nunca registrar secretos, contraseñas ni tokens. Cierra con el flujo de componentes, los comandos de verificación y las brechas conocidas (la retención y alerta se delegan al agregador de infraestructura).
+
 ## Qué exige OWASP
 Registrar los eventos de seguridad relevantes (inicios de sesión válidos y fallidos, control de acceso, fallos del servidor) en un formato consumible por herramientas de monitoreo, con contexto suficiente para detectar y responder a incidentes — pero **sin** filtrar datos sensibles en los propios logs. Exponer señales de salud/disponibilidad que permitan alertar cuando una dependencia cae.
 

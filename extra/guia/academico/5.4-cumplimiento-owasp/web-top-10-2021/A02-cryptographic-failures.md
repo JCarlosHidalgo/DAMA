@@ -2,6 +2,10 @@
 
 > **Estado:** ✅ — RS256 para tokens, PBKDF2 (210k) para contraseñas, AES-256-GCM para secretos de academia, HMAC-SHA256 (comparación en tiempo constante) para webhooks y TLS para el gRPC interno. Sin algoritmos débiles ni secretos en claro.
 
+## Introducción
+
+Esta ficha documenta cómo DAMA atiende los **fallos criptográficos** (A02), el riesgo de no proteger datos sensibles en reposo y en tránsito con criptografía moderna. El documento recorre la evidencia técnica de cada necesidad criptográfica de la plataforma: firma de tokens con RS256, hashing de contraseñas con PBKDF2-HMAC-SHA256, cifrado autenticado AES-256-GCM para los secretos de academia, HMAC-SHA256 con comparación en tiempo constante para los webhooks, refresh tokens de alta entropía almacenados como hash y TLS para el gRPC interno. Incluye la tabla de algoritmos por componente, los comandos de verificación y las brechas conocidas en torno a la gestión y rotación de secretos.
+
 ## Qué exige OWASP
 Proteger datos sensibles en reposo y en tránsito con criptografía moderna: hashes de contraseña fuertes y salados, cifrado autenticado para secretos almacenados, firmas/HMAC con comparación en tiempo constante, TLS para todo tráfico, y ausencia de algoritmos obsoletos (MD5, SHA1 para contraseñas, DES, ECB) o claves embebidas en el código.
 

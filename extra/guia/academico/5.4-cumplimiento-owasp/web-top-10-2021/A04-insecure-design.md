@@ -2,6 +2,10 @@
 
 > **Estado:** 🟢 — Cubierto por diseño: patrones transaccionales (Outbox/Inbox idempotente), aislamiento multitenant en la propia consulta SQL, bloqueo de cuenta, tiers de suscripción y *architecture tests* que fijan los invariantes en tiempo de compilación.
 
+## Introducción
+
+Esta ficha documenta cómo DAMA aborda el **diseño inseguro** (A04), que no es un defecto puntual sino la ausencia de patrones seguros, modelado de amenazas y controles que hagan imposibles ciertas clases de fallo por construcción. El documento reúne la evidencia técnica de los patrones de diseño presentes en la plataforma: el flujo transaccional Outbox/Inbox con idempotencia, el aislamiento multitenant anclado en la propia consulta SQL, el bloqueo de cuenta atómico en la base de datos, el rate-limiting centralizado en el gateway, los tiers de suscripción como atributo reutilizable y los architecture tests que fijan los invariantes en tiempo de compilación. Cierra con el flujo de componentes, los comandos de verificación y las brechas conocidas (entre ellas la ausencia de un threat model formal versionado).
+
 ## Qué exige OWASP
 
 A04 no es un bug concreto sino la ausencia de **diseño seguro**: amenazas modeladas, patrones seguros reutilizables, límites de confianza claros y controles que hagan imposibles ciertas clases de fallo por construcción (no solo por implementación correcta). OWASP pide *secure design patterns*, *threat modeling* y *reference architectures* en lugar de parches puntuales.

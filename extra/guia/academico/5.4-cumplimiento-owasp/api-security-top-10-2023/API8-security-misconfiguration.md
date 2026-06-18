@@ -2,6 +2,10 @@
 
 > **Estado:** ✅ — Cabeceras de seguridad + HSTS en el gateway, CORS por *allowlist* (sin comodín), SQL siempre parametrizado (parámetros nombrados + *stored procedures*) y secretos validados *fail-fast* sin defaults inseguros.
 
+## Introducción
+
+Esta ficha aborda el riesgo API8 del OWASP API Security Top 10 2023: la mala configuración de seguridad, que incluye CORS permisivo, cabeceras ausentes, *defaults* inseguros, errores verbosos, superficies de administración expuestas y construcción dinámica de consultas. El documento detalla cómo DAMA lo cumple con un endurecimiento sistemático: cabeceras de seguridad más HSTS y CORS por *allowlist* (sin comodín) en la puerta de enlace nginx, SQL siempre parametrizado con parámetros nombrados y *stored procedures*, secretos validados *fail-fast* sin defaults inseguros, y errores vía `ProblemDetails` sin *stack trace* ni Swagger en *runtime*.
+
 ## Qué exige OWASP
 
 La mala configuración en APIs incluye CORS permisivo, cabeceras de seguridad ausentes, *defaults* inseguros, mensajes de error verbosos, superficies de administración expuestas y rutas de inyección por construcción dinámica de consultas. OWASP pide un endurecimiento sistemático y repetible y minimizar lo que la API expone.

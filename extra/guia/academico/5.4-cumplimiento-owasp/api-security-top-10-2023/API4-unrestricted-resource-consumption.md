@@ -2,6 +2,10 @@
 
 > **Estado:** ✅ — El gateway impone *rate-limiting* por IP y tope de tamaño de cuerpo; los endpoints paginados acotan el índice de página; las llamadas gRPC/HTTP salientes llevan *timeout* + *circuit-breaker*; y los consumidores RabbitMQ limitan el *prefetch*.
 
+## Introducción
+
+Esta ficha aborda el riesgo API4 del OWASP API Security Top 10 2023: el consumo no restringido de recursos, donde peticiones masivas, cuerpos enormes, paginación sin tope o llamadas a terceros sin *timeout* agotan CPU, memoria, conexiones o presupuesto. El documento detalla cómo DAMA lo cumple con límites explícitos en cada capa: *rate-limiting* por IP real y tope de tamaño de cuerpo en la puerta de enlace nginx, acotación del índice de página en los validadores, *timeout* más *circuit-breaker* en las salidas gRPC (Payment→Auth) y HTTP (Payment→Todotix), y *prefetch* acotado en los consumidores de RabbitMQ.
+
 ## Qué exige OWASP
 
 Una API sin límites permite que peticiones masivas, cuerpos enormes, paginación sin tope o llamadas a terceros sin *timeout* agoten CPU, memoria, conexiones o presupuesto. OWASP pide límites explícitos de tasa, tamaño, paginación y de los recursos que la API consume aguas abajo (DB, colas, APIs externas).

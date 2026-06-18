@@ -2,6 +2,10 @@
 
 > **Estado:** ✅ — Cada función se gatea por rol con `[Authorize(Roles)]` sobre una base denegada por defecto, y las funciones premium suman gating por nivel de suscripción con `[RequiresServiceTier]`.
 
+## Introducción
+
+Esta ficha aborda el riesgo API5 del OWASP API Security Top 10 2023: la autorización a nivel de función rota (BFLA), donde un usuario invoca puntos de acceso u operaciones administrativas o de pago para las que su rol o plan no lo habilita. El documento detalla cómo DAMA lo cumple verificando en el servidor y por cada función: una base denegada por defecto (`FallbackPolicy`), *gating* por rol con `[Authorize(Roles)]` sobre constantes de `UserRoles`, y un *gating* adicional por nivel de suscripción mediante `[RequiresServiceTier]`, que resuelve el nivel efectivo contra el claim firmado y su expiración.
+
 ## Qué exige OWASP
 
 BFLA ocurre cuando un usuario puede invocar funciones (puntos de acceso, operaciones administrativas o de pago) para las que no está autorizado, normalmente porque la API confía en que el cliente oculte la acción o porque el control por rol es inconsistente. OWASP exige negar por defecto y verificar, **en el servidor y por cada función**, que el rol/plan del llamante la habilita.

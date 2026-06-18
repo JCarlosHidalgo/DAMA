@@ -2,6 +2,10 @@
 
 > **Estado:** ✅ — Toda la superficie HTTP de los cinco backends es *denegada por defecto* vía `FallbackPolicy`, y cada punto de acceso accesible exige rol explícito o se abre con `[AllowAnonymous]` de forma deliberada.
 
+## Introducción
+
+Esta ficha documenta cómo DAMA aborda el riesgo de **control de acceso roto** (A01), el primero de la lista OWASP Web Top 10 2021, que ocurre cuando un usuario actúa fuera de los permisos previstos. El documento detalla la evidencia técnica del cumplimiento: la política denegado por defecto vía `FallbackPolicy` en los cinco backends, la validación JWT RS256 previa a la autorización, los atributos `[Authorize(Roles = ...)]` por punto de acceso y las excepciones públicas declaradas explícitamente con `[AllowAnonymous]`. Se cierra con el flujo de componentes, los comandos de verificación y las brechas conocidas (autorización a nivel de objeto fuera del alcance de `[Authorize]`).
+
 ## Qué exige OWASP
 
 El control de acceso roto ocurre cuando un usuario puede actuar fuera de los permisos previstos: acceder a funciones de otro rol, elevar privilegios o ver/operar recursos ajenos. OWASP recomienda **denegar por defecto** (salvo recursos públicos), centralizar la verificación de autorización en el servidor y nunca confiar en que el cliente oculte las acciones. Es el riesgo #1 de la lista 2021.

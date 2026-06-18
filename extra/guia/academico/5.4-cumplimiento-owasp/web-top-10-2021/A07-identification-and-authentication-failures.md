@@ -2,6 +2,10 @@
 
 > **Estado:** ✅ — Login con bloqueo de cuenta, contraseñas PBKDF2 con re-cálculo transparente del hash, JWT RS256 validados estrictamente, refresh tokens rotados con detección de reuso y limitación de tasa de peticiones de fuerza bruta en la puerta de enlace.
 
+## Introducción
+
+Esta ficha documenta cómo DAMA atiende los **fallos de identificación y autenticación** (A07), el riesgo de confirmar la identidad del usuario y gestionar la sesión de forma deficiente. El documento recorre la evidencia técnica de la autenticación robusta: el hashing de contraseñas con PBKDF2 (210 000 iteraciones) y su re-cálculo transparente al iniciar sesión, el bloqueo de cuenta atómico ante intentos fallidos, los access tokens JWT firmados con RS256 y validados estrictamente en cada servicio, los refresh tokens de alta entropía con rotación y detección de reuso, y la limitación de tasa anti-fuerza-bruta en la puerta de enlace. Cierra con el flujo del login, los comandos de verificación y las brechas conocidas (ausencia de MFA y de política de complejidad de contraseña).
+
 ## Qué exige OWASP
 Confirmar la identidad del usuario y gestionar la sesión de forma robusta: contraseñas almacenadas con un hash fuerte y salado, defensa contra ataques automatizados (relleno de credenciales / fuerza bruta), bloqueo de cuenta ante intentos fallidos, tokens de sesión de alta entropía que se invalidan correctamente, y validación íntegra de las credenciales de sesión (firma, emisor, audiencia, expiración).
 

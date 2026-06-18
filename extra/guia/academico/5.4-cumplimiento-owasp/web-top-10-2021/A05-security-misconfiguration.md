@@ -2,6 +2,10 @@
 
 > **Estado:** ✅ — Cabeceras de seguridad endurecidas en el gateway y en el frontend, secretos sólo por entorno con validación *fail-fast*, errores estructurados sin *stack trace* y sin superficie de documentación (Swagger) expuesta en runtime.
 
+## Introducción
+
+Esta ficha documenta cómo DAMA atiende la **mala configuración de seguridad** (A05), que abarca valores por defecto inseguros, superficies innecesarias, cabeceras HTTP ausentes, errores verbosos y secretos en configuración versionada. El documento recorre la evidencia técnica del endurecimiento: las cabeceras de seguridad emitidas en el gateway nginx, la CSP completa y las cabeceras de marco servidas por el httpd del frontend, el CORS con lista de permitidos en lugar de comodín, los secretos inyectados solo por entorno con validación *fail-fast*, los errores estructurados sin volcado de pila y la ausencia de Swagger expuesto en runtime. Concluye con el flujo de componentes, los comandos de verificación y las brechas conocidas.
+
 ## Qué exige OWASP
 
 La mala configuración de seguridad cubre valores por defecto inseguros, superficies innecesarias (consolas, documentación de API, cuentas por defecto), cabeceras HTTP de seguridad ausentes, mensajes de error verbosos que filtran detalles internos y secretos embebidos en configuración versionada. OWASP recomienda un proceso de endurecimiento repetible, mínima superficie expuesta y separación estricta de configuración por entorno.

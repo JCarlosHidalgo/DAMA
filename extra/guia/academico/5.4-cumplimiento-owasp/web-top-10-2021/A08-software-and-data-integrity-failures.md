@@ -2,6 +2,10 @@
 
 > **Estado:** ✅ — Consumo de eventos idempotente (`processed_events`), deserialización segura con `System.Text.Json` (sin `BinaryFormatter`), y validación de la cadena de confianza TLS interna vía CA en el trust store de cada cliente gRPC.
 
+## Introducción
+
+Esta ficha documenta cómo DAMA atiende los **fallos de integridad de software y datos** (A08), el riesgo de no proteger la integridad de los datos y de la cadena de suministro frente a duplicados, replays, mutaciones o deserialización insegura. El documento expone la evidencia técnica: la idempotencia del consumo de eventos anclada en la tabla `processed_events`, la deserialización segura con `System.Text.Json` (sin `BinaryFormatter` ni manejo de tipos arbitrarios) y la validación de la cadena de confianza TLS interna mediante una CA propia en el trust store de cada cliente gRPC. Incluye el flujo de componentes productor-consumidor, los comandos de verificación y las brechas conocidas (la cadena de suministro de dependencias se cubre en A06).
+
 ## Qué exige OWASP
 Garantizar la integridad de datos y de la cadena de suministro: deserializar solo con serializadores seguros (nunca formatos que permitan ejecución de código), confiar únicamente en fuentes verificadas (firmas/certificados), y proteger las tuberías de datos contra duplicados, replays o mutaciones no autorizadas.
 

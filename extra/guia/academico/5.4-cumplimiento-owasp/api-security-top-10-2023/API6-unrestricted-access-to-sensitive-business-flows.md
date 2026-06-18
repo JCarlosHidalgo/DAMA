@@ -2,6 +2,10 @@
 
 > **Estado:** ✅ — El flujo de pago QR está cerrado con controles activos en capas: rol + tier de suscripción, firma HMAC del callback externo, re-consulta a Todotix antes de transicionar, y Bandeja de Entrada idempotente que neutraliza reintentos/replays.
 
+## Introducción
+
+Esta ficha aborda el riesgo API6 del OWASP API Security Top 10 2023: el acceso no restringido a flujos de negocio sensibles, donde un atacante automatiza, falsifica o reproduce un flujo (compra, pago, registro) aunque cada petición individual parezca válida. El documento detalla cómo DAMA lo cumple para el flujo de pago QR de clases en Payment, protegido en cuatro capas: *gating* por rol y nivel de suscripción, verificación de firma HMAC del callback de Todotix, Bandeja de Entrada idempotente que neutraliza *replays*, y re-consulta a Todotix antes de transicionar la deuda.
+
 ## Qué exige OWASP
 
 API6 cubre flujos de negocio sensibles (compra, pago, registro masivo, reservas) que un atacante puede **automatizar o abusar** aunque cada petición individual sea "válida": sin límites, sin verificación de procedencia y sin idempotencia, el flujo se puede disparar repetidamente, falsificar o reproducir. OWASP pide identificar esos flujos y protegerlos con controles específicos (no solo autenticación genérica): *device/human detection*, límites, validación de origen y prevención de replays.

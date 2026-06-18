@@ -8,6 +8,18 @@
 
 ---
 
+## Introducción
+
+Esta sección cierra el capítulo del Marco Práctico sintetizando lo logrado frente a los objetivos y
+consolidando la trazabilidad de punta a punta. Presenta el resultado por cada objetivo específico
+(OE-1…OE-5) con su evidencia, los resultados de calidad según ISO/IEC 25010:2023 (siete
+características cumplidas y dos con brecha de insumo medido), la cobertura de seguridad OWASP y un
+cuadro de resultados cuantitativos (microservicios, requisitos, 1 251 pruebas en verde, ítems OWASP,
+estado de despliegue). Cierra la cadena de trazabilidad objetivo → requisito → diseño →
+implementación → prueba → resultado, consolida las brechas honestas como trabajo futuro
+—desempeño bajo carga, accesibilidad formal, CI automatizada y ensayo de restauración— y concluye
+el capítulo recorriendo la ingeniería completa de DAMA, de la metodología al despliegue.
+
 ## 3.7.1 Síntesis frente a los objetivos específicos
 
 DAMA se construyó para cumplir cinco objetivos específicos (OE-1…OE-5, definidos en 2.5). El

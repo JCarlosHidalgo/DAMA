@@ -2,6 +2,10 @@
 
 > **Estado:** 🟢 — Toda la plataforma corre sobre **.NET 9** con cada dependencia en versión **fijada** (sin rangos flotantes), un analizador estático (SonarAnalyzer) integrado en cada compilación, y las librerías internas publicadas como NuGet versionado. Es un control de **proceso**: depende de mantener el seguimiento de versiones al día.
 
+## Introducción
+
+Esta ficha documenta cómo DAMA gestiona el riesgo de **componentes vulnerables y desactualizados** (A06), que surge al usar frameworks, librerías o runtimes con vulnerabilidades conocidas, sin versionar o sin inventario. El documento expone la evidencia técnica del control, de naturaleza fundamentalmente de proceso: el runtime único y moderno .NET 9, las versiones de cada `PackageReference` fijadas sin rangos flotantes, el inventario de versiones, el analizador estático SonarAnalyzer integrado en cada compilación y las librerías internas publicadas como NuGet versionado. Incluye el flujo de gestión de dependencias, los comandos de verificación y las brechas conocidas (notablemente la ausencia de una barrera de CI que falle ante un CVE).
+
 ## Qué exige OWASP
 
 El riesgo aparece al usar componentes (frameworks, librerías, runtimes) con vulnerabilidades conocidas, sin versionar, sin parchear o sin inventario. OWASP recomienda fijar versiones, mantener un inventario de dependencias, eliminar lo no usado, monitorear avisos de seguridad y actualizar de forma disciplinada.
