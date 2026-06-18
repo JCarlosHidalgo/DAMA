@@ -43,11 +43,13 @@ El prefijo del archivo es el número de sub-sección sin el "3." (3.1 → `1-`, 
 | Sub-sección | Archivo | Estado | Estándar / fuente |
 |---|---|---|---|
 | 3.1 | [`academico/1-metodología-de-desarrollo.md`](academico/1-metodología-de-desarrollo.md) | ✅ Redactado | CPM (cpm.txt) |
+| 3.2 | [`academico/2-analisis-y-especificacion-de-requisitos.md`](academico/2-analisis-y-especificacion-de-requisitos.md) (intro de sección) | ✅ Redactado | 29148 |
 | 3.2.1 | [`academico/2.1-descripcion-general-del-sistema.md`](academico/2.1-descripcion-general-del-sistema.md) | ✅ Redactado | 29148 |
 | 3.2.2 | [`academico/2.2-roles-de-usuario.md`](academico/2.2-roles-de-usuario.md) | ✅ Redactado | 29148 |
 | 3.2.3 | [`academico/2.3-requisitos-funcionales.md`](academico/2.3-requisitos-funcionales.md) | ✅ Redactado | 29148 |
 | 3.2.4 | [`academico/2.4-requisitos-no-funcionales.md`](academico/2.4-requisitos-no-funcionales.md) | ✅ Redactado | 29148 |
 | 3.2.5 | [`academico/2.5-matriz-de-trazabilidad.md`](academico/2.5-matriz-de-trazabilidad.md) | ✅ Redactado | 29148 |
+| 3.3 | [`academico/3-diseno-del-sistema.md`](academico/3-diseno-del-sistema.md) (intro de sección) | ✅ Redactado | 1016 |
 | 3.3.1 | [`academico/3.1-arquitectura.md`](academico/3.1-arquitectura.md) | ✅ Redactado | 1016 |
 | 3.3.2 | [`academico/3.2-casos-de-uso.md`](academico/3.2-casos-de-uso.md) | ✅ Redactado | 1016 / PlantUML |
 | 3.3.3 | [`academico/3.3-diagrama-de-clases.md`](academico/3.3-diagrama-de-clases.md) | ✅ Redactado | 1016 / Doxygen |
@@ -55,9 +57,11 @@ El prefijo del archivo es el número de sub-sección sin el "3." (3.1 → `1-`, 
 | 3.3.5 | [`academico/3.5-diagramas-de-secuencia.md`](academico/3.5-diagramas-de-secuencia.md) | ✅ Redactado | 1016 / PlantUML |
 | 3.3.6 | [`academico/3.6-diseno-de-interfaz.md`](academico/3.6-diseno-de-interfaz.md) | ✅ Redactado | 1016 / 25010 |
 | 3.3.7 | [`academico/3.7-diagrama-de-despliegue.md`](academico/3.7-diagrama-de-despliegue.md) | ✅ Redactado | 1016 / FossFlow |
+| 3.4 | [`academico/4-implementacion.md`](academico/4-implementacion.md) (intro de sección) | ✅ Redactado | 12207 (Implementación) |
 | 3.4.1 | [`academico/4.1-stack-tecnologico-y-justificacion.md`](academico/4.1-stack-tecnologico-y-justificacion.md) | ✅ Redactado | .csproj/package.json |
 | 3.4.2 | [`academico/4.2-estructura-del-codigo-y-modulos.md`](academico/4.2-estructura-del-codigo-y-modulos.md) | ✅ Redactado | Doxygen·Compodoc |
 | 3.4.3 | [`academico/4.3-desarrollo-por-iteraciones.md`](academico/4.3-desarrollo-por-iteraciones.md) | ✅ Redactado | git log (olas) |
+| 3.5 | [`academico/5-pruebas-y-evaluacion-de-calidad.md`](academico/5-pruebas-y-evaluacion-de-calidad.md) (intro de sección) | ✅ Redactado | 25010:2023 |
 | 3.5.1 | [`academico/5.1-plan-de-pruebas.md`](academico/5.1-plan-de-pruebas.md) | ✅ Redactado | 25010:2023 |
 | 3.5.2 | [`academico/5.2-casos-de-prueba-y-resultados.md`](academico/5.2-casos-de-prueba-y-resultados.md) | ✅ Redactado | 25010:2023 |
 | 3.5.3 | [`academico/5.3-evaluacion-por-caracteristicas-de-calidad.md`](academico/5.3-evaluacion-por-caracteristicas-de-calidad.md) | ✅ Redactado | 25010:2023 |
