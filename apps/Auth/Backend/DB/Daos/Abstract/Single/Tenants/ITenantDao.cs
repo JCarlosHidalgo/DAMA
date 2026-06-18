@@ -8,7 +8,7 @@ public readonly record struct TenantTierCountRow(int Tier, int TenantCount);
 
 public interface ITenantDao : ISingleDao<Tenant>
 {
-    Task<List<Tenant>> ReadAllAsync();
+    new Task<List<Tenant>> ReadAllAsync();
 
     Task CreateTenantAsync(Tenant tenant);
 

@@ -52,7 +52,7 @@ public sealed class TenantDao : MySQLSingleDao<Tenant>, ITenantDao
     protected override StringBuilder UpdateCommandIntoStringBuilder(Tenant tenant) =>
         throw new NotSupportedException("TenantDao does not support generic update.");
 
-    public async Task<List<Tenant>> ReadAllAsync()
+    public new async Task<List<Tenant>> ReadAllAsync()
     {
         return await MySQLRetryPolicy.ExecuteAsync(_connection, async () =>
         {
