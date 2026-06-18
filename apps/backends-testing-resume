@@ -1,0 +1,224 @@
+#!/usr/bin/env bash
+#
+# backends-testing-resume — ejecuta las suites NUnit de los backends con estado
+# (Auth, Attendance, CourseManagement, Payment) recolectando cobertura y produce
+# un resumen agregado legible en consola:
+#
+#   - Tabla resumen de las 4 suites + TOTAL (Archivos · Pruebas · Fallos · Omitidas
+#     · Cobertura de lógica · Estado), con la característica ISO/IEC 25010 por suite.
+#   - Cobertura de lógica (% de líneas) por servicio y agregada, leída del recolector
+#     cobertura del .runsettings (excluye infraestructura por diseño).
+#   - Desglose de pruebas por categoría dentro de cada suite.
+#   - Detalle de pruebas fallidas (nombre + mensaje) solo cuando algo falla.
+#
+# Credentials queda fuera por diseño (servicio sin estado, sin casos de prueba).
+#
+# Uso:
+#   apps/backends-testing-resume                 # las 4 suites
+#   apps/backends-testing-resume Auth Payment    # solo las indicadas
+#
+set -uo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+ALL_SUITES=(Auth Attendance CourseManagement Payment)
+if [ "$#" -gt 0 ]; then
+    SUITES=("$@")
+else
+    SUITES=("${ALL_SUITES[@]}")
+fi
+
+iso_characteristic() {
+    case "$1" in
+        Auth)             echo "Security / Functional Suit." ;;
+        CourseManagement) echo "Functional Suitability" ;;
+        Attendance)       echo "Reliability" ;;
+        Payment)          echo "Safety (integridad de cobros)" ;;
+        *)                echo "-" ;;
+    esac
+}
+
+if [ -t 1 ]; then
+    GREEN=$'\033[32m'; RED=$'\033[31m'; BOLD=$'\033[1m'; DIM=$'\033[2m'; CYAN=$'\033[36m'; RESET=$'\033[0m'
+else
+    GREEN=""; RED=""; BOLD=""; DIM=""; CYAN=""; RESET=""
+fi
+
+ljust() { printf '%-*s' "$1" "$2"; }
+rjust() { printf '%*s'  "$1" "$2"; }
+rule()  { printf '%.0s─' $(seq 1 "${1:-104}"); printf '\n'; }
+
+counter() { xmllint --xpath "string(//*[local-name()='Counters']/@$1)" "$2" 2>/dev/null; }
+
+RESULTS_ROOT="$(mktemp -d)"
+trap 'rm -rf "$RESULTS_ROOT"' EXIT
+
+declare -A R_FILES R_TESTS R_FAILS R_SKIPS R_LCOV R_LVALID R_OK R_BREAKDOWN R_FAILDETAIL
+
+TOT_FILES=0; TOT_TESTS=0; TOT_FAILS=0; TOT_SKIPS=0; TOT_LCOV=0; TOT_LVALID=0; ANY_FAIL=0
+
+for suite in "${SUITES[@]}"; do
+    proj="$SCRIPT_DIR/$suite/Test/Test.csproj"
+    runsettings="$SCRIPT_DIR/$suite/Test/.runsettings"
+    rdir="$RESULTS_ROOT/$suite"
+
+    if [ ! -f "$proj" ]; then
+        printf '%b\n' "${RED}✗ No existe la suite '$suite' ($proj)${RESET}"
+        continue
+    fi
+
+    printf '\n%b\n' "${BOLD}${CYAN}──────── $suite ────────${RESET}"
+
+    dotnet test "$proj" -c Release --nologo \
+        -s "$runsettings" \
+        --logger "trx;LogFileName=resume.trx" \
+        --logger "console;verbosity=minimal" \
+        --results-directory "$rdir"
+    run_exit=$?
+
+    trx="$rdir/resume.trx"
+    cov="$(find "$rdir" -name 'coverage.cobertura.xml' 2>/dev/null | head -1)"
+
+    files="$(find "$SCRIPT_DIR/$suite/Test" -name '*Tests.cs' -not -path '*/obj/*' 2>/dev/null | wc -l | tr -d ' ')"
+
+    if [ -f "$trx" ]; then
+        total="$(counter total "$trx")";       total="${total:-0}"
+        executed="$(counter executed "$trx")";  executed="${executed:-0}"
+        failed="$(counter failed "$trx")";      failed="${failed:-0}"
+        errs="$(counter error "$trx")";         errs="${errs:-0}"
+        failed=$((failed + errs))
+        skipped=$((total - executed))
+        [ "$skipped" -lt 0 ] && skipped=0
+    else
+        total=0; failed=0; skipped=0
+    fi
+
+    if [ -n "$cov" ] && [ -f "$cov" ]; then
+        lc="$(xmllint --xpath 'string(/*/@lines-covered)' "$cov" 2>/dev/null)"; lc="${lc:-0}"
+        lv="$(xmllint --xpath 'string(/*/@lines-valid)'   "$cov" 2>/dev/null)"; lv="${lv:-0}"
+    else
+        lc=0; lv=0
+    fi
+
+    if [ -f "$trx" ]; then
+        breakdown="$(xmllint --xpath "//*[local-name()='TestMethod']/@className" "$trx" 2>/dev/null \
+            | grep -o 'className="[^"]*"' | sed 's/className="//;s/"$//' \
+            | awk -F. '{print ($2==""?"(otros)":$2)}' | sort | uniq -c | sort -rn \
+            | awk '{printf "%s%s %s", (NR>1?"  ·  ":""), $2, $1} END{print ""}')"
+    else
+        breakdown=""
+    fi
+
+    faildetail=""
+    if [ -f "$trx" ] && [ "${failed:-0}" -gt 0 ]; then
+        nfail="$(xmllint --xpath "count(//*[local-name()='UnitTestResult'][@outcome='Failed'])" "$trx" 2>/dev/null)"
+        nfail="${nfail:-0}"
+        for i in $(seq 1 "$nfail"); do
+            fname="$(xmllint --xpath "string((//*[local-name()='UnitTestResult'][@outcome='Failed'])[$i]/@testName)" "$trx" 2>/dev/null)"
+            fmsg="$(xmllint --xpath "string((//*[local-name()='UnitTestResult'][@outcome='Failed'])[$i]//*[local-name()='Message'])" "$trx" 2>/dev/null)"
+            fmsg="$(printf '%s' "$fmsg" | tr '\n' ' ' | sed 's/  */ /g' | cut -c1-160)"
+            faildetail+="${fname}"$'\n'"    ${fmsg}"$'\n'
+        done
+    fi
+
+    ok=1
+    if [ "$run_exit" -ne 0 ] || [ ! -f "$trx" ] || [ "${failed:-0}" -gt 0 ]; then
+        ok=0; ANY_FAIL=1
+    fi
+
+    R_FILES[$suite]=$files
+    R_TESTS[$suite]=$total
+    R_FAILS[$suite]=$failed
+    R_SKIPS[$suite]=$skipped
+    R_LCOV[$suite]=$lc
+    R_LVALID[$suite]=$lv
+    R_OK[$suite]=$ok
+    R_BREAKDOWN[$suite]="$breakdown"
+    R_FAILDETAIL[$suite]="$faildetail"
+
+    TOT_FILES=$((TOT_FILES + files))
+    TOT_TESTS=$((TOT_TESTS + total))
+    TOT_FAILS=$((TOT_FAILS + failed))
+    TOT_SKIPS=$((TOT_SKIPS + skipped))
+    TOT_LCOV=$((TOT_LCOV + lc))
+    TOT_LVALID=$((TOT_LVALID + lv))
+done
+
+pct() { awk -v c="$1" -v v="$2" 'BEGIN{ if (v+0>0) printf "%.1f%%", c/v*100; else printf "n/d" }'; }
+
+W_SUITE=16; W_ISO=30; W_FILES=8; W_TESTS=8; W_FAILS=7; W_SKIPS=7; W_COV=11; W_STAT=8
+TABLE_W=$((W_SUITE + W_ISO + W_FILES + W_TESTS + W_FAILS + W_SKIPS + W_COV + W_STAT + 14))
+
+printf '\n%b\n' "${BOLD}Resumen de suites de prueba — backends DAMA${RESET}"
+rule "$TABLE_W"
+printf '%s  %s  %s  %s  %s  %s  %s  %s\n' \
+    "$(ljust $W_SUITE 'Suite')" \
+    "$(ljust $W_ISO 'Caract. ISO/IEC 25010')" \
+    "$(rjust $W_FILES 'Archivos')" \
+    "$(rjust $W_TESTS 'Pruebas')" \
+    "$(rjust $W_FAILS 'Fallos')" \
+    "$(rjust $W_SKIPS 'Omit.')" \
+    "$(rjust $W_COV 'Cobertura')" \
+    "$(rjust $W_STAT 'Estado')"
+rule "$TABLE_W"
+
+for suite in "${SUITES[@]}"; do
+    [ -z "${R_TESTS[$suite]+x}" ] && continue
+    if [ "${R_OK[$suite]}" -eq 1 ]; then
+        statword="✅ OK"; statcol="$GREEN"
+    else
+        statword="❌ FALLO"; statcol="$RED"
+    fi
+    covstr="$(pct "${R_LCOV[$suite]}" "${R_LVALID[$suite]}")"
+    printf '%s  %s  %s  %s  %s  %s  %s  %b%s%b\n' \
+        "$(ljust $W_SUITE "$suite")" \
+        "$(ljust $W_ISO "$(iso_characteristic "$suite")")" \
+        "$(rjust $W_FILES "${R_FILES[$suite]}")" \
+        "$(rjust $W_TESTS "${R_TESTS[$suite]}")" \
+        "$(rjust $W_FAILS "${R_FAILS[$suite]}")" \
+        "$(rjust $W_SKIPS "${R_SKIPS[$suite]}")" \
+        "$(rjust $W_COV "$covstr")" \
+        "$statcol" "$(rjust $W_STAT "$statword")" "$RESET"
+done
+
+rule "$TABLE_W"
+if [ "$ANY_FAIL" -eq 0 ]; then
+    tot_stat="✅ OK"; tot_col="$GREEN"
+else
+    tot_stat="❌ FALLO"; tot_col="$RED"
+fi
+printf '%b%s  %s  %s  %s  %s  %s  %s  %b%s%b\n' \
+    "$BOLD" \
+    "$(ljust $W_SUITE 'TOTAL')" \
+    "$(ljust $W_ISO '-')" \
+    "$(rjust $W_FILES "$TOT_FILES")" \
+    "$(rjust $W_TESTS "$TOT_TESTS")" \
+    "$(rjust $W_FAILS "$TOT_FAILS")" \
+    "$(rjust $W_SKIPS "$TOT_SKIPS")" \
+    "$(rjust $W_COV "$(pct "$TOT_LCOV" "$TOT_LVALID")")" \
+    "$tot_col" "$(rjust $W_STAT "$tot_stat")" "$RESET"
+rule "$TABLE_W"
+printf '%b\n' "${DIM}Cobertura = % de líneas de lógica de negocio (el .runsettings excluye Controllers/DB/Modules/… por diseño).${RESET}"
+printf '%b\n' "${DIM}Credentials queda fuera del alcance (servicio sin estado, sin casos de prueba).${RESET}"
+
+printf '\n%b\n' "${BOLD}Desglose por categoría${RESET}"
+for suite in "${SUITES[@]}"; do
+    [ -z "${R_BREAKDOWN[$suite]+x}" ] && continue
+    printf '  %b%s%b\n' "$CYAN" "$suite" "$RESET"
+    printf '    %s\n' "${R_BREAKDOWN[$suite]:-(sin datos)}"
+done
+
+if [ "$ANY_FAIL" -ne 0 ]; then
+    printf '\n%b\n' "${BOLD}${RED}Pruebas fallidas${RESET}"
+    for suite in "${SUITES[@]}"; do
+        [ -z "${R_FAILDETAIL[$suite]+x}" ] && continue
+        if [ -n "${R_FAILDETAIL[$suite]}" ]; then
+            printf '  %b%s%b\n' "$CYAN" "$suite" "$RESET"
+            printf '%s' "${R_FAILDETAIL[$suite]}" | while IFS= read -r line; do
+                printf '    %s\n' "$line"
+            done
+        fi
+    done
+fi
+
+exit "$ANY_FAIL"

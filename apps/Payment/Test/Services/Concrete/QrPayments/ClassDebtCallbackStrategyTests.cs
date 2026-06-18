@@ -53,6 +53,12 @@ public class ClassDebtCallbackStrategyTests
     }
 
     [Test]
+    public void Kind_IsClassPurchase()
+    {
+        Assert.That(_sut.Kind, Is.EqualTo(DebtKind.ClassPurchase));
+    }
+
+    [Test]
     public async Task HandleCallbackAsync_PendingMissing_ExitsWithoutSideEffects()
     {
         var txId = Guid.NewGuid();

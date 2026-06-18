@@ -34,4 +34,11 @@ public class SubscriptionExpiryCalculatorTests
         Assert.Throws<ArgumentOutOfRangeException>(
             () => SubscriptionExpiryCalculator.ComputeExpiryUtc(From, 1, "Fortnight"));
     }
+
+    [Test]
+    public void ComputeExpiryUtc_NumericOutOfRangeUnit_Throws()
+    {
+        Assert.Throws<ArgumentOutOfRangeException>(
+            () => SubscriptionExpiryCalculator.ComputeExpiryUtc(From, 1, "99"));
+    }
 }

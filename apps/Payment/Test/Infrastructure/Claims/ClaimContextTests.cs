@@ -213,4 +213,67 @@ public class ClaimContextTests
 
         Assert.Throws<MissingClaimException>(() => _ = claimContext.Role);
     }
+
+    [Test]
+    public void IndexCoreServicesPyramid_WhenClaimPresentAndValid_ReturnsParsedInt()
+    {
+        GivenClaims(new Claim("index_core_services_pyramid", "3"));
+        var claimContext = new ClaimContext(_httpContextAccessor.Object);
+
+        Assert.That(claimContext.IndexCoreServicesPyramid, Is.EqualTo(3));
+    }
+
+    [Test]
+    public void IndexCoreServicesPyramid_CachesValueAcrossMultipleReads()
+    {
+        GivenClaims(new Claim("index_core_services_pyramid", "2"));
+        var claimContext = new ClaimContext(_httpContextAccessor.Object);
+
+        int first = claimContext.IndexCoreServicesPyramid;
+        int second = claimContext.IndexCoreServicesPyramid;
+
+        Assert.That(first, Is.EqualTo(second));
+        _httpContextAccessor.Verify(accessor => accessor.HttpContext, Times.Once);
+    }
+
+    [Test]
+    public void IndexCoreServicesPyramid_WhenClaimMalformed_ThrowsMissingClaimException()
+    {
+        GivenClaims(new Claim("index_core_services_pyramid", "not-an-int"));
+        var claimContext = new ClaimContext(_httpContextAccessor.Object);
+
+        Assert.Throws<MissingClaimException>(() => _ = claimContext.IndexCoreServicesPyramid);
+    }
+
+    [Test]
+    public void SubscriptionExpiresAt_WhenClaimPresentAndValid_ReturnsUtcDateTime()
+    {
+        DateTimeOffset expected = DateTimeOffset.FromUnixTimeSeconds(1_750_000_000);
+        GivenClaims(new Claim("subscription_expires_at", "1750000000"));
+        var claimContext = new ClaimContext(_httpContextAccessor.Object);
+
+        Assert.That(claimContext.SubscriptionExpiresAt, Is.EqualTo(expected.UtcDateTime));
+    }
+
+    [Test]
+    public void SubscriptionExpiresAt_CachesValueAcrossMultipleReads()
+    {
+        GivenClaims(new Claim("subscription_expires_at", "1750000000"));
+        var claimContext = new ClaimContext(_httpContextAccessor.Object);
+
+        DateTime first = claimContext.SubscriptionExpiresAt;
+        DateTime second = claimContext.SubscriptionExpiresAt;
+
+        Assert.That(first, Is.EqualTo(second));
+        _httpContextAccessor.Verify(accessor => accessor.HttpContext, Times.Once);
+    }
+
+    [Test]
+    public void SubscriptionExpiresAt_WhenClaimMalformed_ThrowsMissingClaimException()
+    {
+        GivenClaims(new Claim("subscription_expires_at", "not-a-number"));
+        var claimContext = new ClaimContext(_httpContextAccessor.Object);
+
+        Assert.Throws<MissingClaimException>(() => _ = claimContext.SubscriptionExpiresAt);
+    }
 }

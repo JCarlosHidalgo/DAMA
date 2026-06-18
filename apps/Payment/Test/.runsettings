@@ -13,12 +13,16 @@
             **/DB/**/*.cs,
             **/Entities/**/*.cs,
             **/Events/**/*.cs,
+            **/ExternalCheck/**/*.cs,
             **/Filters/**/*.cs,
+            **/Grpc/**/*.cs,
             **/Messaging/**/*.cs,
             **/Modules/**/*.cs,
             **/Options/**/*.cs,
+            **/Services/Concrete/Subscriptions/GrpcAuthSubscriptionUpdater.cs,
             **/Transporters/**/*.cs,
             **/Workers/**/*.cs,
+            **/*.g.cs,
             **/Program.cs
           </ExcludeByFile>
         </Configuration>

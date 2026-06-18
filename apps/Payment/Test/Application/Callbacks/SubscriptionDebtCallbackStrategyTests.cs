@@ -1,6 +1,7 @@
 using Backend.Application.Callbacks;
 using Backend.Builders;
 using Backend.DB.Daos.Abstract.Single.Subscriptions;
+using Backend.Entities;
 using Backend.Entities.Subscriptions;
 using Backend.Options;
 using Backend.Services.Abstract.Subscriptions;
@@ -54,6 +55,12 @@ public class SubscriptionDebtCallbackStrategyTests
             _unitOfWork.Object,
             _transitionBuilder.Object,
             options);
+    }
+
+    [Test]
+    public void Kind_IsTenantSubscription()
+    {
+        Assert.That(_sut.Kind, Is.EqualTo(DebtKind.TenantSubscription));
     }
 
     [Test]

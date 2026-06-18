@@ -32,10 +32,7 @@ public class UpdateSubscriptionPlanDtoValidator : AbstractValidator<UpdateSubscr
 
     private static bool HasDurationWithinOneYear(UpdateSubscriptionPlanDto dto)
     {
-        if (!Enum.TryParse(dto.DurationUnit, ignoreCase: true, out SubscriptionDurationUnit unit))
-        {
-            return false;
-        }
+        _ = Enum.TryParse(dto.DurationUnit, ignoreCase: true, out SubscriptionDurationUnit unit);
 
         return unit switch
         {

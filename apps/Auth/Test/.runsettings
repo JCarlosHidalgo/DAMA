@@ -12,11 +12,14 @@
             **/DB/**/*.cs,
             **/Entities/**/*.cs,
             **/Events/**/*.cs,
+            **/ExternalCheck/**/*.cs,
             **/Filters/**/*.cs,
+            **/Grpc/**/*.cs,
             **/Messaging/**/*.cs,
             **/Modules/**/*.cs,
             **/Options/**/*.cs,
             **/Workers/**/*.cs,
+            **/*.g.cs,
             **/Program.cs
           </ExcludeByFile>
         </Configuration>

@@ -13,6 +13,7 @@
             **/DB/**/*.cs,
             **/Entities/**/*.cs,
             **/Events/**/*.cs,
+            **/ExternalCheck/**/*.cs,
             **/Filters/**/*.cs,
             **/Grpc/**/*.cs,
             **/Hubs/**/*.cs,
@@ -20,6 +21,7 @@
             **/Options/**/*.cs,
             **/Transporters/**/*.cs,
             **/Workers/**/*.cs,
+            **/*.g.cs,
             **/Program.cs
           </ExcludeByFile>
         </Configuration>

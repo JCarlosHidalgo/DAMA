@@ -58,4 +58,13 @@ public class AppKeyCipherTests
     {
         Assert.Throws<ArgumentException>(() => new AppKeyCipher(RandomNumberGenerator.GetBytes(16)));
     }
+
+    [Test]
+    public void Decrypt_PayloadShorterThanNonceAndTag_Throws()
+    {
+        AppKeyCipher sut = new AppKeyCipher(NewKey());
+        string tooShort = Convert.ToBase64String(new byte[8]);
+
+        Assert.Catch<CryptographicException>(() => sut.Decrypt(tooShort));
+    }
 }
