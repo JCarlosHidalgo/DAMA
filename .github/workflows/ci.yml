@@ -98,7 +98,7 @@ jobs:
 
   build-frontend:
     needs: changes
-    if: ${{ needs.changes.outputs.frontend == 'true' }}
+    if: ${{ always() }}
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -173,7 +173,7 @@ jobs:
 
   test-frontend:
     needs: [changes, build-frontend]
-    if: ${{ needs.changes.outputs.frontend == 'true' }}
+    if: ${{ always() }}
     runs-on: ubuntu-latest
     defaults:
       run:
