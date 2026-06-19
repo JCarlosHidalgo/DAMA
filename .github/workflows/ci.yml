@@ -19,6 +19,7 @@ jobs:
       backends: ${{ steps.set.outputs.backends }}
       backends_testable: ${{ steps.set.outputs.backends_testable }}
       frontend: ${{ steps.filter.outputs.frontend }}
+      languages: ${{ steps.set.outputs.languages }}
     steps:
       - uses: actions/checkout@v5
 
@@ -61,8 +62,16 @@ jobs:
               echo "$name=$(printf '%s\n' "$@" | jq -R . | jq -cs .)" >> "$GITHUB_OUTPUT"
             fi
           }
+          languages=()
+          if [ "${#backends[@]}" -ne 0 ]; then
+            languages+=("csharp")
+          fi
+          if [ "${{ steps.filter.outputs.frontend }}" = "true" ]; then
+            languages+=("javascript-typescript")
+          fi
           emit backends "${backends[@]+"${backends[@]}"}"
           emit backends_testable "${testable[@]+"${testable[@]}"}"
+          emit languages "${languages[@]+"${languages[@]}"}"
 
   build-backend:
     needs: changes
@@ -205,3 +214,55 @@ jobs:
           name: frontend-coverage
           path: apps/Frontend/coverage/**
           if-no-files-found: warn
+
+  analyze:
+    needs: changes
+    if: ${{ needs.changes.outputs.languages != '[]' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
+    strategy:
+      fail-fast: false
+      matrix:
+        language: ${{ fromJSON(needs.changes.outputs.languages) }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: none
+
+      - uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{ matrix.language }}"
+
+  ci-gate:
+    needs: [build-backend, build-frontend, test-backend, test-frontend, analyze]
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify required jobs succeeded
+        run: |
+          set -euo pipefail
+          declare -A results=(
+            [build-backend]='${{ needs.build-backend.result }}'
+            [build-frontend]='${{ needs.build-frontend.result }}'
+            [test-backend]='${{ needs.test-backend.result }}'
+            [test-frontend]='${{ needs.test-frontend.result }}'
+            [analyze]='${{ needs.analyze.result }}'
+          )
+          failed=0
+          for job in "${!results[@]}"; do
+            result="${results[$job]}"
+            echo "$job: $result"
+            if [ "$result" != "success" ] && [ "$result" != "skipped" ]; then
+              failed=1
+            fi
+          done
+          if [ "$failed" -ne 0 ]; then
+            echo "One or more required jobs did not succeed."
+            exit 1
+          fi
