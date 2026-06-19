@@ -6,6 +6,7 @@ CLAUDE.md
 # Secrets (real values; never publish). Templates *.example ARE tracked.
 infrastructure/.env.dev
 infrastructure/.env.prod
+infrastructure/environments-test/k6-testing/.env.k6
 infrastructure/tls/
 
 # Learning path (local docs; not tracked)

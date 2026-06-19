@@ -330,3 +330,7 @@ services:
 
 volumes:
   dama-tls:
+
+networks:
+  default:
+    name: dama_network

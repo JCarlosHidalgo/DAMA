@@ -1,0 +1,89 @@
+services:
+
+  auth-load:
+    container_name: AuthLoad
+    image: grafana/k6
+    user: root
+    networks: [dama_network]
+    env_file: [.env.k6]
+    environment:
+      K6_WEB_DASHBOARD: "true"
+      K6_WEB_DASHBOARD_EXPORT: /reports/auth/index.html
+    volumes:
+      - ./scripts:/scripts:ro
+      - auth-load-results:/reports/auth
+    entrypoint: ["sh", "-c", "k6 run /scripts/auth.js || true"]
+
+  course-management-load:
+    container_name: CourseManagementLoad
+    image: grafana/k6
+    user: root
+    networks: [dama_network]
+    env_file: [.env.k6]
+    environment:
+      K6_WEB_DASHBOARD: "true"
+      K6_WEB_DASHBOARD_EXPORT: /reports/course-management/index.html
+    volumes:
+      - ./scripts:/scripts:ro
+      - course-management-load-results:/reports/course-management
+    entrypoint: ["sh", "-c", "k6 run /scripts/course-management.js || true"]
+
+  attendance-load:
+    container_name: AttendanceLoad
+    image: grafana/k6
+    user: root
+    networks: [dama_network]
+    env_file: [.env.k6]
+    environment:
+      K6_WEB_DASHBOARD: "true"
+      K6_WEB_DASHBOARD_EXPORT: /reports/attendance/index.html
+    volumes:
+      - ./scripts:/scripts:ro
+      - attendance-load-results:/reports/attendance
+    entrypoint: ["sh", "-c", "k6 run /scripts/attendance.js || true"]
+
+  payment-load:
+    container_name: PaymentLoad
+    image: grafana/k6
+    user: root
+    networks: [dama_network]
+    env_file: [.env.k6]
+    environment:
+      K6_WEB_DASHBOARD: "true"
+      K6_WEB_DASHBOARD_EXPORT: /reports/payment/index.html
+    volumes:
+      - ./scripts:/scripts:ro
+      - payment-load-results:/reports/payment
+    entrypoint: ["sh", "-c", "k6 run /scripts/payment.js || true"]
+
+  apache:
+    container_name: LoadApache
+    image: httpd:2.4-alpine
+    ports:
+      - "8004:80"
+    volumes:
+      - ./report/index.html:/usr/local/apache2/htdocs/index.html:ro
+      - auth-load-results:/usr/local/apache2/htdocs/auth/:ro
+      - course-management-load-results:/usr/local/apache2/htdocs/course-management/:ro
+      - attendance-load-results:/usr/local/apache2/htdocs/attendance/:ro
+      - payment-load-results:/usr/local/apache2/htdocs/payment/:ro
+    depends_on:
+      auth-load:
+        condition: service_completed_successfully
+      course-management-load:
+        condition: service_completed_successfully
+      attendance-load:
+        condition: service_completed_successfully
+      payment-load:
+        condition: service_completed_successfully
+
+networks:
+  dama_network:
+    name: dama_network
+    external: true
+
+volumes:
+  auth-load-results:
+  course-management-load-results:
+  attendance-load-results:
+  payment-load-results:
