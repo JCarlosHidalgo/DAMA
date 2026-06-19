@@ -5,6 +5,10 @@
   build + test; Credentials builds only. Frontend: build (prettier + eslint +
   ng build) then test (ng test --coverage). Backend builds run with
   `-p:TreatWarningsAsErrors=true` so SonarAnalyzer warnings fail the PR.
+  Each tested backend writes a per-service job summary (Test Files / Test
+  Results) parsed from its `.trx`, mirroring the summary Vitest emits for the
+  frontend; these summaries are conditional, appearing only for the backends
+  that actually ran.
 - `codeql.yml` — CodeQL security scan for C# and JS/TS, on PR to `main` and
   weekly.
 

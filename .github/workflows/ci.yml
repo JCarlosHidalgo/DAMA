@@ -19,6 +19,7 @@ jobs:
       backends: ${{ steps.set.outputs.backends }}
       backends_testable: ${{ steps.set.outputs.backends_testable }}
       frontend: ${{ steps.filter.outputs.frontend }}
+      languages: ${{ steps.set.outputs.languages }}
     steps:
       - uses: actions/checkout@v5
 
@@ -61,8 +62,16 @@ jobs:
               echo "$name=$(printf '%s\n' "$@" | jq -R . | jq -cs .)" >> "$GITHUB_OUTPUT"
             fi
           }
+          languages=()
+          if [ "${#backends[@]}" -ne 0 ]; then
+            languages+=("csharp")
+          fi
+          if [ "${{ steps.filter.outputs.frontend }}" = "true" ]; then
+            languages+=("javascript-typescript")
+          fi
           emit backends Auth Attendance CourseManagement Payment Credentials
           emit backends_testable Auth Attendance CourseManagement Payment
+          emit languages csharp javascript-typescript
 
   build-backend:
     needs: changes
@@ -75,11 +84,11 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - uses: actions/setup-dotnet@v5
+      - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '9.0.x'
 
-      - uses: actions/cache@v5
+      - uses: actions/cache@v4
         with:
           path: ~/.nuget/packages
           key: nuget-${{ runner.os }}-${{ matrix.service }}-${{ hashFiles(format('apps/{0}/Backend/Backend.csproj', matrix.service)) }}
@@ -110,7 +119,7 @@ jobs:
         with:
           bun-version: '1.3.10'
 
-      - uses: actions/cache@v5
+      - uses: actions/cache@v4
         with:
           path: ~/.bun/install/cache
           key: bun-${{ runner.os }}-${{ hashFiles('apps/Frontend/bun.lock') }}
@@ -140,11 +149,11 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - uses: actions/setup-dotnet@v5
+      - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '9.0.x'
 
-      - uses: actions/cache@v5
+      - uses: actions/cache@v4
         with:
           path: ~/.nuget/packages
           key: nuget-${{ runner.os }}-${{ matrix.service }}-${{ hashFiles(format('apps/{0}/Backend/Backend.csproj', matrix.service), format('apps/{0}/Test/Test.csproj', matrix.service)) }}
@@ -163,9 +172,71 @@ jobs:
           --logger "trx;LogFileName=test-results.trx"
           --results-directory apps/${{ matrix.service }}/Test/TestResults
 
+      - name: Test summary
+        if: ${{ always() }}
+        env:
+          SERVICE: ${{ matrix.service }}
+        run: |
+          set -euo pipefail
+          trx=$(find "apps/${SERVICE}/Test/TestResults" -name '*.trx' | head -n1 || true)
+          if [ -z "$trx" ]; then
+            {
+              echo "## ${SERVICE} Backend Test Report"
+              echo ""
+              echo "_No test results (.trx) were produced._"
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          python3 - "$trx" >> "$GITHUB_STEP_SUMMARY" <<'PY'
+          import os, sys, xml.etree.ElementTree as ET
+
+          service = os.environ["SERVICE"]
+          root = ET.parse(sys.argv[1]).getroot()
+          local = lambda tag: tag.split('}')[-1]
+
+          counters = {}
+          classes = set()
+          for element in root.iter():
+              name = local(element.tag)
+              if name == "Counters":
+                  counters = element.attrib
+              elif name == "TestMethod":
+                  class_name = element.attrib.get("className")
+                  if class_name:
+                      classes.add(class_name)
+
+          total = int(counters.get("total", 0))
+          passed = int(counters.get("passed", 0))
+          failed = int(counters.get("failed", 0))
+          executed = int(counters.get("executed", 0))
+          skipped = max(total - executed, 0)
+
+          separator = " · "
+          plural = lambda count, one, many: one if count == 1 else many
+
+          primary = []
+          if failed > 0:
+              primary.append(f"❌ **{failed} {plural(failed, 'failure', 'failures')}**")
+          if passed > 0:
+              primary.append(f"✅ **{passed} {plural(passed, 'pass', 'passes')}**")
+          primary.append(f"{total} total")
+
+          lines = [
+              f"## {service} Backend Test Report",
+              "",
+              "### Summary",
+              "",
+              f"- **Test Files**: {len(classes)} total",
+              f"- **Test Results**: {separator.join(primary)}",
+          ]
+          if skipped > 0:
+              lines.append(f"- **Other**: {skipped} skipped{separator}{skipped} total")
+          print("\n".join(lines))
+          PY
+
       - name: Upload test results
         if: ${{ always() }}
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v4
         with:
           name: test-results-${{ matrix.service }}
           path: apps/${{ matrix.service }}/Test/TestResults/**/*.trx
@@ -185,7 +256,7 @@ jobs:
         with:
           bun-version: '1.3.10'
 
-      - uses: actions/cache@v5
+      - uses: actions/cache@v4
         with:
           path: ~/.bun/install/cache
           key: bun-${{ runner.os }}-${{ hashFiles('apps/Frontend/bun.lock') }}
@@ -200,8 +271,60 @@ jobs:
 
       - name: Upload coverage
         if: ${{ always() }}
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v4
         with:
           name: frontend-coverage
           path: apps/Frontend/coverage/**
           if-no-files-found: warn
+
+  analyze:
+    needs: changes
+    if: ${{ needs.changes.outputs.languages != '[]' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
+    strategy:
+      fail-fast: false
+      matrix:
+        language: ${{ fromJSON(needs.changes.outputs.languages) }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: none
+
+      - uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{ matrix.language }}"
+
+  ci-gate:
+    needs: [build-backend, build-frontend, test-backend, test-frontend, analyze]
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify required jobs succeeded
+        run: |
+          set -euo pipefail
+          declare -A results=(
+            [build-backend]='${{ needs.build-backend.result }}'
+            [build-frontend]='${{ needs.build-frontend.result }}'
+            [test-backend]='${{ needs.test-backend.result }}'
+            [test-frontend]='${{ needs.test-frontend.result }}'
+            [analyze]='${{ needs.analyze.result }}'
+          )
+          failed=0
+          for job in "${!results[@]}"; do
+            result="${results[$job]}"
+            echo "$job: $result"
+            if [ "$result" != "success" ] && [ "$result" != "skipped" ]; then
+              failed=1
+            fi
+          done
+          if [ "$failed" -ne 0 ]; then
+            echo "One or more required jobs did not succeed."
+            exit 1
+          fi
