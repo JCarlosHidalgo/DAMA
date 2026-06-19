@@ -1,0 +1,17 @@
+# CI workflows
+
+- `ci.yml` — on every PR to `main`, detects which `apps/` area changed and runs
+  build then test for it. Backends: Auth, Attendance, CourseManagement, Payment
+  build + test; Credentials builds only. Frontend: build (prettier + eslint +
+  ng build) then test (ng test --coverage). Backend builds run with
+  `-p:TreatWarningsAsErrors=true` so SonarAnalyzer warnings fail the PR.
+- `codeql.yml` — CodeQL security scan for C# and JS/TS, on PR to `main` and
+  weekly.
+
+## Manual one-time setup (GitHub UI — not versionable)
+
+In **Settings → Branches → Branch protection rule** for `main`, mark the
+relevant checks as **required**. Because jobs are conditional on the changed
+area, do **not** require a specific per-area job globally; require `changes`
+(always runs) and add the area jobs you care about as non-blocking, or use a
+ruleset that tolerates skipped checks.

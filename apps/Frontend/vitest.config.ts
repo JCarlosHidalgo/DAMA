@@ -29,6 +29,7 @@ export default defineConfig({
         'src/**/index.ts',
         'src/testing/**',
         'src/app/pages/**/!(*.logic|*.validators|*.variants|*-store).ts',
+        'src/app/**/*-dialog.ts',
       ],
     },
   },
