@@ -84,11 +84,11 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v5
         with:
           dotnet-version: '9.0.x'
 
-      - uses: actions/cache@v4
+      - uses: actions/cache@v5
         with:
           path: ~/.nuget/packages
           key: nuget-${{ runner.os }}-${{ matrix.service }}-${{ hashFiles(format('apps/{0}/Backend/Backend.csproj', matrix.service)) }}
@@ -119,7 +119,7 @@ jobs:
         with:
           bun-version: '1.3.10'
 
-      - uses: actions/cache@v4
+      - uses: actions/cache@v5
         with:
           path: ~/.bun/install/cache
           key: bun-${{ runner.os }}-${{ hashFiles('apps/Frontend/bun.lock') }}
@@ -149,11 +149,11 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v5
         with:
           dotnet-version: '9.0.x'
 
-      - uses: actions/cache@v4
+      - uses: actions/cache@v5
         with:
           path: ~/.nuget/packages
           key: nuget-${{ runner.os }}-${{ matrix.service }}-${{ hashFiles(format('apps/{0}/Backend/Backend.csproj', matrix.service), format('apps/{0}/Test/Test.csproj', matrix.service)) }}
@@ -234,14 +234,6 @@ jobs:
           print("\n".join(lines))
           PY
 
-      - name: Upload test results
-        if: ${{ always() }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-results-${{ matrix.service }}
-          path: apps/${{ matrix.service }}/Test/TestResults/**/*.trx
-          if-no-files-found: warn
-
   test-frontend:
     needs: [changes, build-frontend]
     if: ${{ always() }}
@@ -256,7 +248,7 @@ jobs:
         with:
           bun-version: '1.3.10'
 
-      - uses: actions/cache@v4
+      - uses: actions/cache@v5
         with:
           path: ~/.bun/install/cache
           key: bun-${{ runner.os }}-${{ hashFiles('apps/Frontend/bun.lock') }}
@@ -268,14 +260,6 @@ jobs:
 
       - name: Test (with coverage)
         run: bun run test:coverage
-
-      - name: Upload coverage
-        if: ${{ always() }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: frontend-coverage
-          path: apps/Frontend/coverage/**
-          if-no-files-found: warn
 
   analyze:
     needs: changes
@@ -292,12 +276,12 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - uses: github/codeql-action/init@v3
+      - uses: github/codeql-action/init@v4
         with:
           languages: ${{ matrix.language }}
           build-mode: none
 
-      - uses: github/codeql-action/analyze@v3
+      - uses: github/codeql-action/analyze@v4
         with:
           category: "/language:${{ matrix.language }}"
 
