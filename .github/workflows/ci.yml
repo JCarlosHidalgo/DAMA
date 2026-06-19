@@ -71,7 +71,7 @@ jobs:
           fi
           emit backends Auth Attendance CourseManagement Payment Credentials
           emit backends_testable Auth Attendance CourseManagement Payment
-          emit languages "${languages[@]+"${languages[@]}"}"
+          emit languages csharp javascript-typescript
 
   build-backend:
     needs: changes
