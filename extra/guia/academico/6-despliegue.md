@@ -7,11 +7,10 @@
 > [3.7-diagrama-de-despliegue.md](3.7-diagrama-de-despliegue.md) (diagrama FossFlow); aquí se
 > documenta el **proceso**, no se redibuja la topología.
 >
-> **Nota de honestidad:** la parte de **entrega/despliegue (CD)** está **implementada y operativa**
-> (Dokploy + Cloudflare). La **integración continua automatizada (CI)** **no está implementada**: hoy
-> las barreras de calidad se ejecutan manualmente antes de integrar. La sección 3.6.7 documenta ese
-> estado real y propone **Jenkins** como mejora, marcada como **no implementada** (no se presenta como
-> si corriera).
+> **Estado de CI/CD:** ambas partes están **implementadas y operativas**. La **entrega/despliegue (CD)**
+> corre en **Dokploy + Cloudflare**; la **integración continua automatizada (CI)** corre en **GitHub
+> Actions** (`.github/workflows/ci.yml` y `codeql.yml`), ejecutando las barreras de calidad de 3.5 en
+> cada *pull request* a `main` antes de integrar. La sección 3.6.7 documenta ese pipeline.
 
 ---
 
@@ -24,9 +23,10 @@ desarrollo y producción. Detalla el despliegue continuo operativo en Dokploy (c
 runbook), los dos planos de TLS sin gestión manual de certificados (Cloudflare en el borde y
 `tls-init` en el canal interno), la gestión de datos (bases gestionadas, esquema sin migraciones,
 respaldos S3 y administración con DbGate) y el arranque con fallo rápido ante secretos ausentes.
-Declara con honestidad que la integración continua (CI) no está automatizada —las barreras de
-calidad de 3.5 se corren a mano— y propone Jenkins, marcado explícitamente como no implementado,
-para cerrarla; cierra con la verificación post-despliegue y los comandos de demostración.
+Documenta la integración continua (CI) operativa en **GitHub Actions**, que ejecuta las barreras de
+calidad de 3.5 en cada *pull request* a `main` —build, formato, pruebas y análisis de seguridad
+CodeQL— como puerta previa al CD de Dokploy; cierra con la verificación post-despliegue y los
+comandos de demostración.
 
 ## 3.6.1 Estrategia general
 
@@ -74,9 +74,10 @@ proceso es el runbook de `infrastructure/environments.md`, resumido en estos pas
 | 7 | Mapear dominios y configurar **DbGate** | `dama-software.org`→frontend, `api.dama-software.org`→gateway; DbGate va **bajo el gateway** en `/api/db-gate/`. |
 | 8 | Habilitar **respaldos S3** | En cada base gestionada, `mysqldump → S3` nativo de Dokploy (cron + retención). |
 
-> **Esto es despliegue continuo (CD), no integración continua (CI):** Dokploy **construye y despliega**
-> a partir del repositorio, pero **no ejecuta las pruebas ni las barreras de calidad** antes de
-> hacerlo. Esa verificación es hoy manual (ver 3.6.7).
+> **Esto es despliegue continuo (CD), distinto de la integración continua (CI):** Dokploy **construye y
+> despliega** a partir del repositorio tras el merge a `main`. Las **pruebas y barreras de calidad** las
+> ejecuta antes, en el *pull request*, el pipeline de **GitHub Actions** (ver 3.6.7); con protección de
+> rama, ese check verde es requisito para integrar y, por tanto, para que Dokploy despliegue.
 
 ## 3.6.4 TLS: borde público y canal interno
 
@@ -117,48 +118,51 @@ credenciales de RabbitMQ/DbGate) viven solo en `.env.*` (gitignored; el único a
 alguno falta o está malformado, en lugar de fallar con un error 500 en tiempo de petición. El playbook
 de rotación está en `infrastructure/SECRETS.md`.
 
-## 3.6.7 Integración continua: estado real y propuesta Jenkins
+## 3.6.7 Integración continua: GitHub Actions (estado real, operativo)
 
-### Estado real (no implementado como automatización)
-
-Hoy **no existe un servidor de integración continua**: no hay `.github/workflows/`, ni GitLab CI, ni
-Jenkins en el repositorio. Las **barreras de calidad** documentadas en 3.5 —`dotnet test` de las
-cuatro suites (incluidos los NetArchTest de la Bandeja de Salida), `bun run test:ci` y la barrera de
-cobertura crítica del frontend, `dotnet format --verify-no-changes` y los *gates* de complejidad de
-SonarAnalyzer— se ejecutan **manualmente** por el desarrollador antes de integrar a `main`. Dokploy
-construye y despliega después del merge, **sin** correr esas barreras. Es la misma clase de **brecha
-honesta** que se declara en 5.3: se reporta el estado real, no se asume una CI inexistente.
-
-### Propuesta: Jenkins como capa de CI (no implementada)
-
-> ⚠️ **Propuesta, no implementada.** Lo siguiente describe cómo se *cerraría* el "CI" del título de la
-> sección; **no** corresponde a infraestructura existente en el repositorio.
-
-Jenkins cubriría exactamente ese hueco, insertándose **antes** del merge y del despliegue, sin
-solaparse con Dokploy:
+La integración continua corre en **GitHub Actions**, versionada en `.github/workflows/`: `ci.yml`
+(build + barreras de calidad) y `codeql.yml` (análisis de seguridad). Se inserta **antes** del merge y
+del despliegue, sin solaparse con Dokploy:
 
 ```
-push / PR a GitHub ──► Jenkins (CI: build + barreras) ──► merge a main ──► Dokploy (CD: build + deploy)
+PR a GitHub ──► GitHub Actions (CI: build + barreras + CodeQL) ──► merge a main ──► Dokploy (CD: build + deploy)
 ```
 
-Un `Jenkinsfile` declarativo en la raíz reutilizaría, etapa por etapa, las barreras que **ya existen**
-en el repo (sin inventar herramientas nuevas), aprovechando el monorepo para paralelizar:
+### `ci.yml` — build y pruebas por área cambiada
 
-| Etapa propuesta | Comando reutilizado del repo | Barrera que impone |
-|-----------------|------------------------------|--------------------|
-| Estilo (por backend, en paralelo) | `dotnet format <Backend>.csproj --verify-no-changes` | Convenciones .NET uniformes. |
-| Build + complejidad | `dotnet build -c Release` | *Gates* SonarAnalyzer (S3776 ≤ 10, S1541 ≤ 20). |
-| Pruebas backend | `dotnet test -c Release -s ./.runsettings` | 598 pruebas + NetArchTest de la Bandeja de Salida; publica cobertura. |
-| Pruebas frontend | `bun run test:ci` y `bun run test:coverage:gate` | 653 pruebas + 100 % de cobertura en rutas críticas. |
-| Build de imágenes (opcional) | `docker compose -f infrastructure/compose.prod.yaml build` | Verifica que las imágenes de producción compilan. |
+El pipeline se dispara en cada `pull_request` a `main` (`opened`, `synchronize`, `reopened`), con
+`concurrency` que cancela ejecuciones previas de la misma rama. Su primer job, `changes`, usa
+`dorny/paths-filter` para detectar **qué áreas de `apps/` cambiaron** y emite la matriz de backends a
+construir y probar; así, un PR que solo toca un servicio no recompila ni reprueba el monorepo entero.
+Reutiliza, etapa por etapa, las mismas barreras de 3.5:
 
-El agente correría sobre la imagen `mcr.microsoft.com/dotnet/sdk:9.0` (más Bun), **el mismo entorno**
-que ya usan los Dockerfiles, evitando deriva entre lo que se prueba y lo que se despliega. El disparo
-sería por *webhook* de GitHub (pipeline multibranch: un job por rama/PR), y con **protección de rama**
-en `main` que exija el check verde de Jenkins antes de permitir el merge. Así, los **criterios de
-aceptación** de 3.5.1.4 (todas las pruebas pasan, cobertura crítica cumplida, sin regresiones de
-formato, NetArchTest verde), que hoy se verifican a mano, pasarían a ser una **puerta automática
-obligatoria** previa al CD de Dokploy.
+| Job | Comando del repo | Barrera que impone |
+|-----|------------------|--------------------|
+| `build-backend` (matriz por servicio cambiado) | `dotnet format <Backend>.csproj --verify-no-changes` + `dotnet build -c Release -p:TreatWarningsAsErrors=true` | Convenciones .NET y *gates* de SonarAnalyzer (los warnings del analizador fallan el PR). |
+| `build-frontend` (si cambió `apps/Frontend/`) | `bun run format:check` + `bun run lint` + `bun run build` | Prettier, ESLint y compilación del bundle Angular. |
+| `test-backend` (matriz; excluye Credentials) | `dotnet test --settings .../.runsettings` | Las suites de Auth/Attendance/CourseManagement/Payment (incluidos los NetArchTest de la Bandeja de Salida); cada servicio publica un *job summary* parseado de su `.trx`. |
+| `test-frontend` (si cambió `apps/Frontend/`) | `bun run test:coverage` | Pruebas del frontend con cobertura. |
+| `ci-gate` | agrega los resultados | Falla si algún job requerido no terminó en `success`/`skipped`; es el check único que resume el pipeline. |
+
+Credentials **se construye pero no se prueba** (es un *dummy* de solo-claims, sin casos de prueba),
+en coherencia con el alcance de 3.5. Los jobs cachean paquetes NuGet y el caché de Bun por *hash* del
+lockfile, y la matriz corre con `fail-fast: false` para reportar todas las fallas de un PR de una vez.
+
+### `codeql.yml` — análisis de seguridad
+
+El workflow `codeql.yml` ejecuta el escaneo **CodeQL** para `csharp` y `javascript-typescript` (matriz
+de lenguajes, `build-mode: none`) en cada `push` y `pull_request` a `main`, más un cron **semanal**
+(lunes 06:00 UTC). Publica los hallazgos en *security-events*, cubriendo el análisis estático de
+seguridad como capa adicional a las barreras de calidad de `ci.yml`.
+
+### Puerta obligatoria previa al despliegue
+
+El agente de GitHub Actions corre sobre `ubuntu-latest` con .NET 9 (`actions/setup-dotnet`) y Bun
+(`oven-sh/setup-bun`), alineado con el entorno de los Dockerfiles. Con **protección de rama** en `main`
+(paso manual en la UI de GitHub, no versionable; ver `.github/workflows/README.md`), el check verde es
+requisito para integrar. Así, los **criterios de aceptación** de 3.5.1.4 (todas las pruebas pasan, sin
+regresiones de formato, NetArchTest verde) son una **puerta automática obligatoria** previa al CD de
+Dokploy.
 
 ## 3.6.8 Verificación post-despliegue
 
@@ -185,9 +189,10 @@ grep -n "dbgate\|tls-init\|dokploy-network" infrastructure/compose.prod.yaml
 # El runbook completo de producción
 sed -n '22,176p' infrastructure/environments.md
 
-# Estado real de CI: no hay pipeline versionado (la propuesta Jenkins NO está implementada)
-ls .github/workflows 2>/dev/null || echo "sin CI versionado"
-ls Jenkinsfile .gitlab-ci.yml 2>/dev/null || echo "sin Jenkins/GitLab CI"
+# CI versionada en GitHub Actions: pipeline de calidad + escaneo CodeQL
+ls .github/workflows
+grep -nE "^name:|^on:|dotnet format|TreatWarningsAsErrors|dotnet test|bun run|paths-filter" .github/workflows/ci.yml
+grep -nE "^name:|languages:|cron:" .github/workflows/codeql.yml
 
 # Verificación de rutas del gateway tras desplegar
 cat infrastructure/verify-gateway-routes.sh
@@ -198,8 +203,8 @@ cat infrastructure/verify-gateway-routes.sh
 El despliegue de DAMA es **infraestructura como código** sobre contenedores: el mismo artefacto por
 servicio, configurado por variables de entorno (RNF-022), desplegado en **Dokploy** con bases
 gestionadas y respaldos S3, tras **Cloudflare** para el TLS público, con TLS inter-servicio
-**automático** y administración de esquema por **DbGate**. La parte de **entrega (CD)** está operativa;
-la **integración continua (CI)** **no está automatizada** —las barreras de calidad se corren a mano— y
-se propone **Jenkins** para cerrarla, reutilizando las mismas barreras de 3.5 como puerta obligatoria
-previa al despliegue. La propuesta se declara explícitamente como **no implementada**, en coherencia
-con el rigor de reportar el estado real.
+**automático** y administración de esquema por **DbGate**. La **entrega (CD)** está operativa en
+Dokploy, y la **integración continua (CI)** está automatizada en **GitHub Actions**: `ci.yml` ejecuta
+las mismas barreras de 3.5 (build, formato, pruebas por área cambiada) y `codeql.yml` añade el escaneo
+de seguridad, ambos en cada *pull request* a `main` como puerta obligatoria previa al despliegue. El
+ciclo CI→CD queda así cerrado de extremo a extremo y versionado en el repositorio.
