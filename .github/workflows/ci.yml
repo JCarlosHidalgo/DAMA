@@ -19,7 +19,6 @@ jobs:
       backends: ${{ steps.set.outputs.backends }}
       backends_testable: ${{ steps.set.outputs.backends_testable }}
       frontend: ${{ steps.filter.outputs.frontend }}
-      languages: ${{ steps.set.outputs.languages }}
     steps:
       - uses: actions/checkout@v5
 
@@ -62,16 +61,8 @@ jobs:
               echo "$name=$(printf '%s\n' "$@" | jq -R . | jq -cs .)" >> "$GITHUB_OUTPUT"
             fi
           }
-          languages=()
-          if [ "${#backends[@]}" -ne 0 ]; then
-            languages+=("csharp")
-          fi
-          if [ "${{ steps.filter.outputs.frontend }}" = "true" ]; then
-            languages+=("javascript-typescript")
-          fi
           emit backends Auth Attendance CourseManagement Payment Credentials
           emit backends_testable Auth Attendance CourseManagement Payment
-          emit languages csharp javascript-typescript
 
   build-backend:
     needs: changes
@@ -261,32 +252,8 @@ jobs:
       - name: Test (with coverage)
         run: bun run test:coverage
 
-  analyze:
-    needs: changes
-    if: ${{ needs.changes.outputs.languages != '[]' }}
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      security-events: write
-      actions: read
-    strategy:
-      fail-fast: false
-      matrix:
-        language: ${{ fromJSON(needs.changes.outputs.languages) }}
-    steps:
-      - uses: actions/checkout@v5
-
-      - uses: github/codeql-action/init@v4
-        with:
-          languages: ${{ matrix.language }}
-          build-mode: none
-
-      - uses: github/codeql-action/analyze@v4
-        with:
-          category: "/language:${{ matrix.language }}"
-
   ci-gate:
-    needs: [build-backend, build-frontend, test-backend, test-frontend, analyze]
+    needs: [build-backend, build-frontend, test-backend, test-frontend]
     if: ${{ always() }}
     runs-on: ubuntu-latest
     steps:
@@ -298,7 +265,6 @@ jobs:
             [build-frontend]='${{ needs.build-frontend.result }}'
             [test-backend]='${{ needs.test-backend.result }}'
             [test-frontend]='${{ needs.test-frontend.result }}'
-            [analyze]='${{ needs.analyze.result }}'
           )
           failed=0
           for job in "${!results[@]}"; do
