@@ -69,8 +69,8 @@ jobs:
           if [ "${{ steps.filter.outputs.frontend }}" = "true" ]; then
             languages+=("javascript-typescript")
           fi
-          emit backends "${backends[@]+"${backends[@]}"}"
-          emit backends_testable "${testable[@]+"${testable[@]}"}"
+          emit backends Auth Attendance CourseManagement Payment Credentials
+          emit backends_testable Auth Attendance CourseManagement Payment
           emit languages "${languages[@]+"${languages[@]}"}"
 
   build-backend:
@@ -107,7 +107,7 @@ jobs:
 
   build-frontend:
     needs: changes
-    if: ${{ needs.changes.outputs.frontend == 'true' }}
+    if: ${{ always() }}
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -244,7 +244,7 @@ jobs:
 
   test-frontend:
     needs: [changes, build-frontend]
-    if: ${{ needs.changes.outputs.frontend == 'true' }}
+    if: ${{ always() }}
     runs-on: ubuntu-latest
     defaults:
       run:
