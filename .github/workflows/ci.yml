@@ -61,8 +61,8 @@ jobs:
               echo "$name=$(printf '%s\n' "$@" | jq -R . | jq -cs .)" >> "$GITHUB_OUTPUT"
             fi
           }
-          emit backends Auth Attendance CourseManagement Payment Credentials
-          emit backends_testable Auth Attendance CourseManagement Payment
+          emit backends "${backends[@]}"
+          emit backends_testable "${testable[@]}"
 
   build-backend:
     needs: changes
@@ -98,7 +98,7 @@ jobs:
 
   build-frontend:
     needs: changes
-    if: ${{ always() }}
+    if: ${{ needs.changes.outputs.frontend == 'true' }}
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -227,7 +227,7 @@ jobs:
 
   test-frontend:
     needs: [changes, build-frontend]
-    if: ${{ always() }}
+    if: ${{ needs.changes.outputs.frontend == 'true' }}
     runs-on: ubuntu-latest
     defaults:
       run:
