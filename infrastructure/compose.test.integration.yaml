@@ -1,0 +1,25 @@
+services:
+
+  apache-integration:
+    container_name: ApacheIntegration
+    image: httpd:2.4.65-alpine
+    ports:
+      - "8005:80"
+    volumes:
+      - ./environments-test-integration/root/index.html:/usr/local/apache2/htdocs/index.html:ro
+      - frontend-components-test-results:/usr/local/apache2/htdocs/frontend-components/
+    depends_on:
+      frontend-components-test:
+        condition: service_completed_successfully
+
+  frontend-components-test:
+    container_name: FrontendComponentsTest
+    build:
+      context: ${CONTEXT}
+      dockerfile: ./infrastructure/environments-test-integration/frontend-components/Dockerfile
+    volumes:
+      - ./environments-test-integration/placeholder:/placeholder:ro
+      - frontend-components-test-results:/test-env/coverage/
+
+volumes:
+  frontend-components-test-results:
