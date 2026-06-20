@@ -139,9 +139,9 @@ Reutiliza, etapa por etapa, las mismas barreras de 3.5:
 | Job | Comando del repo | Barrera que impone |
 |-----|------------------|--------------------|
 | `build-backend` (matriz por servicio cambiado) | `dotnet format <Backend>.csproj --verify-no-changes` + `dotnet build -c Release -p:TreatWarningsAsErrors=true` | Convenciones .NET y *gates* de SonarAnalyzer (los warnings del analizador fallan el PR). |
-| `build-frontend` (si cambió `apps/Frontend/`) | `bun run format:check` + `bun run lint` + `bun run build` | Prettier, ESLint y compilación del bundle Angular. |
-| `test-backend` (matriz; excluye Credentials) | `dotnet test --settings .../.runsettings` | Las suites de Auth/Attendance/CourseManagement/Payment (incluidos los NetArchTest de la Bandeja de Salida); cada servicio publica un *job summary* parseado de su `.trx`. |
-| `test-frontend` (si cambió `apps/Frontend/`) | `bun run test:coverage` | Pruebas del frontend con cobertura. |
+| `build-frontend` (si cambió `apps/Frontend/`) | `bun run format:check` + `bun run lint` + `bun run build` | Prettier, ESLint y compilación del bundle Angular; el paso de ESLint además impone el techo de **complejidad ciclomática (≤ 20)**, espejo de la regla S1541 del backend. |
+| `test-backend` (matriz; excluye Credentials) | `dotnet test --settings .../.runsettings` + `check-coverage.py` | Las suites de Auth/Attendance/CourseManagement/Payment (incluidos los NetArchTest de la Bandeja de Salida) y la **puerta de cobertura crítica** (falla el PR si la cobertura de líneas de lógica de negocio baja del 100 %); cada servicio publica un *job summary* parseado de su `.trx`. |
+| `test-frontend` (si cambió `apps/Frontend/`) | `bun run test:coverage:gate` | Pruebas del frontend con cobertura y **puerta de cobertura crítica** (100 % sobre lógica/validadores/*stores*). |
 | `ci-gate` | agrega los resultados | Falla si algún job requerido no terminó en `success`/`skipped`; es el check único que resume el pipeline. |
 
 Credentials **se construye pero no se prueba** (es un *dummy* de solo-claims, sin casos de prueba),

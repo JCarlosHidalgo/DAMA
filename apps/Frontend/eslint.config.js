@@ -15,6 +15,7 @@ module.exports = defineConfig([
     ],
     processor: angular.processInlineTemplates,
     rules: {
+      complexity: ['error', 20],
       'no-duplicate-imports': ['error', { allowSeparateTypeImports: true }],
       'no-restricted-imports': [
         'error',

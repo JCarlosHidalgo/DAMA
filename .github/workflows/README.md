@@ -2,9 +2,14 @@
 
 - `ci.yml` — on every PR to `main`, detects which `apps/` area changed and runs
   build then test for it. Backends: Auth, Attendance, CourseManagement, Payment
-  build + test; Credentials builds only. Frontend: build (prettier + eslint +
-  ng build) then test (ng test --coverage). Backend builds run with
-  `-p:TreatWarningsAsErrors=true` so SonarAnalyzer warnings fail the PR.
+  build + test; each tested backend also runs a critical-coverage gate
+  (`infrastructure/environments-test/cobertura-backends/check-coverage.py`) that
+  fails the PR if business-logic line coverage drops below 100%. Credentials
+  builds only. Frontend: build (prettier + eslint + ng build) then test with a
+  critical-coverage gate (`test:coverage:gate`, 100% on logic/validators/stores);
+  the ESLint step also enforces the cyclomatic-complexity ceiling (≤ 20). Backend
+  builds run with `-p:TreatWarningsAsErrors=true` so SonarAnalyzer warnings fail
+  the PR.
   Each tested backend writes a per-service job summary (Test Files / Test
   Results) parsed from its `.trx`, mirroring the summary Vitest emits for the
   frontend; these summaries are conditional, appearing only for the backends
