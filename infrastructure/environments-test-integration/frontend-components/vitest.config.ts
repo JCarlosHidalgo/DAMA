@@ -27,11 +27,9 @@ export default defineConfig({
         'src/**/index.ts',
         'src/testing/**',
         'src/app/**/*-dialog.ts',
-        // Lógica pura — ya cubierta por la suite existente en apps/Frontend
         'src/**/*.logic.ts',
         'src/**/*.validators.ts',
         'src/**/*-store.ts',
-        // Utilidades y servicios core cubiertos por la suite existente
         'src/app/core/auth/**',
         'src/app/core/utils/**',
         'src/app/core/services/**',
