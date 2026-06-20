@@ -13,7 +13,12 @@ export default defineConfig({
       provider: 'v8',
       reporter: ['html', 'text-summary'],
       reportsDirectory: 'coverage',
-      include: ['src/**/*.ts'],
+      include: [
+        'src/app/shared/components/**/*.ts',
+        'src/app/pages/login/**/*.ts',
+        'src/app/core/utils/confirmation-dialog.ts',
+        'src/app/core/utils/attendance-marked-dialog.ts',
+      ],
       exclude: [
         'src/**/*.spec.ts',
         'src/**/*.d.ts',

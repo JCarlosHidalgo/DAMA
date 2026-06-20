@@ -1,4 +1,3 @@
-import 'zone.js';
 import '@angular/compiler';
 import 'jest-canvas-mock';
 import { toHaveNoViolations } from 'vitest-axe';
