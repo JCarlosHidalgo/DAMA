@@ -163,6 +163,9 @@ jobs:
           --logger "trx;LogFileName=test-results.trx"
           --results-directory apps/${{ matrix.service }}/Test/TestResults
 
+      - name: Critical coverage gate (100% business-logic lines)
+        run: python3 infrastructure/environments-test/cobertura-backends/check-coverage.py "${{ matrix.service }}" "apps/${{ matrix.service }}/Test/TestResults"
+
       - name: Test summary
         if: ${{ always() }}
         env:
@@ -249,8 +252,8 @@ jobs:
       - name: Install
         run: bun install --frozen-lockfile
 
-      - name: Test (with coverage)
-        run: bun run test:coverage
+      - name: Test (with coverage gate)
+        run: bun run test:coverage:gate
 
   ci-gate:
     needs: [build-backend, build-frontend, test-backend, test-frontend]
