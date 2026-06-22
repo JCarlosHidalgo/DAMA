@@ -18,20 +18,20 @@ import {
 } from '@core/utils';
 import { LoadingSkeleton, PageHead } from '@shared/components';
 import { Calendar } from '@shared/components/calendar';
-import { GroupSelect } from '@shared/components/group-select/group-select';
+import { GroupSelectContainer } from '@shared/components/group-select/group-select-container';
 import { AttendanceQrDialog, AttendanceQrDialogData } from './attendance-qr-dialog';
 import { scheduleSubtitle } from './schedule.logic';
 import { teacherScheduleStyles } from './schedule.variants';
 
 @Component({
   selector: 'app-teacher-schedule',
-  imports: [MatCardModule, Calendar, GroupSelect, PageHead, LoadingSkeleton],
+  imports: [MatCardModule, Calendar, GroupSelectContainer, PageHead, LoadingSkeleton],
   template: `
     <app-page-head title="Mi horario" [subtitle]="scheduleSubtitle()" />
 
     <mat-card [class]="styles.controlsCard()">
       <mat-card-content>
-        <app-group-select
+        <app-group-select-container
           source="teacher"
           [selectedGroupId]="selectedGroupId()"
           (groupChange)="onGroupChange($event)"

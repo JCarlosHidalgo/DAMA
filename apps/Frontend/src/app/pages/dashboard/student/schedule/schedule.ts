@@ -20,7 +20,7 @@ import {
 } from '@core/utils';
 import { LoadingSkeleton, PageHead } from '@shared/components';
 import { Calendar } from '@shared/components/calendar';
-import { GroupSelect } from '@shared/components/group-select/group-select';
+import { GroupSelectContainer } from '@shared/components/group-select/group-select-container';
 
 import { ConfirmAttendanceDialog, ConfirmAttendanceDialogData } from './confirm-attendance-dialog';
 import { isEntryAlreadyMarked, studentScheduleSubtitle } from './schedule.logic';
@@ -28,13 +28,13 @@ import { studentScheduleStyles } from './schedule.variants';
 
 @Component({
   selector: 'app-student-schedule',
-  imports: [MatCardModule, Calendar, GroupSelect, PageHead, LoadingSkeleton],
+  imports: [MatCardModule, Calendar, GroupSelectContainer, PageHead, LoadingSkeleton],
   template: `
     <app-page-head title="Horario" [subtitle]="scheduleSubtitle()" />
 
     <mat-card [class]="styles.controlsCard()">
       <mat-card-content>
-        <app-group-select
+        <app-group-select-container
           [selectedGroupId]="selectedGroupId()"
           (groupChange)="onGroupChange($event)"
           (groupsLoaded)="onGroupsLoaded($event)"

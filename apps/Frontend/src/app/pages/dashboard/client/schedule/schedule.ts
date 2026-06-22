@@ -25,7 +25,7 @@ import {
 } from '@core/utils';
 import { Icon, LoadingSkeleton, PageHead } from '@shared/components';
 import { Calendar } from '@shared/components/calendar';
-import { GroupSelect } from '@shared/components/group-select/group-select';
+import { GroupSelectContainer } from '@shared/components/group-select/group-select-container';
 import { NoPasswordManager } from '@shared/directives';
 
 import {
@@ -205,7 +205,7 @@ export class ScheduleDialog {
     MatButtonModule,
     MatTooltipModule,
     Calendar,
-    GroupSelect,
+    GroupSelectContainer,
     Icon,
     PageHead,
     LoadingSkeleton,
@@ -215,7 +215,7 @@ export class ScheduleDialog {
 
     <mat-card [class]="styles().controlsCard()">
       <mat-card-content [class]="styles().controls()">
-        <app-group-select
+        <app-group-select-container
           [editable]="true"
           [locked]="transferMode()"
           [selectedGroupId]="selectedGroupId()"
