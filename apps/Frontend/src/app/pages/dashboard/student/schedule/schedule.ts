@@ -51,6 +51,7 @@ import { studentScheduleStyles } from './schedule.variants';
             <app-calendar
               [entries]="filteredEntries()"
               [anchorDate]="anchorDate()"
+              [tenantTimezone]="authService.tenantTimezone()"
               (eventClick)="onEvent($event)"
               (weekDelta)="onWeekDelta($event)"
             />
@@ -67,7 +68,7 @@ import { studentScheduleStyles } from './schedule.variants';
 export class StudentSchedule {
   private readonly courseApi = inject(CourseApi);
   private readonly attendanceApi = inject(AttendanceApi);
-  private readonly authService = inject(AuthService);
+  protected readonly authService = inject(AuthService);
   private readonly matDialog = inject(MatDialog);
   private readonly notifications = inject(NotificationService);
 

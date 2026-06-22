@@ -12,6 +12,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { firstValueFrom } from 'rxjs';
 
 import { AuthApi, CourseApi } from '@core/api';
+import { AuthService } from '@core/auth';
 import { ClassGroup, Course, CourseScheduleEntry, UserListItem } from '@core/models';
 import { DialogService, NotificationService } from '@core/services';
 import { ClassKindStrategies } from '@core/strategies';
@@ -386,6 +387,7 @@ export class ScheduleDialog {
               [entries]="selectedGroupEntries()"
               [anchorDate]="anchorDate()"
               [selectedDayIndex]="selectedDayIndex()"
+              [tenantTimezone]="authService.tenantTimezone()"
               (weekDelta)="onWeekDelta($event)"
               (dayDelta)="onDayDelta($event)"
             />
@@ -402,6 +404,7 @@ export class ScheduleDialog {
 export class Schedule {
   private readonly courseApi = inject(CourseApi);
   private readonly authApi = inject(AuthApi);
+  protected readonly authService = inject(AuthService);
   private readonly dialogs = inject(DialogService);
   private readonly notifications = inject(NotificationService);
   private readonly classKindStrategies = inject(ClassKindStrategies);

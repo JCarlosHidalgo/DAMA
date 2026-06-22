@@ -4,7 +4,6 @@ import {
   computed,
   effect,
   ElementRef,
-  inject,
   input,
   output,
   signal,
@@ -22,7 +21,6 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin, { DateClickArg } from '@fullcalendar/interaction';
 import timeGridPlugin from '@fullcalendar/timegrid';
 
-import { AuthService } from '@core/auth';
 import { CourseScheduleEntry } from '@core/models';
 import { courseColor, isoWeekdayIndex, shiftIsoDate } from '@core/utils';
 
@@ -77,7 +75,6 @@ const SUNDAY_WEEKDAY_INDEX = 7;
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Calendar {
-  private readonly authService = inject(AuthService);
   private readonly fullCalendar = viewChild<FullCalendarComponent>('fc');
   private readonly calendarHost = viewChild<ElementRef<HTMLElement>>('calendarHost');
 
@@ -87,6 +84,7 @@ export class Calendar {
   readonly anchorDate = input<string | null>(null);
   readonly mobile = input<boolean | null>(null);
   readonly selectedDayIndex = input<number | null>(null);
+  readonly tenantTimezone = input.required<string>();
 
   readonly eventClick = output<CourseScheduleEntry>();
   readonly dateClick = output<string>();
@@ -164,7 +162,7 @@ export class Calendar {
   });
 
   protected readonly calendarOptions = computed<CalendarOptions>(() => {
-    const tenantTimezone = this.authService.tenantTimezone();
+    const tenantTimezone = this.tenantTimezone();
     const showDetails = this.showDetails();
     const events: EventInput[] = this.entries().map((scheduleEntry) => ({
       id: `${scheduleEntry.classKind}:${scheduleEntry.classId}`,

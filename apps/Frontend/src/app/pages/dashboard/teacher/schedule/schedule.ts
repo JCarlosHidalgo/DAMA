@@ -49,6 +49,7 @@ import { teacherScheduleStyles } from './schedule.variants';
             <app-calendar
               [entries]="filteredEntries()"
               [anchorDate]="anchorDate()"
+              [tenantTimezone]="authService.tenantTimezone()"
               (eventClick)="onEvent($event)"
               (weekDelta)="onWeekDelta($event)"
             />
@@ -66,7 +67,7 @@ export class TeacherSchedule {
   private readonly courseApi = inject(CourseApi);
   private readonly matDialog = inject(MatDialog);
   private readonly notifications = inject(NotificationService);
-  private readonly authService = inject(AuthService);
+  protected readonly authService = inject(AuthService);
 
   protected readonly styles = teacherScheduleStyles();
   protected readonly interactable = computed(() =>
