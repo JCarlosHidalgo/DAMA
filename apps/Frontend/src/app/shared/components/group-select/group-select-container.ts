@@ -24,14 +24,13 @@ import { NoPasswordManager } from '@shared/directives';
 import { GroupSelect } from './group-select';
 import { groupNameDialogStyles } from './group-select.variants';
 import {
-  GROUPS_QUERY_KEY,
   GroupSource,
   groupsQueryKey,
   resolveGroupCreate,
   resolveGroupRename,
 } from './group-select.logic';
 
-export { GROUPS_QUERY_KEY, TEACHER_GROUPS_QUERY_KEY } from './group-select.logic';
+export { TEACHER_GROUPS_QUERY_KEY } from './group-select.logic';
 export type { GroupSource } from './group-select.logic';
 
 interface GroupNameDialogData {
@@ -148,7 +147,7 @@ export class GroupSelectContainer {
     mutationFn: (name: string) => firstValueFrom(this.courseApi.createGroup(name)),
     onSuccess: (created: ClassGroup) => {
       this.notifications.success('Grupo creado.');
-      this.queryClient.invalidateQueries({ queryKey: GROUPS_QUERY_KEY });
+      this.queryClient.invalidateQueries({ queryKey: groupsQueryKey(this.source()) });
       this.groupChange.emit(created.id);
     },
     onError: () => this.notifications.error('Error al crear grupo.'),
@@ -159,7 +158,7 @@ export class GroupSelectContainer {
       firstValueFrom(this.courseApi.renameGroup(renameInput.id, renameInput.name)),
     onSuccess: () => {
       this.notifications.success('Grupo actualizado.');
-      this.queryClient.invalidateQueries({ queryKey: GROUPS_QUERY_KEY });
+      this.queryClient.invalidateQueries({ queryKey: groupsQueryKey(this.source()) });
     },
     onError: () => this.notifications.error('Error al actualizar grupo.'),
   }));
@@ -168,7 +167,7 @@ export class GroupSelectContainer {
     mutationFn: (groupId: string) => firstValueFrom(this.courseApi.deleteGroup(groupId)),
     onSuccess: () => {
       this.notifications.success('Grupo eliminado.');
-      this.queryClient.invalidateQueries({ queryKey: GROUPS_QUERY_KEY });
+      this.queryClient.invalidateQueries({ queryKey: groupsQueryKey(this.source()) });
     },
     onError: () => this.notifications.error('No se pudo eliminar: el grupo aún tiene clases.'),
   }));
