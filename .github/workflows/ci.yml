@@ -20,7 +20,7 @@ jobs:
       backends_testable: ${{ steps.set.outputs.backends_testable }}
       frontend: ${{ steps.filter.outputs.frontend }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
       - uses: dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d  # v4
         id: filter
@@ -67,7 +67,7 @@ jobs:
   lint-dockerfiles:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
       - name: Lint Dockerfiles
         run: |
@@ -94,7 +94,7 @@ jobs:
       matrix:
         service: ${{ fromJSON(needs.changes.outputs.backends) }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
       - uses: actions/setup-dotnet@v5
         with:
@@ -144,7 +144,7 @@ jobs:
       run:
         working-directory: apps/Frontend
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6  # v2
         with:
@@ -178,7 +178,7 @@ jobs:
       matrix:
         service: ${{ fromJSON(needs.changes.outputs.backends_testable) }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
       - uses: actions/setup-dotnet@v5
         with:
@@ -276,7 +276,7 @@ jobs:
       run:
         working-directory: apps/Frontend
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6  # v2
         with:
