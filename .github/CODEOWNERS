@@ -1,0 +1,15 @@
+*                           @JCarlosHidalgo
+
+/apps/Auth/                 @JCarlosHidalgo
+/apps/Attendance/           @JCarlosHidalgo
+/apps/CourseManagement/     @JCarlosHidalgo
+/apps/Payment/              @JCarlosHidalgo
+/apps/Credentials/          @JCarlosHidalgo
+
+/apps/Frontend/             @JCarlosHidalgo
+
+/infrastructure/            @JCarlosHidalgo
+/.github/                   @JCarlosHidalgo
+
+/grpc-contracts/            @JCarlosHidalgo
+/packages/                  @JCarlosHidalgo
