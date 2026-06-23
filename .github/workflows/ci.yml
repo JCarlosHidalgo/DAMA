@@ -96,6 +96,25 @@ jobs:
       - name: Build (warnings as errors → SonarAnalyzer strict)
         run: dotnet build apps/${{ matrix.service }}/Backend/Backend.csproj -c Release --no-restore -p:TreatWarningsAsErrors=true
 
+      - name: Generate SBOM
+        run: |
+          dotnet tool install --global Microsoft.Sbom.DotNet
+          export PATH="$HOME/.dotnet/tools:$PATH"
+          sbom-tool generate \
+            -b apps/${{ matrix.service }}/Backend \
+            -bc apps/${{ matrix.service }}/Backend \
+            -pn DAMA.${{ matrix.service }} \
+            -pv ${{ github.sha }} \
+            -ps DAMA-Software \
+            -nsb https://github.com/JCarlosHidalgo/DAMA
+        continue-on-error: true
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sbom-${{ matrix.service }}
+          path: apps/${{ matrix.service }}/Backend/_manifest/spdx_2.2/
+
   build-frontend:
     needs: changes
     if: ${{ needs.changes.outputs.frontend == 'true' }}
