@@ -14,7 +14,7 @@ import { firstValueFrom } from 'rxjs';
 import { PaymentApi } from '@core/api';
 import { CreateDebtTemplatePayload, DebtTemplate, UpdateDebtTemplatePayload } from '@core/models';
 import { DialogService, NotificationService } from '@core/services';
-import { EmptyState, Icon, LoadingSkeleton, PageHead, Tag } from '@shared/components';
+import { EmptyState, Icon, LoadingSkeleton, PageHead, Tag } from '@shared/design/components';
 import { NoPasswordManager } from '@shared/directives';
 import { MoneyPipe } from '@shared/pipes';
 

@@ -39,7 +39,7 @@ import {
 
 import { AuthService, UserRole } from '@core/auth';
 
-import { ThemeToggle } from '@shared/components';
+import { ThemeToggle } from '@shared/design/components';
 
 import { dashboardStyles } from './dashboard.variants';
 

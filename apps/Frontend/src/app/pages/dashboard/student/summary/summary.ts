@@ -6,8 +6,8 @@ import { catchError, forkJoin, map, of, startWith } from 'rxjs';
 import { AttendanceApi, PaymentApi } from '@core/api';
 import { AuthService } from '@core/auth';
 import { StudentRemainClasses } from '@core/models';
-import { ErrorState, Icon, LoadingSkeleton, PageHead } from '@shared/components';
-import { BarChart, LineChart } from '@shared/components/charts';
+import { ErrorState, Icon, LoadingSkeleton, PageHead } from '@shared/design/components';
+import { BarChart, LineChart } from '@shared/design/components/charts';
 import { MoneyPipe } from '@shared/pipes';
 
 import { aggregateClassesPerMonth, MonthlySeries, spendPointsToLine } from './summary.logic';

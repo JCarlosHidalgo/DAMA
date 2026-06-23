@@ -7,7 +7,7 @@ import { firstValueFrom } from 'rxjs';
 import { CourseScheduleEntry } from '@core/models';
 import { NotificationService } from '@core/services';
 import { ClassKindStrategies } from '@core/strategies';
-import { Icon } from '@shared/components';
+import { Icon } from '@shared/design/components';
 
 import { translateAttendanceError } from './confirm-attendance-dialog.logic';
 import { confirmAttendanceDialogStyles } from './confirm-attendance-dialog.variants';

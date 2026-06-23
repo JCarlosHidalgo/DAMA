@@ -5,7 +5,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
 import { ClassGroup } from '@core/models';
-import { Icon } from '@shared/components/icon';
+import { Icon } from '@shared/design/components/icon';
 
 import { GroupSource, findSelectedGroup } from './group-select.logic';
 import { groupSelectStyles } from './group-select.variants';

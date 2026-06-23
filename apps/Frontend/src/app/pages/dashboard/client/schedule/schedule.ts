@@ -23,9 +23,9 @@ import {
   normalizeSchedule,
   resolveSelectedGroupId,
 } from '@core/utils';
-import { Icon, LoadingSkeleton, PageHead } from '@shared/components';
-import { Calendar } from '@shared/components/calendar';
-import { GroupSelectContainer } from '@shared/components/group-select/group-select-container';
+import { Icon, LoadingSkeleton, PageHead } from '@shared/design/components';
+import { Calendar } from '@shared/design/components/calendar';
+import { GroupSelectContainer } from '@shared/design/components/group-select/group-select-container';
 import { NoPasswordManager } from '@shared/directives';
 
 import {

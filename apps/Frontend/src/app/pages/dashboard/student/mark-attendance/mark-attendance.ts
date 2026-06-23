@@ -16,8 +16,8 @@ import {
   scheduledAttendanceKey,
   todayDateOnlyInTenant,
 } from '@core/utils';
-import { Icon, LoadingSkeleton, PageHead } from '@shared/components';
-import { CameraScanner } from '@shared/components/camera-scanner/camera-scanner';
+import { Icon, LoadingSkeleton, PageHead } from '@shared/design/components';
+import { CameraScanner } from '@shared/design/components/camera-scanner/camera-scanner';
 
 import {
   classifyMarkAttendanceError,

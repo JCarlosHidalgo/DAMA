@@ -18,7 +18,7 @@ import { PaymentApi } from '@core/api';
 import { DebtTemplate, QrDebtStatus } from '@core/models';
 import { DialogService, NotificationService } from '@core/services';
 import { pollQrDebtUntilSettled, resolveQrDebtOutcome } from '@core/utils';
-import { EmptyState, Icon, LoadingSkeleton, PageHead, Tag } from '@shared/components';
+import { EmptyState, Icon, LoadingSkeleton, PageHead, Tag } from '@shared/design/components';
 import { NoPasswordManager } from '@shared/directives';
 import { MoneyPipe } from '@shared/pipes';
 

@@ -28,7 +28,7 @@ import {
   ResponsiveTable,
   type ResponsiveTableColumn,
   TableCell,
-} from '@shared/components';
+} from '@shared/design/components';
 import { NoPasswordManager } from '@shared/directives';
 
 import { userDialogStyles, userListStyles } from './user-list.variants';

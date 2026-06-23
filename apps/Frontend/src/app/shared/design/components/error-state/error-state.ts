@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
-import { Icon } from '@shared/components/icon';
+import { Icon } from '@shared/design/components/icon';
 
 import { errorStateStyles } from './error-state.variants';
 

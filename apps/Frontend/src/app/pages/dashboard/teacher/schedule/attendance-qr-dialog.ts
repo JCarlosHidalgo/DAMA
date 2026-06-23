@@ -19,8 +19,8 @@ import { AuthService } from '@core/auth';
 import { CourseScheduleEntry } from '@core/models';
 import { ClassKindStrategies, RosterEntry } from '@core/strategies';
 import { encodeQr } from '@core/utils';
-import { LoadingSkeleton } from '@shared/components';
-import { QrCard } from '@shared/components/qr-card/qr-card';
+import { LoadingSkeleton } from '@shared/design/components';
+import { QrCard } from '@shared/design/components/qr-card/qr-card';
 
 import {
   attendanceEntrySubtitle,
