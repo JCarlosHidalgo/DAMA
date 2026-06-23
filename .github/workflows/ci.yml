@@ -64,6 +64,27 @@ jobs:
           emit backends "${backends[@]}"
           emit backends_testable "${testable[@]}"
 
+  lint-dockerfiles:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Lint Dockerfiles
+        run: |
+          for dockerfile in \
+            infrastructure/environments/auth/Dockerfile \
+            infrastructure/environments/attendance/Dockerfile \
+            infrastructure/environments/course-management/Dockerfile \
+            infrastructure/environments/payment/Dockerfile \
+            infrastructure/environments/credentials/Dockerfile \
+            infrastructure/environments/api-gateway/Dockerfile \
+            infrastructure/environments/frontend/Dockerfile \
+            infrastructure/environments/rabbitmq/Dockerfile \
+            infrastructure/environments/tls-init/Dockerfile; do
+            echo "Linting $dockerfile"
+            docker run --rm -i hadolint/hadolint@sha256:30a8fd2e785ab6176eed53f74769e04f125afb2f74a6c52aef7d463583b6d45e < "$dockerfile"
+          done
+
   build-backend:
     needs: changes
     if: ${{ needs.changes.outputs.backends != '[]' }}
@@ -275,7 +296,7 @@ jobs:
         run: bun run test:coverage:gate
 
   ci-gate:
-    needs: [build-backend, build-frontend, test-backend, test-frontend]
+    needs: [build-backend, build-frontend, test-backend, test-frontend, lint-dockerfiles]
     if: ${{ always() }}
     runs-on: ubuntu-latest
     steps:
@@ -287,6 +308,7 @@ jobs:
             [build-frontend]='${{ needs.build-frontend.result }}'
             [test-backend]='${{ needs.test-backend.result }}'
             [test-frontend]='${{ needs.test-frontend.result }}'
+            [lint-dockerfiles]='${{ needs.lint-dockerfiles.result }}'
           )
           failed=0
           for job in "${!results[@]}"; do

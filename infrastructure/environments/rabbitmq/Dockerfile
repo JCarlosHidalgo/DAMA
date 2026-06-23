@@ -5,6 +5,7 @@ FROM rabbitmq:4.1-management-alpine
 # Must match the broker's major/minor line; bump together with the FROM tag.
 ARG DELAYED_PLUGIN_VERSION=4.1.0
 
+# hadolint ignore=DL3018,DL4006
 RUN apk add --no-cache curl ca-certificates \
     && curl -fSL -o /tmp/plugin.ez \
         "https://github.com/rabbitmq/rabbitmq-delayed-message-exchange/releases/download/v${DELAYED_PLUGIN_VERSION}/rabbitmq_delayed_message_exchange-${DELAYED_PLUGIN_VERSION}.ez" \
