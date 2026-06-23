@@ -39,6 +39,13 @@ jobs:
               alpine sh -c "cp -r /data/. /out/ 2>/dev/null || true"
           done
 
+      - name: Generate checksums
+        run: |
+          for svc in auth payment course-management attendance frontend; do
+            find "site/tests/$svc" -type f | sort | \
+              xargs sha256sum > "site/tests/$svc/checksums.sha256"
+          done
+
       - uses: actions/upload-artifact@v4
         with:
           name: tests-html
