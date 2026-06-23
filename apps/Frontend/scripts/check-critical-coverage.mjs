@@ -131,13 +131,9 @@ for (const { relativePath, stats } of summaries) {
     (stats.branchPct === 100 || relaxedBranchOk(relativePath, stats.branchPct))
       ? 'ok'
       : 'GAP';
-  console.log(
-    `[${flag}] ${relativePath}  ` +
-      `S=${stats.statementPct.toFixed(2)}%  ` +
-      `B=${stats.branchPct.toFixed(2)}%  ` +
-      `F=${stats.functionPct.toFixed(2)}%  ` +
-      `L=${stats.linePct.toFixed(2)}%`,
-  );
+  if (flag === 'ok') {
+    console.log(`[ok] ${relativePath}`);
+  }
 }
 
 if (failures.length > 0) {

@@ -77,3 +77,17 @@ Or simpler: `docker compose down -v` to drop the volume and let the container re
 `dotnet run` reads from `apps/<Svc>/Backend/appsettings.Development.json` and process env vars, not from `infrastructure/.env.dev`. Either:
 - export the same vars in your shell before running (`export JWT_PUBLIC_KEY_B64=...`), or
 - drop an `AppSettings` block (with `PublicKey`, `PrivateKey` for Auth) into `appsettings.Development.json`. These files are gitignored where present; do not commit real keys.
+
+## Supply Chain
+
+### NuGet prefix reservation — `JuanCarlosHS.`
+
+Protects against dependency confusion attacks where a third party registers a
+package under the same namespace on nuget.org.
+
+| Item | Value |
+|---|---|
+| Prefix | `JuanCarlosHS.` |
+| Verified on | 2026-06-23 |
+| Status | Pending verification — visit nuget.org/packages/JuanCarlosHS.SQLDaosPackage and check for the blue prefix badge; if absent, open a prefix reservation request at github.com/NuGet/NuGetGallery using the "Package ID Prefix Reservation" issue template |
+| How to verify | Visit nuget.org/packages/JuanCarlosHS.SQLDaosPackage and check for the blue prefix badge |

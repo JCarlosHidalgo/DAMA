@@ -7,9 +7,12 @@ RUN dotnet restore
 COPY ./apps/CourseManagement/Backend/ .
 RUN dotnet publish -c Release -o out
 
-FROM mcr.microsoft.com/dotnet/sdk:9.0
-WORKDIR /webapp
-COPY --from=build /webapp/out .
+FROM mcr.microsoft.com/dotnet/aspnet:9.0
+WORKDIR /app
+# hadolint ignore=DL3008
+RUN apt-get update && apt-get install -y --no-install-recommends curl \
+    && rm -rf /var/lib/apt/lists/*
+COPY --chown=app:app --from=build /webapp/out .
 ENV ASPNETCORE_ENVIRONMENT=Container
 
 # Inter-service gRPC TLS. CourseManagement is the gRPC server; its cert + key
@@ -20,4 +23,5 @@ ENV ASPNETCORE_ENVIRONMENT=Container
 HEALTHCHECK --interval=10s --timeout=3s --retries=6 --start-period=20s \
     CMD curl -fsS http://localhost:80/health || exit 1
 
+USER app
 ENTRYPOINT ["dotnet","Backend.dll"]
