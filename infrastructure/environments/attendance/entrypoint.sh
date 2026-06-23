@@ -6,4 +6,4 @@ if [ -f /etc/dama/tls/ca.crt ]; then
     update-ca-certificates >/dev/null 2>&1 || true
 fi
 
-exec dotnet Backend.dll
+exec gosu app dotnet Backend.dll
