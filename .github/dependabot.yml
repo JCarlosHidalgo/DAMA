@@ -1,0 +1,85 @@
+version: 2
+updates:
+  # GitHub Actions — keeps pinned SHAs current
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "ci"
+
+  # NuGet — one entry per backend
+  - package-ecosystem: "nuget"
+    directory: "/apps/Auth/Backend"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "backend"
+
+  - package-ecosystem: "nuget"
+    directory: "/apps/Attendance/Backend"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "backend"
+
+  - package-ecosystem: "nuget"
+    directory: "/apps/CourseManagement/Backend"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "backend"
+
+  - package-ecosystem: "nuget"
+    directory: "/apps/Payment/Backend"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "backend"
+
+  - package-ecosystem: "nuget"
+    directory: "/apps/Credentials/Backend"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "backend"
+
+  - package-ecosystem: "nuget"
+    directory: "/packages/outbox"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "packages"
+
+  - package-ecosystem: "nuget"
+    directory: "/packages/unit-of-work"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "packages"
+
+  - package-ecosystem: "nuget"
+    directory: "/packages/grpc-contracts"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "packages"
+
+  # npm — Dependabot reads package.json; Bun is not natively supported.
+  # After each Dependabot PR, run `bun install` locally to update bun.lock before merging.
+  - package-ecosystem: "npm"
+    directory: "/apps/Frontend"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "frontend"
