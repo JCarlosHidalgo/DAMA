@@ -21,17 +21,15 @@ COPY ./apps/Frontend/tsconfig.app.json ./
 COPY ./apps/Frontend/angular.json ./
 COPY ./apps/Frontend/src/ ./src/
 COPY ./infrastructure/docs/compodoc/tsconfig.doc.json ./tsconfig.doc.json
-COPY ./infrastructure/docs/dependency-cruiser/tsconfig.depcruise.json ./tsconfig.depcruise.json
-COPY ./infrastructure/docs/dependency-cruiser/index.html ./deps-index.html
+COPY ./infrastructure/docs/compodoc/tsconfig.depcruise.json ./tsconfig.depcruise.json
+COPY ./infrastructure/docs/compodoc/includes/ ./compodoc-includes/
 
 RUN npm install -g @compodoc/compodoc@1.1.30
 
-CMD sh -c "compodoc -p tsconfig.doc.json -d /work/Documentation --theme material --name 'DAMA Frontend Documentation' --hideGenerator --disableCoverage \
+CMD sh -c "compodoc -p tsconfig.doc.json -d /work/Documentation --theme material --name 'DAMA Frontend Documentation' --hideGenerator --disableCoverage --includes compodoc-includes \
   && grep -q \"sortMethod: 'directed',\" /work/Documentation/js/tree.js \
   && sed -i \"s|sortMethod: 'directed',|sortMethod: 'directed', levelSeparation: 200, nodeSpacing: 220, treeSpacing: 260,|\" /work/Documentation/js/tree.js \
-  && mkdir -p /work/Documentation/dependencies \
-  && ./node_modules/.bin/depcruise src/app --no-config --include-only '^src/app' --exclude '\\.spec\\.ts\$' --do-not-follow 'node_modules' --collapse '^src/app/[^/]+' --ts-config tsconfig.depcruise.json --output-type dot | dot -T svg > /work/Documentation/dependencies/global.svg \
-  && ./node_modules/.bin/depcruise src/app/core --no-config --include-only '^src/app/core' --exclude '\\.spec\\.ts\$' --do-not-follow 'node_modules' --ts-config tsconfig.depcruise.json --output-type dot | dot -T svg > /work/Documentation/dependencies/core.svg \
-  && ./node_modules/.bin/depcruise src/app/shared --no-config --include-only '^src/app/shared' --exclude '\\.spec\\.ts\$' --do-not-follow 'node_modules' --collapse '^src/app/shared/(directives|forms|pipes|design/components/[^/]+)' --ts-config tsconfig.depcruise.json --output-type dot | dot -T svg > /work/Documentation/dependencies/shared.svg \
-  && ./node_modules/.bin/depcruise src/app/pages --no-config --include-only '^src/app/pages' --exclude '\\.spec\\.ts\$' --do-not-follow 'node_modules' --collapse '^src/app/pages/(login|dashboard/[^/]+/[^/]+|dashboard)' --ts-config tsconfig.depcruise.json --output-type dot | dot -T svg > /work/Documentation/dependencies/pages.svg \
-  && cp deps-index.html /work/Documentation/dependencies/index.html"
+  && ./node_modules/.bin/depcruise src/app --no-config --include-only '^src/app' --exclude '\\.spec\\.ts\$' --do-not-follow 'node_modules' --collapse '^src/app/[^/]+' --ts-config tsconfig.depcruise.json --output-type dot | dot -T svg > /work/Documentation/additional-documentation/global.svg \
+  && ./node_modules/.bin/depcruise src/app/core --no-config --include-only '^src/app/core' --exclude '\\.spec\\.ts\$' --do-not-follow 'node_modules' --ts-config tsconfig.depcruise.json --output-type dot | dot -T svg > /work/Documentation/additional-documentation/core.svg \
+  && ./node_modules/.bin/depcruise src/app/shared --no-config --include-only '^src/app/shared' --exclude '\\.spec\\.ts\$' --do-not-follow 'node_modules' --ts-config tsconfig.depcruise.json --output-type dot | dot -T svg > /work/Documentation/additional-documentation/shared.svg \
+  && ./node_modules/.bin/depcruise src/app/pages --no-config --include-only '^src/app/pages' --exclude '\\.spec\\.ts\$' --do-not-follow 'node_modules' --ts-config tsconfig.depcruise.json --output-type dot | dot -T svg > /work/Documentation/additional-documentation/pages.svg"
