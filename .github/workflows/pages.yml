@@ -46,7 +46,7 @@ jobs:
               xargs sha256sum > "site/tests/$svc/checksums.sha256"
           done
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: tests-html
           path: site/tests/
@@ -76,7 +76,7 @@ jobs:
               alpine sh -c "cp -r /data/. /out/ 2>/dev/null || true"
           done
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: docs-html
           path: site/docs/
