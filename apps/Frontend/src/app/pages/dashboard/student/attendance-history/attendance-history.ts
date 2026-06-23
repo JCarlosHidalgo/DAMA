@@ -7,7 +7,7 @@ import { AttendanceApi } from '@core/api';
 import { ScheduledClassAttendance, UniqueClassAttendance } from '@core/models';
 import { NotificationService } from '@core/services';
 import { PaginatedTabState } from '@core/utils';
-import { EmptyState, LoadingSkeleton, PageHead, Paginator } from '@shared/components';
+import { EmptyState, LoadingSkeleton, PageHead, Paginator } from '@shared/design/components';
 import { TenantDatePipe } from '@shared/pipes';
 
 import { TabKind, formatTimeRange, tabKindForIndex } from './attendance-history.logic';

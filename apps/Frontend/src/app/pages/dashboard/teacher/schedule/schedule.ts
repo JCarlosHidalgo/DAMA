@@ -16,9 +16,9 @@ import {
   resolveSelectedGroupId,
   subscriptionAllowsScheduleInteraction,
 } from '@core/utils';
-import { LoadingSkeleton, PageHead } from '@shared/components';
-import { Calendar } from '@shared/components/calendar';
-import { GroupSelectContainer } from '@shared/components/group-select/group-select-container';
+import { LoadingSkeleton, PageHead } from '@shared/design/components';
+import { Calendar } from '@shared/design/components/calendar';
+import { GroupSelectContainer } from '@shared/design/components/group-select/group-select-container';
 import { AttendanceQrDialog, AttendanceQrDialogData } from './attendance-qr-dialog';
 import { scheduleSubtitle } from './schedule.logic';
 import { teacherScheduleStyles } from './schedule.variants';

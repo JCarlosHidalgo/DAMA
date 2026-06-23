@@ -10,8 +10,8 @@ import {
   Tenant,
   TenantTierCount,
 } from '@core/models';
-import { PageHead, StatCard } from '@shared/components';
-import { BarChart, DoughnutChart, LineChart } from '@shared/components/charts';
+import { PageHead, StatCard } from '@shared/design/components';
+import { BarChart, DoughnutChart, LineChart } from '@shared/design/components/charts';
 import { MoneyPipe } from '@shared/pipes';
 
 import { revenueByTierToBar, revenueTimelineToLine, tierCountsToDoughnut } from './analytics.logic';

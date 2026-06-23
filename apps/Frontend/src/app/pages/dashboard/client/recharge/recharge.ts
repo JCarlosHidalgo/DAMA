@@ -10,7 +10,7 @@ import { firstValueFrom } from 'rxjs';
 import { AttendanceApi, AuthApi } from '@core/api';
 import { UserListItem } from '@core/models';
 import { DialogService, NotificationService } from '@core/services';
-import { Icon, PageHead } from '@shared/components';
+import { Icon, PageHead } from '@shared/design/components';
 import { NoPasswordManager } from '@shared/directives';
 
 import {

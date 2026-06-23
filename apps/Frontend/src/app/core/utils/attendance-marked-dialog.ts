@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 
-import { Icon } from '@shared/components';
+import { Icon } from '@shared/design/components';
 
 import { attendanceMarkedDialogStyles } from './attendance-marked-dialog.variants';
 

@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { MatIconButton } from '@angular/material/button';
-import { Icon } from '@shared/components/icon';
+import { Icon } from '@shared/design/components/icon';
 import { paginatorStyles } from './paginator.variants';
 
 export interface PageInfo {

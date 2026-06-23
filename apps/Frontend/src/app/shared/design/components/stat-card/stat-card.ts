@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
-import { Icon } from '@shared/components/icon';
-import type { IconName } from '@shared/components/icon';
+import { Icon } from '@shared/design/components/icon';
+import type { IconName } from '@shared/design/components/icon';
 import { statCardStyles } from './stat-card.variants';
 
 export interface StatDelta {

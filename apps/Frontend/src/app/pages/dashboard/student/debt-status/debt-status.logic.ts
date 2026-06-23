@@ -1,6 +1,6 @@
 import type { FailureReason, StudentQrBreakdown } from '@core/models';
-import type { TagVariant } from '@shared/components';
-import type { ChartPaletteKey } from '@shared/components/charts';
+import type { TagVariant } from '@shared/design/components';
+import type { ChartPaletteKey } from '@shared/design/components/charts';
 
 export type TabKind = 'pending' | 'success' | 'failed';
 

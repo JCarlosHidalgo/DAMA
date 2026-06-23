@@ -14,7 +14,7 @@ import { AuthService } from '@core/auth';
 import { defaultRouteForRole } from '@core/router';
 import { HttpErrorMapper } from '@core/services';
 
-import { ThemeToggle } from '@shared/components';
+import { ThemeToggle } from '@shared/design/components';
 
 import { loginStyles } from './login.variants';
 

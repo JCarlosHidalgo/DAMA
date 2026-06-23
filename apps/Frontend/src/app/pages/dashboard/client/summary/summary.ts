@@ -4,7 +4,7 @@ import { catchError, map, of, startWith } from 'rxjs';
 
 import { PaymentApi } from '@core/api';
 import { PaymentSummary } from '@core/models';
-import { ErrorState, LoadingSkeleton, PageHead, StatCard } from '@shared/components';
+import { ErrorState, LoadingSkeleton, PageHead, StatCard } from '@shared/design/components';
 import { MoneyPipe, TenantDatePipe } from '@shared/pipes';
 
 import { clientSummaryStyles } from './summary.variants';

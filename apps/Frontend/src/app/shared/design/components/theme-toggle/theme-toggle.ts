@@ -3,7 +3,7 @@ import { MatButtonModule } from '@angular/material/button';
 
 import { ThemeService } from '@core/services';
 
-import { Icon } from '@shared/components/icon';
+import { Icon } from '@shared/design/components/icon';
 
 @Component({
   selector: 'app-theme-toggle',

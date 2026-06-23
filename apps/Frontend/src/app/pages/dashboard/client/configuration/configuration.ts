@@ -8,7 +8,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { PaymentApi, AuthApi } from '@core/api';
 import { AuthService } from '@core/auth';
 import { NotificationService } from '@core/services';
-import { PageHead } from '@shared/components';
+import { PageHead } from '@shared/design/components';
 import { NoPasswordManager } from '@shared/directives';
 
 import {

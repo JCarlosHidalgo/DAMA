@@ -1,0 +1,184 @@
+name: GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Build test reports
+        env:
+          CONTEXT: ${{ github.workspace }}
+        run: |
+          docker compose -p dama-tests -f infrastructure/compose.test.yaml up --build \
+            auth-test payment-test course-management-test attendance-test frontend-test
+
+      - name: Extract test reports from volumes
+        run: |
+          mkdir -p site/tests
+          cp infrastructure/environments-test/root/index.html site/tests/index.html
+          for svc in auth payment course-management attendance frontend; do
+            mkdir -p "site/tests/$svc"
+            docker run --rm \
+              -v "dama-tests_${svc}-test-results:/data" \
+              -v "$GITHUB_WORKSPACE/site/tests/$svc:/out" \
+              alpine sh -c "cp -r /data/. /out/ 2>/dev/null || true"
+          done
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tests-html
+          path: site/tests/
+
+  build-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Build documentation
+        env:
+          CONTEXT: ${{ github.workspace }}
+        run: |
+          docker compose -p dama-docs -f infrastructure/compose.docs.yaml up --build \
+            auth-docs-build attendance-docs-build course-management-docs-build \
+            credentials-docs-build payment-docs-build frontend-docs-build
+
+      - name: Extract docs from volumes
+        run: |
+          mkdir -p site/docs
+          cp infrastructure/docs/doxygen/index.html site/docs/index.html
+          for svc in auth attendance course-management credentials payment frontend; do
+            mkdir -p "site/docs/$svc"
+            docker run --rm \
+              -v "dama-docs_${svc}-docs-html:/data" \
+              -v "$GITHUB_WORKSPACE/site/docs/$svc:/out" \
+              alpine sh -c "cp -r /data/. /out/ 2>/dev/null || true"
+          done
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: docs-html
+          path: site/docs/
+
+  deploy:
+    needs: [build-tests, build-docs]
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: tests-html
+          path: site/tests/
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: docs-html
+          path: site/docs/
+
+      - name: Create root index
+        run: |
+          cat > site/index.html << 'EOF'
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+              <meta charset="UTF-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <title>DAMA Platform</title>
+              <style>
+                  :root {
+                      --primary-color: #2c5282;
+                      --accent-color: #4299e1;
+                      --text-color: #1a202c;
+                      --muted-color: #4a5568;
+                      --background-color: #f7fafc;
+                      --card-background: #ffffff;
+                      --border-color: #e2e8f0;
+                  }
+                  * { box-sizing: border-box; }
+                  body {
+                      margin: 0;
+                      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+                      background-color: var(--background-color);
+                      color: var(--text-color);
+                      min-height: 100vh;
+                      display: flex;
+                      flex-direction: column;
+                  }
+                  header {
+                      background-color: var(--primary-color);
+                      color: white;
+                      padding: 2.5rem 1.5rem;
+                      text-align: center;
+                      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+                  }
+                  header h1 { margin: 0 0 0.5rem; font-size: 2rem; font-weight: 600; letter-spacing: -0.02em; }
+                  header p { margin: 0; opacity: 0.85; font-size: 1rem; }
+                  main { flex: 1; max-width: 960px; width: 100%; margin: 2rem auto; padding: 0 1.5rem; }
+                  .cards {
+                      display: grid;
+                      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+                      gap: 1rem;
+                  }
+                  .card {
+                      display: block;
+                      background-color: var(--card-background);
+                      border: 1px solid var(--border-color);
+                      border-left: 4px solid var(--accent-color);
+                      border-radius: 6px;
+                      padding: 1.25rem 1.5rem;
+                      text-decoration: none;
+                      color: inherit;
+                      transition: transform 0.15s ease, box-shadow 0.15s ease, border-left-color 0.15s ease;
+                  }
+                  .card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); border-left-color: var(--primary-color); }
+                  .card h2 { margin: 0 0 0.35rem; font-size: 1.15rem; color: var(--primary-color); font-weight: 600; }
+                  .card p { margin: 0; font-size: 0.9rem; color: var(--muted-color); line-height: 1.5; }
+                  footer { text-align: center; padding: 1.25rem 1.5rem 2rem; color: var(--muted-color); font-size: 0.85rem; }
+              </style>
+          </head>
+          <body>
+              <header>
+                  <h1>DAMA Platform</h1>
+                  <p>Coverage reports and API reference documentation for the DAMA monorepo</p>
+              </header>
+              <main>
+                  <section class="cards">
+                      <a class="card" href="tests/">
+                          <h2>Test Reports</h2>
+                          <p>HTML coverage reports for the five .NET backend microservices and the Angular frontend.</p>
+                      </a>
+                      <a class="card" href="docs/">
+                          <h2>Documentation</h2>
+                          <p>Doxygen reference for the five .NET backends and Compodoc reference for the Angular frontend.</p>
+                      </a>
+                  </section>
+              </main>
+              <footer>Updated automatically on every push to <code>main</code></footer>
+          </body>
+          </html>
+          EOF
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site/
+
+      - id: deployment
+        uses: actions/deploy-pages@v4

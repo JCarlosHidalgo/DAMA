@@ -3,7 +3,7 @@ import type {
   SubscriptionRevenuePoint,
   TenantTierCount,
 } from '@core/models';
-import type { ChartPaletteKey } from '@shared/components/charts';
+import type { ChartPaletteKey } from '@shared/design/components/charts';
 
 export interface LabeledSeries {
   labels: string[];

@@ -18,7 +18,7 @@ import { AuthService } from '@core/auth';
 import { QrDebtStatus, SubscriptionPlan } from '@core/models';
 import { DialogService, NotificationService } from '@core/services';
 import { pollQrDebtUntilSettled, resolveQrDebtOutcome, sortPlansByLevel } from '@core/utils';
-import { EmptyState, LoadingSkeleton, PageHead, Tag } from '@shared/components';
+import { EmptyState, LoadingSkeleton, PageHead, Tag } from '@shared/design/components';
 import { MoneyPipe } from '@shared/pipes';
 
 import {

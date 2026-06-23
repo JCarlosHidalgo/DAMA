@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
-import { Icon } from '@shared/components/icon';
-import type { IconName } from '@shared/components/icon';
+import { Icon } from '@shared/design/components/icon';
+import type { IconName } from '@shared/design/components/icon';
 import { emptyStateStyles } from './empty-state.variants';
 
 @Component({

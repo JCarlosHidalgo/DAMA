@@ -26,8 +26,8 @@ import {
   Paginator,
   StatCard,
   Tag,
-} from '@shared/components';
-import { BarChart, DoughnutChart } from '@shared/components/charts';
+} from '@shared/design/components';
+import { BarChart, DoughnutChart } from '@shared/design/components/charts';
 import { MoneyPipe, TenantDatePipe } from '@shared/pipes';
 
 import {

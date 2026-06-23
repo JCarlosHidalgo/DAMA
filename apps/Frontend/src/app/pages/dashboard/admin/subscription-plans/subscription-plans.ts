@@ -17,7 +17,7 @@ import { PaymentApi } from '@core/api';
 import { SubscriptionDurationUnit, SubscriptionPlan } from '@core/models';
 import { NotificationService } from '@core/services';
 import { sortPlansByLevel } from '@core/utils';
-import { LoadingSkeleton, PageHead } from '@shared/components';
+import { LoadingSkeleton, PageHead } from '@shared/design/components';
 
 import {
   DURATION_UNITS,

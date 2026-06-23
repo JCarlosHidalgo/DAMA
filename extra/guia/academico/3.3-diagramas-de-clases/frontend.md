@@ -1,93 +1,115 @@
-# 3.3.3.11 Diagramado del frontend (Angular 21 / Compodoc)
+# 3.3.3.11 Diagramado del frontend (Angular 21 / Compodoc + dependency-cruiser)
 
 > Contraparte de los archivos de backend, adaptada al frontend. Sigue el mismo enfoque a)/b) de la
-> [plantilla](_plantilla.md), pero la herramienta es **Compodoc** (no Doxygen), porque es el
-> generador de documentación del stack Angular. Es la **sección final** del capítulo, después de los
+> [plantilla](_plantilla.md), pero la herramienta principal es **Compodoc** (documentación de clases
+> y componentes) complementada con **dependency-cruiser** (cuatro grafos de dependencias integrados
+> en Compodoc como documentación adicional). Es la **sección final** del capítulo, después de los
 > cinco servicios de backend (3.3.3.6 a 3.3.3.10).
 >
 > **Decisiones de adaptación (acordadas):**
-> - **Fuente:** Compodoc — grafo de dependencias, grafo por componente (entradas/salidas, *providers*
->   y componentes hijos de la plantilla) y la ficha por clase.
+> - **Fuente de la jerarquía gráfica (parte a):** cuatro grafos generados por **dependency-cruiser**
+>   y servidos dentro de Compodoc (sección «Dependency Graphs»): `global.svg`, `core.svg`,
+>   `shared.svg` y `pages.svg`. Cada grafo muestra los módulos TypeScript reales (archivos `.ts`)
+>   como nodos y sus importaciones como aristas dirigidas.
 > - **Granularidad (parte b):** los **bloques lógicos** (servicios, guardias, interceptor, *pipes*,
->   directivas, estrategias y capa de lógica) se documentan **clase por clase**; los **58 componentes**
->   se agrupan y diagraman **por *feature*** (página), no uno por uno.
-> - **Jerarquía gráfica (parte a):** se usa el **grafo de dependencias de Compodoc** tal cual.
+>   directivas, estrategias y capa de lógica) se documentan **clase por clase**; los componentes se
+>   agrupan y documentan **por *feature*** (página) a través del grafo de componente de Compodoc.
 > - **Herencia/colaboración:** «realización» = la interfaz/tipo de función que el bloque implementa
 >   (`CanActivateFn`, `HttpInterceptorFn`, `PipeTransform`, `TokenStorage`, …); «colaboración» = las
 >   dependencias **inyectadas**, los **componentes hijos** de la plantilla y el uso de su **archivo de
 >   capa de lógica**, según el grafo de componente de Compodoc.
 >
-> **Generar las figuras:** desde `apps/Frontend`,
-> `npx @compodoc/compodoc -p ../../infrastructure/docs/compodoc/tsconfig.doc.json -d compodoc-out`
-> (produce el grafo de dependencias, los grafos por componente y las fichas por clase).
+> **Generar las figuras:** reconstruir el stack de documentación con
+> `docker compose --env-file infrastructure/.env.dev -f infrastructure/compose.docs.yaml up --build`
+> y abrir `http://localhost:8003/frontend/`. Los cuatro grafos de dependencias están en
+> «Additional documentation → Dependency Graphs»; los grafos por componente y las fichas por clase,
+> en las secciones propias de Compodoc.
 
 ---
 
-## a) Jerarquía gráfica (grafo de dependencias de Compodoc)
+## a) Jerarquía gráfica (grafos de dependency-cruiser)
 
 El frontend es una **SPA Angular 21 totalmente *standalone*** (sin `NgModule`): la organización no se
-expresa con módulos de Angular, sino con la **estructura de carpetas** que Compodoc refleja en su
-**grafo de dependencias**. Tres áreas de primer nivel ordenan el código:
+expresa con módulos de Angular, sino con la **estructura de carpetas**. Tres áreas de primer nivel
+ordenan el código y son la base de los cuatro grafos:
 
-- `core/` — la infraestructura de aplicación: clientes de la API (`core/api/`), autenticación y sesión
-  (`core/auth/`), servicios transversales (`core/services/`), estrategia de precarga de rutas
-  (`core/router/`) y estrategias de dominio (`core/strategies/`).
-- `shared/` — piezas reutilizables: componentes (`shared/components/`), *pipes* (`shared/pipes/`) y
-  directivas (`shared/directives/`).
-- `pages/` — las pantallas por **feature/rol**: `login/` y `dashboard/` ramificado en `admin/`,
-  `client/`, `student/` y `teacher/`.
+- `core/` — infraestructura de aplicación: clientes de API (`api/`), autenticación y sesión
+  (`auth/`), servicios transversales (`services/`), utilidades de dominio (`utils/`), estrategia de
+  precarga de rutas (`router/`) y estrategias de dominio (`strategies/`).
+- `shared/` — sistema de diseño reutilizable: componentes (`design/components/`), recetas de estilos
+  (`design/`), *pipes* (`pipes/`), directivas (`directives/`) y primitivas de formulario (`forms/`).
+- `pages/` — pantallas por **feature/rol**: `login/` y `dashboard/` ramificado en `admin/`,
+  `client/`, `student/` y `teacher/`; cada página aplica el **patrón de capa de lógica** (`*.logic.ts`
+  hermano del componente).
 
-Sobre cada componente de página se aplica el **patrón de capa de lógica**: el componente queda
-«humilde» (orquesta vista y eventos) y delega la lógica pura en un archivo hermano `*.logic.ts` de
-**funciones puras** (sin estado ni inyección), lo que sostiene la testabilidad (los `*.logic.ts` se
-prueban al 100 %).
+### Grafo global
 
-Títulos de figura (del grafo de dependencias de Compodoc) y la función de cada grupo:
+> **Figura: Grafo de dependencias global del frontend (dependency-cruiser) — áreas `core`, `shared` y `pages`**
 
-> **Figura: Grafo de dependencias global del frontend (Compodoc) — áreas `core`, `shared` y `pages`**
+Colapsa todo el árbol a tres nodos: `src/app/core`, `src/app/shared` y `src/app/pages`. Las aristas
+muestran la única dirección válida de dependencia: las páginas dependen de `core` y de `shared`;
+`core` y `shared` no dependen de `pages`. Es la vista de más alto nivel de la arquitectura del
+cliente y el contrato estructural que el resto de grafos desglosa.
 
-Muestra la dependencia general: las páginas dependen de `shared` y de `core`; `core` no depende de
-`pages`. Es la vista de más alto nivel de la arquitectura del cliente.
+### Grafo del área `core`
 
-> **Figura: Grafo de dependencias del área `core` (clientes de API, autenticación, servicios, estrategias)**
+> **Figura: Grafo de dependencias del área `core` (dependency-cruiser) — archivos individuales**
 
-Función: concentra todo lo que no es pantalla —comunicación con el *gateway*, manejo de sesión y
-servicios transversales—, de modo que las páginas no hablen directamente con la red ni con el
-almacenamiento.
+Muestra los ~40 archivos `.ts` de `core/` como nodos individuales con sus importaciones internas.
+Los patrones visibles en el grafo:
 
-> **Figura: Grafo de dependencias del área `shared` (componentes, *pipes*, directivas)**
+- **Clúster de autenticación:** `auth-service.ts` es el nodo más conectado del grafo; de él dependen
+  directamente `auth-guard.ts`, `role-guard.ts`, `subscription-guard.ts`,
+  `subscription-access-guard.ts`, `auth-interceptor.ts` y `role-aware-preload.ts`. El propio
+  `auth-service.ts` depende de `token-storage.ts`, `token-decoder.ts` y `jwt.model.ts`.
+- **Cadena de servicios:** `notification-service.ts` → `http-error-mapper.ts` →
+  `http-error-mapper.logic.ts`. Los archivos de modelos (`models/`) son hojas sin dependencias
+  internas.
+- **Utilidades de dominio:** `confirmation-dialog.ts` y `attendance-marked-dialog.ts` dependen de
+  sus respectivos archivos `.variants.ts`; `qr-debt-polling.ts` y `qr-debt-outcome.ts` dependen de
+  los modelos de `models/`.
+- **Estrategias:** `class-kind.strategy.ts` depende de `api/` y de `models/`.
+- Los archivos de `api/` (`auth.api.ts`, `course.api.ts`, `attendance.api.ts`, `payment.api.ts`,
+  `credentials.api.ts`) son nodos hoja: no tienen importaciones internas dentro de `core/`.
 
-Función: provee los bloques de interfaz reutilizables (tabla adaptable, selección de grupo, gráficos,
-*skeletons*, *pipes* de formato) que las páginas componen.
+### Grafo del área `shared`
 
-> **Figura: Grafo de componentes de la *feature* `login`**
+> **Figura: Grafo de dependencias del área `shared` (dependency-cruiser) — archivos individuales**
 
-Función: la pantalla de acceso; punto de entrada no autenticado.
+Muestra todos los archivos `.ts` de `shared/` como nodos individuales. La estructura observada:
 
-> **Figura: Grafo de componentes de la *feature* `dashboard/admin` (academias, planes de suscripción, analítica)**
+- **Sistema de diseño (`design/components/`):** cada componente está formado por un par `*.ts` +
+  `*.variants.ts` con acoplamiento exclusivamente entre sí. La única dependencia interna entre
+  componentes distintos ocurre dentro de `charts/`: `chart-options.logic.ts` →
+  `chart-tokens.logic.ts`. El resto de componentes (`calendar`, `camera-scanner`, `course-color-chip`,
+  `empty-state`, `error-state`, `group-select`, `icon`, `loading-skeleton`, `page-head`, `paginator`,
+  `qr-card`, `responsive-table`, `stat-card`, `tag`, `theme-toggle`) son pares aislados.
+- **`design/index.ts` y `design/recipes.ts`** aparecen como nodos individuales sin dependencias
+  internas hacia otros componentes del área.
+- **`pipes/`, `directives/` y `forms/`** son conjuntos de archivos sin dependencias cruzadas entre
+  ellos.
 
-Función: las pantallas del operador global (Admin) para gestionar academias, planes y ver la
-analítica de ingresos.
+### Grafo del área `pages`
 
-> **Figura: Grafo de componentes de la *feature* `dashboard/client` (usuarios, cursos, grupos, horario, plantillas de deuda, configuración, recarga, suscripción, resumen)**
+> **Figura: Grafo de dependencias del área `pages` (dependency-cruiser) — archivos individuales**
 
-Función: las pantallas del gestor de academia (Client), el conjunto más amplio de la aplicación.
-
-> **Figura: Grafo de componentes de la *feature* `dashboard/student` (horario, marcar asistencia, historial, estado de deuda, pago de clases, resumen)**
-
-Función: las pantallas del estudiante, incluida la de marcado de asistencia por código QR.
-
-> **Figura: Grafo de componentes de la *feature* `dashboard/teacher` (horario y toma de asistencia)**
-
-Función: las pantallas del profesor para ver su horario y registrar asistencia.
+Muestra todos los archivos `.ts` de `pages/` como nodos individuales. El patrón es uniforme en
+todas las *features*: cada pantalla tiene un archivo de componente `*.ts`, un archivo de estilos
+`*.variants.ts` y, en la mayoría de los casos, un archivo de capa de lógica `*.logic.ts`; algunas
+páginas añaden `*.validators.ts`. Los archivos de enrutamiento y componentes auxiliares
+(`dashboard.ts`, `dashboard.routes.ts`, `dashboard/shared/placeholder.ts`,
+`dashboard/shared/schedule-router.ts`, `dashboard/shared/summary-router.ts`) aparecen como nodos
+individuales conectados a los componentes de página que los referencian. Las dependencias de `pages/`
+hacia `core/` y `shared/` no aparecen en este grafo porque el análisis se limita al área `pages/`;
+esas aristas se ven en el grafo global.
 
 ---
 
 ## b) Diagramas de herencia/realización y colaboración
 
 Una entrada por **bloque lógico** implementado. Las clases/interfaces/funciones **externas** (Angular,
-Angular Material, RxJS, etc.) se **referencian** desde las viñetas, sin entrada propia. Los **58
-componentes** no se enumeran uno por uno: se documentan por *feature* mediante el grafo de componente
+Angular Material, RxJS, etc.) se **referencian** desde las viñetas, sin entrada propia. Los
+componentes no se enumeran uno por uno: se documentan por *feature* mediante el grafo de componente
 de Compodoc (cierre de esta sección).
 
 ### Clientes de la API (`core/api/`)
@@ -137,7 +159,8 @@ de Compodoc (cierre de esta sección).
 8. **`TokenDecoder`** — decodifica el token de sesión para leer sus *claims* en el cliente.
 
    > **Figura: Diagrama de colaboración para `TokenDecoder`**
-   - No recibe dependencias inyectadas (lógica de decodificación autónoma); lo consume `AuthService`.
+   - Depende del modelo implementado `JwtClaims` (definido en `jwt.model.ts`); no recibe dependencias
+     inyectadas. Lo consume `AuthService`.
 
 9. **`SessionStorageTokenStorage`** — persistencia del token en el almacenamiento de sesión del
    navegador, de forma segura para renderizado en servidor.
@@ -166,7 +189,8 @@ de Compodoc (cierre de esta sección).
     - Realiza el tipo de función externo `CanActivateFn`.
 
     > **Figura: Diagrama de colaboración para `roleGuard`**
-    - Inyecta el servicio implementado `AuthService` (lee el rol) y el servicio externo `Router`.
+    - Inyecta el servicio implementado `AuthService` (lee el rol y los *claims* del modelo `JwtClaims`)
+      y el servicio externo `Router`.
 
 12. **`subscriptionGuard`** — bloquea el acceso cuando la suscripción de la academia no está vigente.
 
@@ -174,8 +198,8 @@ de Compodoc (cierre de esta sección).
     - Realiza el tipo de función externo `CanActivateFn`.
 
     > **Figura: Diagrama de colaboración para `subscriptionGuard`**
-    - Inyecta el servicio implementado `AuthService` (estado de la suscripción) y el servicio externo
-      `Router`.
+    - Inyecta el servicio implementado `AuthService` (estado de la suscripción, leído del modelo
+      `JwtClaims`) y el servicio externo `Router`.
 
 13. **`subscriptionAccessGuard`** — restringe funcionalidades según el nivel de suscripción contratado.
 
@@ -203,13 +227,14 @@ de Compodoc (cierre de esta sección).
 15. **`DialogService`** — abre diálogos modales reutilizables (confirmación, avisos).
 
     > **Figura: Diagrama de colaboración para `DialogService`**
-    - Inyecta el servicio externo `MatDialog` (Angular Material).
+    - Inyecta el servicio externo `MatDialog` (Angular Material) y usa las utilidades de diálogo de
+      `core/utils/`.
 
 16. **`HttpErrorMapper`** — traduce los errores HTTP a mensajes de usuario coherentes.
 
     > **Figura: Diagrama de colaboración para `HttpErrorMapper`**
-    - No recibe dependencias inyectadas; lo consume `NotificationService` y se apoya en la capa de
-      lógica `http-error-mapper.logic.ts` (entrada 30).
+    - Delega la lógica de mapeo en la capa de lógica `http-error-mapper.logic.ts` (entrada 30); no
+      recibe dependencias inyectadas.
 
 17. **`NotificationService`** — muestra notificaciones (éxito/error) de forma unificada.
 
@@ -232,19 +257,24 @@ de Compodoc (cierre de esta sección).
     > **Figura: Diagrama de colaboración para `RoleAwarePreloadStrategy`**
     - Inyecta el servicio implementado `AuthService` (lee el rol para decidir la precarga).
 
+20. **`DefaultRoute`** — determina la ruta de inicio según el rol autenticado.
+
+    > **Figura: Diagrama de colaboración para `DefaultRoute`**
+    - Inyecta el servicio implementado `AuthService` para leer el rol del usuario.
+
 ### Estrategias de dominio (`core/strategies/`)
 
-20. **`ClassKindStrategy`** — contrato que unifica el tratamiento de los dos tipos de clase
+21. **`ClassKindStrategy`** — contrato que unifica el tratamiento de los dos tipos de clase
     (recurrente y puntual).
 
     > **Figura: Diagrama de herencia para `ClassKindStrategy`**
     - Es una interfaz **raíz**; la realizan `ScheduledClassStrategy` y `UniqueClassStrategy`.
 
     > **Figura: Diagrama de colaboración para `ClassKindStrategy`**
-    - Sus operaciones usan los tipos implementados `ClassFormPayload` y `AttendanceTarget` (modelos del
-      mismo archivo de estrategia).
+    - Sus operaciones usan los tipos implementados del dominio definidos en `core/models/` y acceden
+      a `core/api/`.
 
-21. **`ScheduledClassStrategy`** — estrategia para las clases recurrentes.
+22. **`ScheduledClassStrategy`** — estrategia para las clases recurrentes.
 
     > **Figura: Diagrama de herencia para `ScheduledClassStrategy`**
     - Realiza la interfaz implementada `ClassKindStrategy`.
@@ -252,7 +282,7 @@ de Compodoc (cierre de esta sección).
     > **Figura: Diagrama de colaboración para `ScheduledClassStrategy`**
     - Inyecta los servicios implementados `CourseApi`, `AttendanceApi` y `AttendanceRealtimeService`.
 
-22. **`UniqueClassStrategy`** — estrategia para las clases puntuales.
+23. **`UniqueClassStrategy`** — estrategia para las clases puntuales.
 
     > **Figura: Diagrama de herencia para `UniqueClassStrategy`**
     - Realiza la interfaz implementada `ClassKindStrategy`.
@@ -260,15 +290,15 @@ de Compodoc (cierre de esta sección).
     > **Figura: Diagrama de colaboración para `UniqueClassStrategy`**
     - Inyecta los servicios implementados `CourseApi`, `AttendanceApi` y `AttendanceRealtimeService`.
 
-23. **`ClassKindStrategies`** — registro que selecciona la estrategia según el tipo de clase.
+24. **`ClassKindStrategies`** — registro que selecciona la estrategia según el tipo de clase.
 
     > **Figura: Diagrama de colaboración para `ClassKindStrategies`**
     - Inyecta las clases implementadas `ScheduledClassStrategy` y `UniqueClassStrategy` y entrega la
       adecuada a quien la solicita.
 
-### Pipes (`shared/pipes/`)
+### *Pipes* (`shared/pipes/`)
 
-24. **`MoneyPipe`** — formatea importes monetarios para la vista.
+25. **`MoneyPipe`** — formatea importes monetarios para la vista.
 
     > **Figura: Diagrama de herencia para `MoneyPipe`**
     - Realiza la interfaz externa `PipeTransform` (de Angular).
@@ -276,7 +306,7 @@ de Compodoc (cierre de esta sección).
     > **Figura: Diagrama de colaboración para `MoneyPipe`**
     - No recibe dependencias inyectadas (transformación pura).
 
-25. **`TenantDatePipe`** — formatea fechas en la zona horaria de la academia.
+26. **`TenantDatePipe`** — formatea fechas en la zona horaria de la academia.
 
     > **Figura: Diagrama de herencia para `TenantDatePipe`**
     - Realiza la interfaz externa `PipeTransform`.
@@ -284,65 +314,62 @@ de Compodoc (cierre de esta sección).
     > **Figura: Diagrama de colaboración para `TenantDatePipe`**
     - Inyecta el servicio implementado `AuthService`, del que obtiene la zona horaria de la academia.
 
-### Directivas (`shared/`)
+### Directivas (`shared/directives/`)
 
-26. **`NoPasswordManager`** — directiva que desalienta la intervención de gestores de contraseñas en
-    campos sensibles.
+27. **`NoPasswordManagerDirective`** — directiva que desalienta la intervención de gestores de
+    contraseñas en campos sensibles.
 
-    > **Figura: Diagrama de herencia para `NoPasswordManager`**
+    > **Figura: Diagrama de herencia para `NoPasswordManagerDirective`**
     - Es una directiva de atributo (decorada con `@Directive`); no realiza interfaces de ciclo de vida.
 
-    > **Figura: Diagrama de colaboración para `NoPasswordManager`**
+    > **Figura: Diagrama de colaboración para `NoPasswordManagerDirective`**
     - No recibe dependencias inyectadas; actúa sobre el elemento anfitrión al que se aplica.
-
-27. **`TableCellDirective`** (`shared/components/responsive-table/`, selector `[appTableCell]`) —
-    marca las celdas para que la tabla adaptable las apile en pantallas pequeñas.
-
-    > **Figura: Diagrama de colaboración para `TableCellDirective`**
-    - Coopera con el componente de tabla adaptable de su mismo archivo, que la consume para el
-      comportamiento responsive.
 
 ### Capa de lógica (`*.logic.ts`) — funciones puras
 
 La capa de lógica son **22** módulos de **funciones puras** (sin estado, sin inyección, sin herencia):
-no tienen diagrama de herencia ni de colaboración por dependencias; Compodoc las documenta en su
+no tienen diagrama de herencia ni de colaboración por dependencias; Compodoc los documenta en su
 sección de **funciones**. Su «colaboración» es uniforme: **cada archivo es consumido por su componente
-hermano** y opera sobre los **modelos** (`*.model.ts`) del dominio. Se enumeran agrupadas por *feature*;
-para cada una se cita su figura de funciones de Compodoc.
+o servicio hermano** y opera sobre los **modelos** (`*.model.ts`) del dominio. Se enumeran agrupadas
+por área; para cada una se cita su figura de funciones de Compodoc.
 
-> **Figura: Funciones de la capa de lógica (Compodoc) — núcleo y compartidos**
-- `http-error-mapper.logic.ts` (mapeo de errores HTTP a mensajes), consumido por `HttpErrorMapper`.
-- `shared/components/charts/chart-options.logic.ts` y `chart-tokens.logic.ts` (opciones y paleta de
-  gráficos), consumidos por los componentes de gráficos.
-- `shared/components/group-select/group-select.logic.ts` (claves de consulta y resolución de grupos),
-  consumido por el componente de selección de grupo.
+> **Figura: Funciones de la capa de lógica (Compodoc) — `core` y `shared`**
+- `core/services/http-error-mapper.logic.ts` — mapeo de errores HTTP a mensajes, consumido por
+  `HttpErrorMapper`.
+- `shared/design/components/charts/chart-tokens.logic.ts` — paleta de colores de los gráficos,
+  consumido por `chart-options.logic.ts`.
+- `shared/design/components/charts/chart-options.logic.ts` — construcción de opciones de Chart.js,
+  consumido por los componentes de gráficos.
+- `shared/design/components/group-select/group-select.logic.ts` — claves de consulta y resolución
+  de grupos, consumido por el componente de selección de grupo.
 
 > **Figura: Funciones de la capa de lógica (Compodoc) — *feature* Admin**
-- `analytics.logic.ts` (transformación de series para gráficos de analítica), `subscription-plans.logic.ts`
-  (etiquetas y carga útil de planes), `tenants.logic.ts` (resolución de alta/edición de academias).
+- `analytics.logic.ts` (transformación de series para gráficos de analítica),
+  `subscription-plans.logic.ts` (etiquetas y carga útil de planes),
+  `tenants.logic.ts` (resolución de alta/edición de academias).
 
 > **Figura: Funciones de la capa de lógica (Compodoc) — *feature* Client**
 - `configuration.logic.ts`, `courses.logic.ts`, `debt-templates.logic.ts`, `recharge.logic.ts`,
-  `schedule.logic.ts`, `subscription.logic.ts` (validaciones, mensajes de confirmación y resolución de
-  formularios de cada pantalla del Client).
+  `schedule.logic.ts`, `subscription.logic.ts` — validaciones, mensajes de confirmación y resolución
+  de formularios de cada pantalla del Client.
 
 > **Figura: Funciones de la capa de lógica (Compodoc) — *feature* Student**
 - `attendance-history.logic.ts`, `debt-status.logic.ts`, `mark-attendance.logic.ts`,
   `pay-classes.logic.ts`, `schedule.logic.ts`, `summary.logic.ts`,
-  `schedule/confirm-attendance-dialog.logic.ts` (lectura del código QR, clasificación de errores,
-  series de resumen y validaciones del Student).
+  `schedule/confirm-attendance-dialog.logic.ts` — lectura del código QR, clasificación de errores,
+  series de resumen y validaciones del Student.
 
 > **Figura: Funciones de la capa de lógica (Compodoc) — *feature* Teacher**
-- `teacher/schedule/schedule.logic.ts` y `teacher/schedule/attendance-qr-dialog.logic.ts` (subtítulos,
-  generación del código QR y altas de asistencia del Teacher).
+- `teacher/schedule/schedule.logic.ts` y `teacher/schedule/attendance-qr-dialog.logic.ts` —
+  subtítulos, generación del código QR y altas de asistencia del Teacher.
 
 ### Componentes por *feature*
 
-Los **58 componentes** se documentan **por *feature***, no uno por uno. Para cada *feature*, el **grafo
-de componente de Compodoc** muestra, por componente: sus **entradas/salidas**, sus **dependencias
-inyectadas** (servicios y estrategias de las entradas 1–23) y sus **componentes hijos** de la plantilla
-(de `shared/components/`). La regla de colaboración es uniforme: **el componente inyecta los servicios
-de `core/` y delega la lógica pura en su archivo `*.logic.ts` hermano**.
+Los componentes se documentan **por *feature***, no uno por uno. Para cada *feature*, el **grafo de
+componente de Compodoc** muestra, por componente: sus **entradas/salidas**, sus **dependencias
+inyectadas** (servicios y estrategias de las entradas 1–24) y sus **componentes hijos** de la
+plantilla (de `shared/design/components/`). La regla de colaboración es uniforme: **el componente
+inyecta los servicios de `core/` y delega la lógica pura en su archivo `*.logic.ts` hermano**.
 
 > **Figura: Grafo de componentes — *feature* `login`**
 > **Figura: Grafo de componentes — *feature* `dashboard/admin`**
@@ -350,9 +377,9 @@ de `core/` y delega la lógica pura en su archivo `*.logic.ts` hermano**.
 > **Figura: Grafo de componentes — *feature* `dashboard/student`**
 > **Figura: Grafo de componentes — *feature* `dashboard/teacher`**
 
-Para cada *feature*, la función es la descrita en la parte a); el grafo por componente detalla las
-asociaciones concretas (qué cliente de API y qué estrategia inyecta cada pantalla, y qué componentes
-compartidos compone).
+Para cada *feature*, la función es la descrita en la parte a); el grafo por componente de Compodoc
+detalla las asociaciones concretas (qué cliente de API y qué estrategia inyecta cada pantalla, y qué
+componentes de `shared/design/components/` compone).
 
 ---
 
@@ -364,7 +391,8 @@ ls apps/Frontend/src/app/core/api apps/Frontend/src/app/core/auth apps/Frontend/
 find apps/Frontend/src/app -name '*.logic.ts' | sort     # capa de lógica (funciones puras)
 grep -rlE "@Pipe|@Directive" apps/Frontend/src/app --include=*.ts | grep -v spec
 
-# Generar el grafo de dependencias, los grafos por componente y las fichas por clase
-cd apps/Frontend && npx @compodoc/compodoc -p ../../infrastructure/docs/compodoc/tsconfig.doc.json -d compodoc-out
-#   abrir compodoc-out/index.html
+# Generar los cuatro grafos de dependencias y la documentación Compodoc completa
+docker compose --env-file infrastructure/.env.dev -f infrastructure/compose.docs.yaml up --build
+# Abrir http://localhost:8003/frontend/
+# Los grafos de dependencias: Additional documentation → Dependency Graphs
 ```
