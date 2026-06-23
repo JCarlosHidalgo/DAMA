@@ -6,8 +6,11 @@ FROM rabbitmq:4.1-management-alpine
 ARG DELAYED_PLUGIN_VERSION=4.1.0
 
 RUN apk add --no-cache curl ca-certificates \
-    && curl -fSL -o /opt/rabbitmq/plugins/rabbitmq_delayed_message_exchange-${DELAYED_PLUGIN_VERSION}.ez \
+    && curl -fSL -o /tmp/plugin.ez \
         "https://github.com/rabbitmq/rabbitmq-delayed-message-exchange/releases/download/v${DELAYED_PLUGIN_VERSION}/rabbitmq_delayed_message_exchange-${DELAYED_PLUGIN_VERSION}.ez" \
+    && echo "567f876378e70af9d949de4066bbb2fc30162b46bcbc9efe2430076b172e4a87  /tmp/plugin.ez" | sha256sum -c - \
+    && mv /tmp/plugin.ez \
+        /opt/rabbitmq/plugins/rabbitmq_delayed_message_exchange-${DELAYED_PLUGIN_VERSION}.ez \
     && rabbitmq-plugins enable --offline rabbitmq_delayed_message_exchange
 
 # Serve the management UI under /api/rabbitmq so it is reachable through the
