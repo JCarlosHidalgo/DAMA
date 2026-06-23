@@ -17,7 +17,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="JuanCarlosHS.SQLDaosPackage" Version="3.1.0" />
+    <PackageReference Include="JuanCarlosHS.SQLDaosPackage" Version="3.1.1" />
     <PackageReference Include="MySql.Data" Version="9.3.0" />
   </ItemGroup>
 
