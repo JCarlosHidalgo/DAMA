@@ -1,3 +1,7 @@
+using Backend.ExternalCheck;
+
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+
 namespace Backend.Modules;
 
 public sealed class HealthCheckModule : IServiceModule, IAppModule
@@ -12,6 +16,17 @@ public sealed class HealthCheckModule : IServiceModule, IAppModule
 
     public void Configure(WebApplication app)
     {
-        app.MapHealthChecks("/health").AllowAnonymous();
+        app.MapHealthChecks("/health", new HealthCheckOptions
+        {
+            Predicate = _ => false
+        })
+        .AllowAnonymous();
+
+        app.MapHealthChecks("/health/ready", new HealthCheckOptions
+        {
+            Predicate = healthCheck => healthCheck.Tags.Contains("ready"),
+            ResponseWriter = ReadinessResponseWriter.WriteAsync
+        })
+        .AllowAnonymous();
     }
 }
